@@ -31,6 +31,8 @@
       color: var(--text);
       font-family: 'Barlow', sans-serif;
       min-height: 100vh;
+      margin: 0;
+      padding: 0;
     }
  
     /* HEADER */
@@ -219,11 +221,20 @@
  
     /* BAG SECTION */
     .bag-section {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 2rem 1.5rem 4rem;
+      max-width: 1200px;
+      margin: 0 auto 0 0;
+      padding: 2rem 1.5rem 4rem 0;
     }
-    .type-group { margin-bottom: 2rem; }
+    .type-group {
+      display: inline-block;
+      width: 23%;
+      margin-right: 2%;
+      vertical-align: top;
+      margin-bottom: 2rem;
+    }
+    .type-group:last-child {
+      margin-right: 0;
+    }
     .type-header {
       display: flex;
       align-items: center;
@@ -245,7 +256,7 @@
  
     .disc-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      grid-template-columns: 1fr;
       gap: 10px;
     }
     .disc-card {
@@ -393,16 +404,6 @@
       <input type="range" id="fore-slider" min="100" max="500" step="10" value="300" />
       <div class="range-labels"><span>100 ft</span><span>300 ft</span><span>500 ft</span></div>
     </div>
-  </div>
- 
-  <div class="control-card" style="margin-bottom:0">
-    <label>Brand filter</label>
-    <div class="btn-row">
-      <button class="filter-btn active brand-both" data-brand="both">Both brands</button>
-      <button class="filter-btn brand-innova" data-brand="innova">Innova only</button>
-      <button class="filter-btn brand-discraft" data-brand="discraft">Discraft only</button>
-    </div>
-  </div>
 </div>
  
 <div class="stats-row" id="stats-row"></div>
@@ -514,7 +515,7 @@ function getStability(turn, fade) {
   return { label: "neutral", class: "neutral" };
 }
  
-let backDist = 300, foreDist = 300, brand = "both";
+let backDist = 300, foreDist = 300;
 
 function getStabilityPreference() {
   // Map distance to stability: higher distance = more overstable preference
@@ -525,10 +526,8 @@ function getStabilityPreference() {
 }
 
 function getBag() {
-  // Filter eligible discs
-  const eligible = DISCS.filter(d =>
-    (brand === "both" || d.brand === brand)
-  );
+  // Return all discs sorted by stability preference
+  const eligible = DISCS.slice();
   
   const stabPref = getStabilityPreference();
   
@@ -629,20 +628,6 @@ document.getElementById("fore-slider").addEventListener("input", e => {
   render();
 });
 
-// Brand buttons
-
-document.querySelectorAll("[data-brand]").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll("[data-brand]").forEach(b => b.classList.remove("active","brand-innova","brand-discraft","brand-both"));
-    brand = btn.dataset.brand;
-    btn.classList.add("active");
-    if (brand === "innova") btn.classList.add("brand-innova");
-    else if (brand === "discraft") btn.classList.add("brand-discraft");
-    else btn.classList.add("brand-both");
-    render();
-  });
-});
- 
 render();
 </script>
 </body>
