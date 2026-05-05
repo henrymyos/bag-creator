@@ -193,6 +193,12 @@
       border-color: rgba(163,113,247,0.4);
       color: #a371f7;
     }
+    .brand-filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin: 0 0 1.25rem;
+    }
  
     /* STATS ROW */
     .stats-row {
@@ -402,7 +408,7 @@
 <body>
  
 <header>
-  <div class="logo">Disc<span>Bag</span></div>
+  <div class="logo">Bag<span>Creator</span></div>
   <div class="header-sub">Innova &amp; Discraft Edition</div>
 </header>
  
@@ -432,6 +438,11 @@
       <div class="range-labels"><span>100 ft</span><span>300 ft</span><span>500 ft</span></div>
     </div>
 </div>
+<div class="brand-filter-row">
+  <button class="filter-btn brand-innova" id="filter-innova">Innova</button>
+  <button class="filter-btn brand-discraft" id="filter-discraft">Discraft</button>
+  <button class="filter-btn brand-both active" id="filter-both">Both</button>
+</div>
  
 <div class="stats-row" id="stats-row"></div>
  
@@ -453,6 +464,27 @@ const DISCS = [
   { brand:"innova", type:"putter", name:"Rhyno", speed:2, glide:1, turn:0, fade:3, desc:"Very overstable putter. Excellent in headwinds and for hard fade approach shots." },
   { brand:"innova", type:"putter", name:"JK Pro Aviar", speed:2, glide:3, turn:0, fade:1, desc:"Tour-proven version of the Aviar used on the professional circuit." },
   { brand:"innova", type:"putter", name:"P-Bird", speed:3, glide:3, turn:0, fade:0, desc:"Straight-flying putter with virtually no fade. Holds any angle you release it on." },
+  { brand:"innova", type:"putter", name:"Aero", speed:3, glide:6, turn:0, fade:0, desc:"The Aero is a great disc for new players. It&#039;s the straightest point-to-point golf disc and the easiest disc to keep on the fairway for novice players." },
+  { brand:"innova", type:"putter", name:"Animal", speed:2, glide:1, turn:0, fade:1, desc:"The Animal was designed to be a short-range, stable forehand and backhand approach disc. It’s also a good putter in the wind and inside the circle. The Animal features our Thumtrac® Rim for a secure grip." },
+  { brand:"innova", type:"putter", name:"Aviar Driver", speed:2, glide:3, turn:0, fade:2, desc:"The Aviar is the number one putter in disc golf. Having won more World Championships than all other putters combined. The Aviar Driver is a big bead version of the Aviar P&amp;A." },
+  { brand:"innova", type:"putter", name:"Aviar3", speed:3, glide:2, turn:0, fade:2, desc:"The Aviar3 has the same comfortable grip you&#039;d expect in an Aviar putter but with a distinctive flat top." },
+  { brand:"innova", type:"putter", name:"Aviarx3", speed:3, glide:2, turn:0, fade:3, desc:"The AviarX3 is the ideal Putt &amp; Approach disc for headwind upshots and drives." },
+  { brand:"innova", type:"putter", name:"Bullfrog", speed:3, glide:1, turn:0, fade:1, desc:"Bring instant confidence to your putting game with the Bullfrog and its comfortable grip and consistent flight." },
+  { brand:"innova", type:"putter", name:"Classic Aviar", speed:2, glide:3, turn:0, fade:0, desc:"The Classic Aviar has a firm grip and is our straightest flying Aviar model from start to finish. Reliable in all conditions and is excellent for drives, approach shots and putts." },
+  { brand:"innova", type:"putter", name:"Dart", speed:3, glide:4, turn:0, fade:0, desc:"The Dart is a small diameter putter with a straight flight. The Dart is especially good for long range putts and go-for shots." },
+  { brand:"innova", type:"putter", name:"Hydra", speed:3, glide:3, turn:0, fade:2, desc:"The Hydra is a grippy and durable Putt &amp; Approach disc. Easy to release grip for confident putting. Floats in water." },
+  { brand:"innova", type:"putter", name:"Invader", speed:3, glide:2, turn:0, fade:1, desc:"The Invader is one of the best driving and approach putters available. Its flat-top profile features a rounded, small bead rim making it easy to grip-n-rip straight flights." },
+  { brand:"innova", type:"putter", name:"Jk Aviar", speed:2, glide:3, turn:0, fade:2, desc:"Made from the Aviar driver mold. It is more flexible and grippier than other Aviar models. Like all Aviars, the JK Aviar is perfect for driving, approaching and putting." },
+  { brand:"innova", type:"putter", name:"Kc Aviar", speed:2, glide:3, turn:0, fade:2, desc:"The KC Aviar is made from the Aviar driver mold in a firm blend of Pro-line plastic for players who prefer a stiffer disc. The preferred model of top pro players." },
+  { brand:"innova", type:"putter", name:"Mirage", speed:3, glide:4, turn:-3, fade:0, desc:"Seeing is believing." },
+  { brand:"innova", type:"putter", name:"Polecat", speed:1, glide:3, turn:0, fade:0, desc:"The Polecat flies flat and straight. It is a great choice for pros and beginners alike. A low profile, point and shoot, easy-to-release putt and approach disc." },
+  { brand:"innova", type:"putter", name:"Rhynox", speed:2, glide:1, turn:0, fade:4, desc:"COMING SOON!" },
+  { brand:"innova", type:"putter", name:"Sonic", speed:1, glide:2, turn:-4, fade:0, desc:"The Sonic, based on the Hero 235, is a new putt and approach disc. This disc has a comfortable low profile grip with great thumb traction." },
+  { brand:"innova", type:"putter", name:"Stud", speed:3, glide:3, turn:0, fade:2, desc:"The Stud is a speed 3 driving putter that has excellent high speed stability and can be reined in for putts as well." },
+  { brand:"innova", type:"putter", name:"Whale", speed:2, glide:3, turn:0, fade:1, desc:"The Whale is a beefy, Aviar-like Putter that has the stability of our Big-Bead Aviar Driver with nearly the same low-speed over stability as our Putt and Approach." },
+  { brand:"innova", type:"putter", name:"Xd", speed:3, glide:4, turn:-1, fade:1, desc:"The XD has a low profile grip which is secure but easy to release. It is the most driver-like putter we have and is useful for drives, approaches and putts." },
+  { brand:"innova", type:"putter", name:"Xero", speed:2, glide:3, turn:0, fade:0, desc:"The Innova Xero Putt &amp; Approach disc has more range and torque resistance than other straight-flying putters in our catalog." },
+  { brand:"innova", type:"putter", name:"Yeti Aviar", speed:2, glide:3, turn:0, fade:1, desc:"The Yeti Aviar is for Big Bead Aviar lovers looking for a straight flying putter with a lower profile." },
   { brand:"discraft", type:"putter", name:"Luna", speed:3, glide:3, turn:0, fade:0, desc:"Paul McBeth's signature putter. Straight-flying, comfortable grip, holds any line perfectly." },
   { brand:"discraft", type:"putter", name:"Banger GT", speed:2, glide:3, turn:0, fade:1, desc:"Beaded putter with a comfortable grip and predictable flight. Great for straddle putts." },
   { brand:"discraft", type:"putter", name:"Zone", speed:4, glide:2, turn:0, fade:4, desc:"One of the most popular overstable approach discs ever. A must-have for tight fairways and headwinds." },
@@ -487,7 +519,35 @@ const DISCS = [
   { brand:"discraft", type:"midrange", name:"Meteor", speed:5, glide:5, turn:-3, fade:1, desc:"Understable midrange that turns and glides. Excellent for hyzer-flips and turnover shots." },
   { brand:"discraft", type:"midrange", name:"Sol", speed:4, glide:5, turn:-2, fade:1, desc:"Very high glide, understable disc. Floats beautifully for beginners learning disc control." },
   { brand:"discraft", type:"midrange", name:"Quake", speed:5, glide:4, turn:0, fade:2, desc:"Neutral to slightly overstable midrange. Good all-around choice when you need a bit of fade." },
- 
+  { brand:"innova", type:"midrange", name:"Alien", speed:4, glide:2, turn:0, fade:1, desc:"Unique in both look and feel, its top resembles a Sonic, its rim is like a mid-range." },
+  { brand:"innova", type:"midrange", name:"Arachnid", speed:5, glide:6, turn:-1, fade:1, desc:"The Arachnid is a low-profile mid-range built for speed, glide, and long straight flights." },
+  { brand:"innova", type:"midrange", name:"Avatar", speed:5, glide:4, turn:0, fade:2, desc:"The Avatar unites the best of Innova's iconic mid-ranges." },
+  { brand:"innova", type:"midrange", name:"Cheetah", speed:6, glide:4, turn:-2, fade:2, desc:"The Cheetah is an easy to learn disc. Great for throwing straight mid to long range shots on narrow fairways. Great first driver." },
+  { brand:"innova", type:"midrange", name:"Cobra", speed:4, glide:5, turn:-2, fade:2, desc:"An excellent all-around disc that is easy to grip. Gets better with age. Great for rollers, finesse shots, and is a terrific disc for beginners." },
+  { brand:"innova", type:"midrange", name:"Coyote", speed:4, glide:5, turn:0, fade:1, desc:"The Coyote is a mid-range disc with good glide that flies predictably for straight, gentle turnover, or hyzer shots. It is an easy to throw disc with a friendly grip. A great choice for players using only one disc." },
+  { brand:"innova", type:"midrange", name:"Cro", speed:5, glide:3, turn:0, fade:2, desc:"The Cro is a small diameter Mid-Range flies slightly overstable. A great small diameter alternative to the Roc or Shark." },
+  { brand:"innova", type:"midrange", name:"Fox", speed:5, glide:6, turn:-2, fade:1, desc:"The Fox is our farthest-gliding mid-range with a modern feel, and shot-shaping control for straight and turnover lines." },
+  { brand:"innova", type:"midrange", name:"Foxbat", speed:5, glide:6, turn:-1, fade:0, desc:"The Foxbat is a neutral Mid-Range disc that holds a line with minimal fade." },
+  { brand:"innova", type:"midrange", name:"Gator", speed:5, glide:2, turn:0, fade:4, desc:"The Gator is a power control disc that delivers pin-point accuracy even in adverse wind conditions. High power throwers who need control need look no further." },
+  { brand:"innova", type:"midrange", name:"Gazelle", speed:6, glide:4, turn:0, fade:2, desc:"The Gazelle brings versatility and control to fairway shots. A long, straight flight with predictable fade at the end. Handles windy conditions well." },
+  { brand:"innova", type:"midrange", name:"Jay", speed:5, glide:4, turn:0, fade:1, desc:"The Innova Jay can handle power or be finessed." },
+  { brand:"innova", type:"midrange", name:"King Cobra", speed:4, glide:5, turn:0, fade:2, desc:"The King Cobra is a Cobra with more bite. A &#039;Go-To&#039; Mid-Range Disc with reliable performance." },
+  { brand:"innova", type:"midrange", name:"Lion", speed:5, glide:4, turn:0, fade:2, desc:"Tame your mid-range shots. Defined by its stable flight, the Lion will attack at any angle—hyzer, flat, or anhyzer." },
+  { brand:"innova", type:"midrange", name:"Manta", speed:5, glide:5, turn:-2, fade:1, desc:"The Manta is a good choice for beginners, and is ideal for players looking for a \"beat in\" Mid-Range for finesse shots." },
+  { brand:"innova", type:"midrange", name:"Panther", speed:5, glide:4, turn:-2, fade:1, desc:"The Panther is a great disc for medium and short range shots and slow controlled turnover shots. Makes a good mid to long range roller disc." },
+  { brand:"innova", type:"midrange", name:"Roc Plus", speed:4, glide:5, turn:0, fade:2, desc:"The Roc+ features our Plus Mold rim which allows for a smooth release when throwing the disc." },
+  { brand:"innova", type:"midrange", name:"Rollo", speed:5, glide:6, turn:-4, fade:1, desc:"As the name suggests, the Rollo is a disc for rolling." },
+  { brand:"innova", type:"midrange", name:"Shark3", speed:5, glide:4, turn:0, fade:2, desc:"Faster and sleeker than the original Shark, the Shark3 is a stable mid-range designed to attack the fairways." },
+  { brand:"innova", type:"midrange", name:"Skeeter", speed:5, glide:5, turn:-1, fade:1, desc:"The Skeeter is a straight flyer with a dependable fade. Great for putting, approaching, and short drives." },
+  { brand:"innova", type:"midrange", name:"Spider", speed:5, glide:3, turn:0, fade:1, desc:"The Spider is a mid-range disc that works for hyzer, straight and turnover throws. Nose up and it&#039;ll go left, nose down it will turn right." },
+  { brand:"innova", type:"midrange", name:"Toro", speed:4, glide:2, turn:1, fade:3, desc:"Calvin Heimburg was the inspiration behind the Toro." },
+  { brand:"innova", type:"midrange", name:"Vcobra", speed:5, glide:5, turn:-1, fade:2, desc:"The VCobra is a low profile fast Mid-Range disc with a V-Tech convex rim." },
+  { brand:"innova", type:"midrange", name:"Viper", speed:6, glide:4, turn:1, fade:5, desc:"The Viper is very stable to overstable disc that is very reliable in all wind conditions." },
+  { brand:"innova", type:"midrange", name:"Vroc", speed:4, glide:4, turn:0, fade:1, desc:"The VRoc is a convex rimmed Roc that&#039;s based on the San Marino Roc with more torque resistance and a smaller fade." },
+  { brand:"innova", type:"midrange", name:"Whippet", speed:6, glide:3, turn:1, fade:5, desc:"The Whippet is a very overstable flyer used for long hooking shots. Stable into a headwind. Suitable for professional players." },
+  { brand:"innova", type:"midrange", name:"Wombat", speed:5, glide:6, turn:-1, fade:0, desc:"The Wombat is a large diameter Mid-Range that flies similar to the Foxbat with added convex technology or VTech." },
+  { brand:"innova", type:"midrange", name:"Wombat3", speed:5, glide:6, turn:-1, fade:0, desc:"The Wombat3 mid-range feels great in the hand and is easy to throw." },
+
   // ── FAIRWAY DRIVERS ──
   { brand:"innova", type:"fairway", name:"Leopard3", speed:7, glide:5, turn:-2, fade:1, desc:"The go-to beginner fairway driver. Understable, forgiving, and gets good distance at lower arm speeds." },
   { brand:"innova", type:"fairway", name:"Leopard", speed:6, glide:5, turn:-2, fade:1, desc:"Even more understable than the Leopard3. Great first fairway driver for newer players." },
@@ -511,7 +571,19 @@ const DISCS = [
   { brand:"discraft", type:"fairway", name:"Flick", speed:7, glide:3, turn:1, fade:4, desc:"Uniquely overstable disc with a positive turn. Excellent forehand disc that fights hard to the left." },
   { brand:"discraft", type:"fairway", name:"Heat", speed:9, glide:6, turn:-3, fade:1, desc:"High-glide understable driver. Great for beginners who need a disc that gets airborne easily." },
   { brand:"discraft", type:"fairway", name:"Stryker", speed:10, glide:5, turn:-2, fade:1, desc:"Speed 10 fairway driver with a friendly turn. Good for controlled distance and shaped lines." },
- 
+  { brand:"innova", type:"fairway", name:"Archangel", speed:8, glide:6, turn:-4, fade:1, desc:"The Archangel is a turnover driver that maximizes distance for less powerful players. One of our easiest drivers to throw" },
+  { brand:"innova", type:"fairway", name:"Banshee", speed:7, glide:3, turn:0, fade:3, desc:"The Banshee is a very reliable driver in all wind conditions. An excellent power disc for backhand and sidearm." },
+  { brand:"innova", type:"fairway", name:"Eagle", speed:7, glide:4, turn:-1, fade:3, desc:"The Eagle is the original, professional level fairway driver. The predictability to make confident and accurate power shots." },
+  { brand:"innova", type:"fairway", name:"Fl", speed:9, glide:3, turn:0, fade:2, desc:"The FL is similar to the Firebird with more glide and a less extreme fade at the end of the flight." },
+  { brand:"innova", type:"fairway", name:"Hawkeye", speed:7, glide:5, turn:-1, fade:1, desc:"For predictability and accuracy in a fairway driver, grab the Innova Hawkeye." },
+  { brand:"innova", type:"fairway", name:"It", speed:7, glide:6, turn:-3, fade:1, desc:"The Lynx is the new name for the IT." },
+  { brand:"innova", type:"fairway", name:"Lynx", speed:7, glide:6, turn:-3, fade:1, desc:"The Lynx is the new name for the IT." },
+  { brand:"innova", type:"fairway", name:"Roadrunner", speed:9, glide:5, turn:-4, fade:1, desc:"The Roadrunner is a long-range distance driver with lots of glide. Great for rollers. Best distance driver for turnover shots." },
+  { brand:"innova", type:"fairway", name:"Savant", speed:9, glide:5, turn:-1, fade:2, desc:"The Savant is a speed 9 driver with plenty of glide and a predictable, smooth fade. It flies like an Eagle, only faster!" },
+  { brand:"innova", type:"fairway", name:"Tl", speed:7, glide:5, turn:-1, fade:1, desc:"The TL is the brother of the reliable TeeBird. This disc has the same great speed and glide as the Teebird, but is straighter flying with less fade at the end of the flight." },
+  { brand:"innova", type:"fairway", name:"Tl3", speed:8, glide:4, turn:-1, fade:1, desc:"The TL3 is the evolution of the TL. Much like the longer faster TeeBird3, the TL3 has a bit more speed and a little less glide for more control. Think: TeeBird control, straighter flight AND finish." },
+  { brand:"innova", type:"fairway", name:"Viking", speed:9, glide:4, turn:-1, fade:2, desc:"The Viking is a low speed distance driver that flies straight with great glide and little fade." },
+
   // ── DISTANCE DRIVERS ──
   { brand:"innova", type:"distance", name:"Boss", speed:13, glide:5, turn:-1, fade:3, desc:"Maximum distance driver for big arms. Slightly understable for hyzer-flip power shots." },
   { brand:"innova", type:"distance", name:"Destroyer", speed:12, glide:5, turn:-1, fade:3, desc:"The world's best-selling distance driver. Versatile, dependable, and used at every level of pro play." },
@@ -541,7 +613,7 @@ const DISCS = [
   { brand:"discraft", type:"distance", name:"Nuke SS", speed:13, glide:5, turn:-2, fade:2, desc:"Slightly understable Nuke. Better for players who want distance without maximum overstability." },
   { brand:"discraft", type:"distance", name:"Flash", speed:11, glide:6, turn:-2, fade:2, desc:"High-glide distance disc with a gentle turn. Good for longer holes in calm conditions." },
   { brand:"discraft", type:"distance", name:"Cyclone", speed:12, glide:5, turn:-1, fade:3, desc:"Stable distance driver with a reliable fade. Great for big hyzer lines and wind-fighting throws." },
-{ brand:"innova", type:"distance", name:"Ape", speed:13, glide:5, turn:0, fade:4, desc:"A fast long-range distance driver with great stability. Expect consistent and accurate flights from this disc. The Ape is great for powerful backhand and sidearm players." },
+  { brand:"innova", type:"distance", name:"Ape", speed:13, glide:5, turn:0, fade:4, desc:"A fast long-range distance driver with great stability. Expect consistent and accurate flights from this disc. The Ape is great for powerful backhand and sidearm players." },
   { brand:"innova", type:"distance", name:"Archon", speed:11, glide:5, turn:-2, fade:2, desc:"The Archon is a speed 11 distance driver reminiscent of a longer Valkyrie. It has the finesse you need when the course throws you curves." },
   { brand:"innova", type:"distance", name:"Beast", speed:10, glide:5, turn:-2, fade:2, desc:"The Beast is a long distance driver with a gliding, predictable finish. It&#039;s sure to increase distance for beginners and pros alike." },
   { brand:"innova", type:"distance", name:"Charger", speed:13, glide:5, turn:-1, fade:2, desc:"The Charger is a straight-finishing, 13-speed driver that can be thrown at full power without worrying about the disc flipping over." },
@@ -549,7 +621,7 @@ const DISCS = [
   { brand:"innova", type:"distance", name:"Dominator", speed:13, glide:5, turn:-1, fade:2, desc:"The Dominator is a speed 13 model designed to be a long line, shot shaping distance driver for advanced players." },
   { brand:"innova", type:"distance", name:"Firestorm", speed:14, glide:4, turn:-1, fade:3, desc:"The Firestorm is a wide-rimmed, speed 14 distance driver that some would describe as a faster, beat-in Destroyer. On low, level drives thrown with enough speed, the Firestorm flies straight with a forward-finishing fade." },
   { brand:"innova", type:"distance", name:"Gorgon", speed:10, glide:6, turn:-2, fade:1, desc:"Introducing the Gorgon, a disc that merges the precision and ease of a fairway driver with the reach of a distance driver." },
-  { brand:"innova", type:"distance", name:"Invictus", speed:10, glide:4, turn:0, fade:3, desc:"Invictus means “unconquered” in Latin and for long-range throws into a headwind, there’s no equal." },
+  { brand:"innova", type:"distance", name:"Invictus", speed:10, glide:4, turn:0, fade:3, desc:"Invictus means &ldquo;unconquered&rdquo; in Latin and for long-range throws into a headwind, there&#039;s no equal." },
   { brand:"innova", type:"distance", name:"Krait", speed:11, glide:5, turn:-1, fade:2, desc:"The Krait&#039;s unique ability to achieve a mellow low speed fade, while simultaneously resisting high speed turn makes it a perfect choice for long range shot shaping off the tee." },
   { brand:"innova", type:"distance", name:"Mamba", speed:11, glide:6, turn:-5, fade:1, desc:"The Mamba was designed to give maximum distance for minimal effort. A great choice for anhyzer tailwind drives." },
   { brand:"innova", type:"distance", name:"Max", speed:11, glide:3, turn:0, fade:5, desc:"The Max is a fast, overstable power driver with significant glide. A great distance disc for strong headwinds and sidearm throwers." },
@@ -563,67 +635,6 @@ const DISCS = [
   { brand:"innova", type:"distance", name:"Vulcan", speed:13, glide:5, turn:-4, fade:2, desc:"The Vulcan is one of our lightest and longest Distance Drivers available in Star plastic. Makes a great long range roller as well." },
   { brand:"innova", type:"distance", name:"Wahoo", speed:12, glide:6, turn:-2, fade:2, desc:"The R-Pro Wahoo is a long range distance driver that floats in water and will keep you at the top of the food chain." },
   { brand:"innova", type:"distance", name:"Xcaliber", speed:12, glide:5, turn:0, fade:4, desc:"The XCaliber is for those who have got to have the biggest and the baddest. Extremely fast with glide and stability. This is the one for confident bombs in windy conditions." },
-  { brand:"innova", type:"fairway", name:"Archangel", speed:8, glide:6, turn:-4, fade:1, desc:"The Archangel is a turnover driver that maximizes distance for less powerful players. One of our easiest drivers to throw" },
-  { brand:"innova", type:"fairway", name:"Banshee", speed:7, glide:3, turn:0, fade:3, desc:"The Banshee is a very reliable driver in all wind conditions. An excellent power disc for backhand and sidearm." },
-  { brand:"innova", type:"fairway", name:"Eagle", speed:7, glide:4, turn:-1, fade:3, desc:"The Eagle is the original, professional level fairway driver. The predictability to make confident and accurate power shots." },
-  { brand:"innova", type:"fairway", name:"Fl", speed:9, glide:3, turn:0, fade:2, desc:"The FL is similar to the Firebird with more glide and a less extreme fade at the end of the flight." },
-  { brand:"innova", type:"fairway", name:"Hawkeye", speed:7, glide:5, turn:-1, fade:1, desc:"For predictability and accuracy in a fairway driver, grab the Innova Hawkeye." },
-  { brand:"innova", type:"fairway", name:"It", speed:7, glide:6, turn:-3, fade:1, desc:"The Lynx is the new name for the IT." },
-  { brand:"innova", type:"fairway", name:"Lynx", speed:7, glide:6, turn:-3, fade:1, desc:"The Lynx is the new name for the IT." },
-  { brand:"innova", type:"fairway", name:"Roadrunner", speed:9, glide:5, turn:-4, fade:1, desc:"The Roadrunner is a long-range distance driver with lots of glide. Great for rollers. Best distance driver for turnover shots." },
-  { brand:"innova", type:"fairway", name:"Savant", speed:9, glide:5, turn:-1, fade:2, desc:"The Savant is a speed 9 driver with plenty of glide and a predictable, smooth fade. It flies like an Eagle, only faster!" },
-  { brand:"innova", type:"fairway", name:"Tl", speed:7, glide:5, turn:-1, fade:1, desc:"The TL is the brother of the reliable TeeBird. This disc has the same great speed and glide as the Teebird, but is straighter flying with less fade at the end of the flight." },
-  { brand:"innova", type:"fairway", name:"Tl3", speed:8, glide:4, turn:-1, fade:1, desc:"The TL3 is the evolution of the TL. Much like the longer faster TeeBird3, the TL3 has a bit more speed and a little less glide for more control. Think: TeeBird control, straighter flight AND finish." },
-  { brand:"innova", type:"fairway", name:"Viking", speed:9, glide:4, turn:-1, fade:2, desc:"The Viking is a low speed distance driver that flies straight with great glide and little fade." },
-  { brand:"innova", type:"midrange", name:"Alien", speed:4, glide:2, turn:0, fade:1, desc:"Unique in both look and feel, its top resembles a Sonic, its rim is like a mid-range." },
-  { brand:"innova", type:"midrange", name:"Arachnid", speed:5, glide:6, turn:-1, fade:1, desc:"The Arachnid is a low-profile mid-range built for speed, glide, and long straight flights." },
-  { brand:"innova", type:"midrange", name:"Avatar", speed:5, glide:4, turn:0, fade:2, desc:"The Avatar unites the best of Innova’s iconic mid-ranges." },
-  { brand:"innova", type:"midrange", name:"Cheetah", speed:6, glide:4, turn:-2, fade:2, desc:"The Cheetah is an easy to learn disc. Great for throwing straight mid to long range shots on narrow fairways. Great first driver." },
-  { brand:"innova", type:"midrange", name:"Cobra", speed:4, glide:5, turn:-2, fade:2, desc:"An excellent all-around disc that is easy to grip. Gets better with age. Great for rollers, finesse shots, and is a terrific disc for beginners." },
-  { brand:"innova", type:"midrange", name:"Coyote", speed:4, glide:5, turn:0, fade:1, desc:"The Coyote is a mid-range disc with good glide that flies predictably for straight, gentle turnover, or hyzer shots. It is an easy to throw disc with a friendly grip. A great choice for players using only one disc." },
-  { brand:"innova", type:"midrange", name:"Cro", speed:5, glide:3, turn:0, fade:2, desc:"The Cro is a small diameter Mid-Range flies slightly overstable. A great small diameter alternative to the Roc or Shark." },
-  { brand:"innova", type:"midrange", name:"Fox", speed:5, glide:6, turn:-2, fade:1, desc:"The Fox is our farthest-gliding mid-range with a modern feel, and shot-shaping control for straight and turnover lines." },
-  { brand:"innova", type:"midrange", name:"Foxbat", speed:5, glide:6, turn:-1, fade:0, desc:"The Foxbat is a neutral Mid-Range disc that holds a line with minimal fade." },
-  { brand:"innova", type:"midrange", name:"Gator", speed:5, glide:2, turn:0, fade:4, desc:"The Gator is a power control disc that delivers pin-point accuracy even in adverse wind conditions. High power throwers who need control need look no further." },
-  { brand:"innova", type:"midrange", name:"Gazelle", speed:6, glide:4, turn:0, fade:2, desc:"The Gazelle brings versatility and control to fairway shots. A long, straight flight with predictable fade at the end. Handles windy conditions well." },
-  { brand:"innova", type:"midrange", name:"Jay", speed:5, glide:4, turn:0, fade:1, desc:"The Innova Jay can handle power or be finessed." },
-  { brand:"innova", type:"midrange", name:"King Cobra", speed:4, glide:5, turn:0, fade:2, desc:"The King Cobra is a Cobra with more bite. A &#039;Go-To&#039; Mid-Range Disc with reliable performance." },
-  { brand:"innova", type:"midrange", name:"Lion", speed:5, glide:4, turn:0, fade:2, desc:"Tame your mid-range shots. Defined by its stable flight, the Lion will attack at any angle—hyzer, flat, or anhyzer." },
-  { brand:"innova", type:"midrange", name:"Manta", speed:5, glide:5, turn:-2, fade:1, desc:"The Manta is a good choice for beginners, and is ideal for players looking for a “beat in” Mid-Range for finesse shots." },
-  { brand:"innova", type:"midrange", name:"Panther", speed:5, glide:4, turn:-2, fade:1, desc:"The Panther is a great disc for medium and short range shots and slow controlled turnover shots. Makes a good mid to long range roller disc." },
-  { brand:"innova", type:"midrange", name:"Roc Plus", speed:4, glide:5, turn:0, fade:2, desc:"The Roc+ features our Plus Mold rim which allows for a smooth release when throwing the disc." },
-  { brand:"innova", type:"midrange", name:"Rollo", speed:5, glide:6, turn:-4, fade:1, desc:"As the name suggests, the Rollo is a disc for rolling." },
-  { brand:"innova", type:"midrange", name:"Shark3", speed:5, glide:4, turn:0, fade:2, desc:"Faster and sleeker than the original Shark, the Shark3 is a stable mid-range designed to attack the fairways." },
-  { brand:"innova", type:"midrange", name:"Skeeter", speed:5, glide:5, turn:-1, fade:1, desc:"The Skeeter is a straight flyer with a dependable fade. Great for putting, approaching, and short drives." },
-  { brand:"innova", type:"midrange", name:"Spider", speed:5, glide:3, turn:0, fade:1, desc:"The Spider is a mid-range disc that works for hyzer, straight and turnover throws. Nose up and it&#039;ll go left, nose down it will turn right." },
-  { brand:"innova", type:"midrange", name:"Toro", speed:4, glide:2, turn:1, fade:3, desc:"Calvin Heimburg was the inspiration behind the Toro." },
-  { brand:"innova", type:"midrange", name:"Vcobra", speed:5, glide:5, turn:-1, fade:2, desc:"The VCobra is a low profile fast Mid-Range disc with a V-Tech convex rim." },
-  { brand:"innova", type:"midrange", name:"Viper", speed:6, glide:4, turn:1, fade:5, desc:"The Viper is very stable to overstable disc that is very reliable in all wind conditions." },
-  { brand:"innova", type:"midrange", name:"Vroc", speed:4, glide:4, turn:0, fade:1, desc:"The VRoc is a convex rimmed Roc that&#039;s based on the San Marino Roc with more torque resistance and a smaller fade." },
-  { brand:"innova", type:"midrange", name:"Whippet", speed:6, glide:3, turn:1, fade:5, desc:"The Whippet is a very overstable flyer used for long hooking shots. Stable into a headwind. Suitable for professional players." },
-  { brand:"innova", type:"midrange", name:"Wombat", speed:5, glide:6, turn:-1, fade:0, desc:"The Wombat is a large diameter Mid-Range that flies similar to the Foxbat with added convex technology or VTech." },
-  { brand:"innova", type:"midrange", name:"Wombat3", speed:5, glide:6, turn:-1, fade:0, desc:"The Wombat3 mid-range feels great in the hand and is easy to throw." },
-  { brand:"innova", type:"putter", name:"Aero", speed:3, glide:6, turn:0, fade:0, desc:"The Aero is a great disc for new players. It&#039;s the straightest point-to-point golf disc and the easiest disc to keep on the fairway for novice players." },
-  { brand:"innova", type:"putter", name:"Animal", speed:2, glide:1, turn:0, fade:1, desc:"The Animal was designed to be a short-range, stable forehand and backhand approach disc. It’s also a good putter in the wind and inside the circle. The Animal features our Thumtrac® Rim for a secure grip." },
-  { brand:"innova", type:"putter", name:"Aviar Driver", speed:2, glide:3, turn:0, fade:2, desc:"The Aviar is the number one putter in disc golf. Having won more World Championships than all other putters combined. The Aviar Driver is a big bead version of the Aviar P&amp;A." },
-  { brand:"innova", type:"putter", name:"Aviar3", speed:3, glide:2, turn:0, fade:2, desc:"The Aviar3 has the same comfortable grip you&#039;d expect in an Aviar putter but with a distinctive flat top." },
-  { brand:"innova", type:"putter", name:"Aviarx3", speed:3, glide:2, turn:0, fade:3, desc:"The AviarX3 is the ideal Putt &amp; Approach disc for headwind upshots and drives." },
-  { brand:"innova", type:"putter", name:"Bullfrog", speed:3, glide:1, turn:0, fade:1, desc:"Bring instant confidence to your putting game with the Bullfrog and its comfortable grip and consistent flight." },
-  { brand:"innova", type:"putter", name:"Classic Aviar", speed:2, glide:3, turn:0, fade:0, desc:"The Classic Aviar has a firm grip and is our straightest flying Aviar model from start to finish. Reliable in all conditions and is excellent for drives, approach shots and putts." },
-  { brand:"innova", type:"putter", name:"Dart", speed:3, glide:4, turn:0, fade:0, desc:"The Dart is a small diameter putter with a straight flight. The Dart is especially good for long range putts and go-for shots." },
-  { brand:"innova", type:"putter", name:"Hydra", speed:3, glide:3, turn:0, fade:2, desc:"The Hydra is a grippy and durable Putt &amp; Approach disc. Easy to release grip for confident putting. Floats in water." },
-  { brand:"innova", type:"putter", name:"Invader", speed:3, glide:2, turn:0, fade:1, desc:"The Invader is one of the best driving and approach putters available. Its flat-top profile features a rounded, small bead rim making it easy to grip-n-rip straight flights." },
-  { brand:"innova", type:"putter", name:"Jk Aviar", speed:2, glide:3, turn:0, fade:2, desc:"Made from the Aviar driver mold. It is more flexible and grippier than other Aviar models. Like all Aviars, the JK Aviar is perfect for driving, approaching and putting." },
-  { brand:"innova", type:"putter", name:"Kc Aviar", speed:2, glide:3, turn:0, fade:2, desc:"The KC Aviar is made from the Aviar driver mold in a firm blend of Pro-line plastic for players who prefer a stiffer disc. The preferred model of top pro players." },
-  { brand:"innova", type:"putter", name:"Mirage", speed:3, glide:4, turn:-3, fade:0, desc:"Seeing is believing." },
-  { brand:"innova", type:"putter", name:"Polecat", speed:1, glide:3, turn:0, fade:0, desc:"The Polecat flies flat and straight. It is a great choice for pros and beginners alike. A low profile, point and shoot, easy-to-release putt and approach disc." },
-  { brand:"innova", type:"putter", name:"Rhynox", speed:2, glide:1, turn:0, fade:4, desc:"COMING SOON!" },
-  { brand:"innova", type:"putter", name:"Sonic", speed:1, glide:2, turn:-4, fade:0, desc:"The Sonic, based on the Hero 235, is a new putt and approach disc. This disc has a comfortable low profile grip with great thumb traction." },
-  { brand:"innova", type:"putter", name:"Stud", speed:3, glide:3, turn:0, fade:2, desc:"The Stud is a speed 3 driving putter that has excellent high speed stability and can be reined in for putts as well." },
-  { brand:"innova", type:"putter", name:"Whale", speed:2, glide:3, turn:0, fade:1, desc:"The Whale is a beefy, Aviar-like Putter that has the stability of our Big-Bead Aviar Driver with nearly the same low-speed over stability as our Putt and Approach." },
-  { brand:"innova", type:"putter", name:"Xd", speed:3, glide:4, turn:-1, fade:1, desc:"The XD has a low profile grip which is secure but easy to release. It is the most driver-like putter we have and is useful for drives, approaches and putts." },
-  { brand:"innova", type:"putter", name:"Xero", speed:2, glide:3, turn:0, fade:0, desc:"The Innova Xero Putt &amp; Approach disc has more range and torque resistance than other straight-flying putters in our catalog." },
-  { brand:"innova", type:"putter", name:"Yeti Aviar", speed:2, glide:3, turn:0, fade:1, desc:"The Yeti Aviar is for Big Bead Aviar lovers looking for a straight flying putter with a lower profile." },
 ];
  
 const TYPE_ORDER = ["putter","midrange","fairway","distance"];
@@ -647,24 +658,23 @@ function getStabilityPreference() {
   return (backStability + foreStability) / 2; // Average preference (0=understable, 1=overstable)
 }
 
-function getBag() {
-  // Return all discs sorted by stability preference
-  const eligible = DISCS.slice();
-  
-  const stabPref = getStabilityPreference();
-  
+function selectByPreference(discs, count, stabPref) {
+  if (discs.length === 0) return [];
   // Sort by how well they match stability preference
-  eligible.sort((a, b) => {
-    const aStab = a.turn; // Negative = understable, positive = overstable
-    const bStab = b.turn;
-    
-    // Higher stabPref means we want more overstable (positive turn/fade)
-    const targetStab = stabPref * 4 - 2; // Map stabPref to turn range (-2 to 2)
+  discs.sort((a, b) => {
+    const aStab = a.turn + a.fade;
+    const bStab = b.turn + b.fade;
+    const targetStab = stabPref * 6 - 3; // Map stabPref to stab range (-3 to 3)
     const aDist = Math.abs(aStab - targetStab);
     const bDist = Math.abs(bStab - targetStab);
-    
     return aDist - bDist;
   });
+  return discs.slice(0, count);
+}
+
+function getBag() {
+  const eligible = applyBrandFilter(DISCS);
+  const stabPref = getStabilityPreference();
   
   // Separate by type
   const putters = eligible.filter(d => d.type === "putter" && d.speed >= 3);
@@ -672,17 +682,44 @@ function getBag() {
   const fairways = eligible.filter(d => d.type === "fairway");
   const distances = eligible.filter(d => d.type === "distance");
   
-  // Curated 18-disc bag: 2 throwing putters, 5 midranges, 5 fairway drivers, 6 distance drivers
+  // Select based on stability preference
+  const selectedPutters = selectByPreference(putters, 2, stabPref);
+  const selectedMidranges = selectByPreference(midranges, 5, stabPref);
+  const selectedFairways = selectByPreference(fairways, 5, stabPref);
+  const selectedDistances = selectByPreference(distances, 5, stabPref);
+  
+  // Add one extra random distance driver
+  if (distances.length > 5) {
+    const remaining = distances.filter(d => !selectedDistances.includes(d));
+    if (remaining.length > 0) {
+      selectedDistances.push(remaining[Math.floor(Math.random() * remaining.length)]);
+    }
+  }
+  
   const bag = [
-    ...putters.slice(0, 2),
-    ...midranges.slice(0, 5),
-    ...fairways.slice(0, 5),
-    ...distances.slice(0, 6)
+    ...selectedPutters,
+    ...selectedMidranges,
+    ...selectedFairways,
+    ...selectedDistances
   ];
   
   return bag;
 }
  
+let brandFilter = 'both';
+
+function applyBrandFilter(discs) {
+  return discs.filter(d => brandFilter === 'both' || d.brand === brandFilter);
+}
+
+function setBrandFilter(filter) {
+  brandFilter = filter;
+  document.getElementById('filter-innova').classList.toggle('active', filter === 'innova');
+  document.getElementById('filter-discraft').classList.toggle('active', filter === 'discraft');
+  document.getElementById('filter-both').classList.toggle('active', filter === 'both');
+  render();
+}
+
 function render() {
   const bag = getBag();
   const output = document.getElementById("bag-output");
@@ -702,7 +739,7 @@ function render() {
   }
  
   output.innerHTML = TYPE_ORDER.map(type => {
-    const discs = bag.filter(d => d.type === type);
+    const discs = bag.filter(d => d.type === type).sort((a, b) => (b.fade - Math.abs(b.turn)) - (a.fade - Math.abs(a.turn)));
     if (!discs.length) return '';
     return `
       <div class="type-group">
@@ -752,6 +789,10 @@ document.getElementById("fore-slider").addEventListener("input", e => {
   document.getElementById("fore-out").textContent = foreDist;
   render();
 });
+
+document.getElementById('filter-innova').addEventListener('click', () => setBrandFilter('innova'));
+document.getElementById('filter-discraft').addEventListener('click', () => setBrandFilter('discraft'));
+document.getElementById('filter-both').addEventListener('click', () => setBrandFilter('both'));
 
 render();
 </script>
