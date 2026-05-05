@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Disc Golf Bag Builder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+    :root {
+      --bg: #0d1117;
+      --bg2: #161b22;
+      --bg3: #21262d;
+      --border: rgba(255,255,255,0.08);
+      --border2: rgba(255,255,255,0.14);
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #39d353;
+      --accent2: #58a6ff;
+      --innova: #e05c2a;
+      --discraft: #58a6ff;
+      --putter: #3fb950;
+      --midrange: #d29922;
+      --fairway: #a371f7;
+      --distance: #f78166;
+    }
+ 
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Barlow', sans-serif;
+      min-height: 100vh;
+    }
+ 
+    /* HEADER */
+    header {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--text);
+    }
+    .logo span { color: var(--accent); }
+    .header-sub { font-size: 13px; color: var(--muted); }
+ 
+    /* HERO */
+    .hero {
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+      padding: 3rem 2rem 2rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(57,211,83,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero h1 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      line-height: 1;
+      margin-bottom: 10px;
+    }
+    .hero h1 em { color: var(--accent); font-style: normal; }
+    .hero p { font-size: 15px; color: var(--muted); max-width: 480px; margin: 0 auto; }
+ 
+    /* CONTROLS */
+    .controls {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 0;
+    }
+    .control-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+    @media (max-width: 600px) { .control-row { grid-template-columns: 1fr; } }
+ 
+    .control-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.1rem 1.25rem;
+    }
+    .control-card label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 10px;
+    }
+    .dist-display {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .dist-display .num {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .dist-display .unit { font-size: 14px; color: var(--muted); }
+ 
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      background: var(--bg3);
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+    .range-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+ 
+    .btn-group { display: flex; flex-direction: column; gap: 6px; }
+    .btn-row { display: flex; gap: 6px; }
+    .filter-btn {
+      flex: 1;
+      padding: 7px 10px;
+      font-family: 'Barlow', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 6px;
+      border: 1px solid var(--border2);
+      background: var(--bg3);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+    }
+    .filter-btn:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
+    .filter-btn.active.skill {
+      background: rgba(57,211,83,0.12);
+      border-color: rgba(57,211,83,0.4);
+      color: var(--accent);
+    }
+    .filter-btn.active.brand-innova {
+      background: rgba(224,92,42,0.12);
+      border-color: rgba(224,92,42,0.4);
+      color: var(--innova);
+    }
+    .filter-btn.active.brand-discraft {
+      background: rgba(88,166,255,0.12);
+      border-color: rgba(88,166,255,0.4);
+      color: var(--discraft);
+    }
+    .filter-btn.active.brand-both {
+      background: rgba(163,113,247,0.12);
+      border-color: rgba(163,113,247,0.4);
+      color: #a371f7;
+    }
+ 
+    /* STATS ROW */
+    .stats-row {
+      display: flex;
+      gap: 10px;
+      max-width: 900px;
+      margin: 1.25rem auto 0;
+      padding: 0 1.5rem;
+    }
+    .stat-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .stat-pill .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+    .stat-pill strong { color: var(--text); }
+ 
+    /* BAG SECTION */
+    .bag-section {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+    .type-group { margin-bottom: 2rem; }
+    .type-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1rem;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .type-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .type-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+    .type-count { font-size: 12px; color: var(--muted); margin-left: auto; }
+ 
+    .disc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 10px;
+    }
+    .disc-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+      transition: border-color 0.2s, transform 0.15s;
+      cursor: default;
+    }
+    .disc-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+ 
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .brand-badge {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+    .brand-badge.innova { background: rgba(224,92,42,0.15); color: var(--innova); }
+    .brand-badge.discraft { background: rgba(88,166,255,0.15); color: var(--discraft); }
+ 
+    .disc-name {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+    .disc-plastic { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+ 
+    .flight-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5px;
+      margin-bottom: 10px;
+    }
+    .fnum {
+      background: var(--bg3);
+      border-radius: 6px;
+      padding: 5px 4px;
+      text-align: center;
+    }
+    .fnum .v {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      display: block;
+      line-height: 1;
+    }
+    .fnum .l {
+      font-size: 9px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: block;
+      margin-top: 2px;
+    }
+    .fnum.spd .v { color: var(--distance); }
+    .fnum.gli .v { color: var(--accent); }
+    .fnum.trn .v { color: var(--accent2); }
+    .fnum.fad .v { color: #f78166; }
+ 
+    .disc-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+ 
+    .stability-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+    .stability-tag.overstable { background: rgba(247,129,102,0.15); color: #f78166; }
+    .stability-tag.understable { background: rgba(88,166,255,0.15); color: var(--accent2); }
+    .stability-tag.neutral { background: rgba(57,211,83,0.12); color: var(--accent); }
+ 
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--muted);
+    }
+    .empty-state p { font-size: 14px; margin-top: 8px; }
+ 
+    /* TIP BAR */
+    .tip-bar {
+      background: rgba(57,211,83,0.06);
+      border: 1px solid rgba(57,211,83,0.15);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #8bc8a0;
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .tip-bar strong { color: var(--accent); }
+ 
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+ 
+<header>
+  <div class="logo">Disc<span>Bag</span></div>
+  <div class="header-sub">Innova &amp; Discraft Edition</div>
+</header>
+ 
+<div class="hero">
+  <h1>Build Your <em>Perfect</em> Bag</h1>
+  <p>Enter how far you throw and your skill level — we'll pick the right discs to cover every shot.</p>
+</div>
+ 
+<div class="controls">
+  <div class="control-row">
+    <div class="control-card">
+      <label>Max throw distance</label>
+      <div class="dist-display">
+        <span class="num" id="dist-out">250</span>
+        <span class="unit">feet</span>
+      </div>
+      <input type="range" id="dist-slider" min="150" max="500" step="10" value="250" />
+      <div class="range-labels"><span>150 ft</span><span>300 ft</span><span>500 ft</span></div>
+    </div>
+ 
+    <div class="control-card">
+      <label>Experience level</label>
+      <div class="btn-group">
+        <div class="btn-row">
+          <button class="filter-btn active skill" data-skill="beginner">Beginner</button>
+          <button class="filter-btn skill" data-skill="intermediate">Intermediate</button>
+        </div>
+        <div class="btn-row">
+          <button class="filter-btn skill" data-skill="advanced">Advanced</button>
+          <button class="filter-btn skill" data-skill="pro">Pro</button>
+        </div>
+      </div>
+    </div>
+  </div>
+ 
+  <div class="control-card" style="margin-bottom:0">
+    <label>Brand filter</label>
+    <div class="btn-row">
+      <button class="filter-btn active brand-both" data-brand="both">Both brands</button>
+      <button class="filter-btn brand-innova" data-brand="innova">Innova only</button>
+      <button class="filter-btn brand-discraft" data-brand="discraft">Discraft only</button>
+    </div>
+  </div>
+</div>
+ 
+<div class="stats-row" id="stats-row"></div>
+ 
+<div class="bag-section">
+  <div class="tip-bar" id="tip-bar"></div>
+  <div id="bag-output"></div>
+</div>
+ 
+<footer>Flight numbers: Speed · Glide · Turn · Fade &nbsp;|&nbsp; Data based on manufacturer specs</footer>
+ 
+<script>
+const DISCS = [
+  // ── PUTTERS ──
+  { brand:"innova", type:"putter", name:"Aviar", plastic:"DX / Star / Champion", speed:2, glide:3, turn:0, fade:1, minDist:0, maxDist:500, skills:["beginner","intermediate","advanced","pro"], desc:"The most popular putter ever made. Dependable, consistent, and forgiving in all conditions." },
+  { brand:"innova", type:"putter", name:"KC Pro Aviar", plastic:"KC Pro", speed:2, glide:3, turn:0, fade:1, minDist:0, maxDist:500, skills:["intermediate","advanced","pro"], desc:"Slightly beadless version of the Aviar with a tackier grip. Preferred by many pros for putts." },
+  { brand:"innova", type:"putter", name:"Birdie", plastic:"DX", speed:2, glide:3, turn:0, fade:1, minDist:0, maxDist:300, skills:["beginner"], desc:"Slightly softer than the Aviar. Excellent first putter for beginners learning to putt." },
+  { brand:"innova", type:"putter", name:"Colt", plastic:"XT", speed:3, glide:3, turn:0, fade:1, minDist:0, maxDist:400, skills:["beginner","intermediate"], desc:"Neutral and predictable. Easy to throw straight for both putting and approach work." },
+  { brand:"innova", type:"putter", name:"Rhyno", plastic:"DX / Pro", speed:2, glide:1, turn:0, fade:3, minDist:0, maxDist:400, skills:["intermediate","advanced","pro"], desc:"Very overstable putter. Excellent in headwinds and for hard fade approach shots." },
+  { brand:"innova", type:"putter", name:"JK Pro Aviar", plastic:"Pro", speed:2, glide:3, turn:0, fade:1, minDist:0, maxDist:500, skills:["advanced","pro"], desc:"Tour-proven version of the Aviar used on the professional circuit." },
+  { brand:"innova", type:"putter", name:"P-Bird", plastic:"Star", speed:3, glide:3, turn:0, fade:0, minDist:0, maxDist:400, skills:["beginner","intermediate","advanced"], desc:"Straight-flying putter with virtually no fade. Holds any angle you release it on." },
+  { brand:"discraft", type:"putter", name:"Luna", plastic:"ESP / Jawbreaker", speed:3, glide:3, turn:0, fade:0, minDist:0, maxDist:500, skills:["beginner","intermediate","advanced","pro"], desc:"Paul McBeth's signature putter. Straight-flying, comfortable grip, holds any line perfectly." },
+  { brand:"discraft", type:"putter", name:"Banger GT", plastic:"Pro-D / Z", speed:2, glide:3, turn:0, fade:1, minDist:0, maxDist:400, skills:["beginner","intermediate"], desc:"Beaded putter with a comfortable grip and predictable flight. Great for straddle putts." },
+  { brand:"discraft", type:"putter", name:"Zone", plastic:"Z / ESP", speed:4, glide:3, turn:0, fade:3, minDist:0, maxDist:400, skills:["intermediate","advanced","pro"], desc:"One of the most popular overstable approach discs ever. A must-have for tight fairways and headwinds." },
+  { brand:"discraft", type:"putter", name:"Fierce", plastic:"Putter Line", speed:3, glide:3, turn:0, fade:1, minDist:0, maxDist:350, skills:["beginner","intermediate"], desc:"Paige Pierce's signature disc. Comfortable in the hand and great for beginners learning approach shots." },
+  { brand:"discraft", type:"putter", name:"Roach", plastic:"Pro-D / Z", speed:2, glide:3, turn:0, fade:1, minDist:0, maxDist:400, skills:["beginner","intermediate","advanced"], desc:"Neutral, reliable putter. Easy to throw straight with minimal dome — a popular choice at all skill levels." },
+  { brand:"discraft", type:"putter", name:"Wasp", plastic:"Pro-D / Z", speed:4, glide:3, turn:0, fade:3, minDist:100, maxDist:450, skills:["intermediate","advanced","pro"], desc:"Overstable approach putter that finishes hard left. Great alternative to the Zone." },
+  { brand:"discraft", type:"putter", name:"Challenger", plastic:"Putter Line / Z", speed:2, glide:3, turn:0, fade:1, minDist:0, maxDist:400, skills:["beginner","intermediate","advanced"], desc:"Simple, neutral putter. Very popular for recreational and beginner players wanting reliability." },
+  { brand:"discraft", type:"putter", name:"Magnet", plastic:"Pro-D", speed:2, glide:5, turn:0, fade:1, minDist:0, maxDist:350, skills:["beginner","intermediate"], desc:"High-glide putter that floats to the basket. Good for distance putting on shorter holes." },
+ 
+  // ── MIDRANGES ──
+  { brand:"innova", type:"midrange", name:"Mako3", plastic:"Star / Champion", speed:5, glide:5, turn:0, fade:0, minDist:150, maxDist:350, skills:["beginner","intermediate"], desc:"One of the straightest discs ever made. Throws exactly where you aim it with no movement." },
+  { brand:"innova", type:"midrange", name:"Roc3", plastic:"Star / Champion", speed:5, glide:4, turn:0, fade:3, minDist:200, maxDist:500, skills:["intermediate","advanced","pro"], desc:"Overstable workhorse. Reliable, strong fade in all conditions. Used heavily by pros worldwide." },
+  { brand:"innova", type:"midrange", name:"Roc", plastic:"DX / KC Pro", speed:4, glide:4, turn:0, fade:3, minDist:150, maxDist:450, skills:["beginner","intermediate","advanced"], desc:"Classic midrange that started it all. Very overstable with a dependable finish." },
+  { brand:"innova", type:"midrange", name:"Meteor", plastic:"Star", speed:5, glide:5, turn:-3, fade:0, minDist:150, maxDist:350, skills:["beginner","intermediate"], desc:"Understable midrange for big turning shots and rollers. Ideal when arm speed is lower." },
+  { brand:"innova", type:"midrange", name:"Stingray", plastic:"DX / Star", speed:4, glide:6, turn:-3, fade:0, minDist:150, maxDist:300, skills:["beginner"], desc:"Very understable and high-glide. Great for beginners who need a disc that turns and glides." },
+  { brand:"innova", type:"midrange", name:"Rat", plastic:"Star", speed:5, glide:4, turn:0, fade:2, minDist:200, maxDist:400, skills:["intermediate","advanced","pro"], desc:"Slightly overstable midrange. Finishes left reliably without being too stiff in the wind." },
+  { brand:"innova", type:"midrange", name:"Atlas", plastic:"Star", speed:5, glide:5, turn:-1, fade:2, minDist:200, maxDist:400, skills:["intermediate","advanced"], desc:"Slightly understable with a mild fade. Versatile midrange that holds straight lines well." },
+  { brand:"innova", type:"midrange", name:"Wolf", plastic:"Star", speed:5, glide:5, turn:-2, fade:1, minDist:150, maxDist:350, skills:["beginner","intermediate"], desc:"Understable disc that works great for hyzer-flip shots and turnover lines." },
+  { brand:"innova", type:"midrange", name:"Pig", plastic:"Star / Champion", speed:3, glide:1, turn:0, fade:3, minDist:150, maxDist:500, skills:["intermediate","advanced","pro"], desc:"Extremely overstable utility disc. Used for controlled approach shots and punch throws in tight spaces." },
+  { brand:"discraft", type:"midrange", name:"Buzzz", plastic:"Z / ESP", speed:5, glide:4, turn:-1, fade:1, minDist:150, maxDist:450, skills:["beginner","intermediate","advanced","pro"], desc:"The most popular midrange disc in the world. Consistent, straight flight used by players at every level." },
+  { brand:"discraft", type:"midrange", name:"Buzzz OS", plastic:"Z / ESP", speed:5, glide:4, turn:0, fade:3, minDist:200, maxDist:500, skills:["intermediate","advanced","pro"], desc:"Overstable version of the Buzzz. Strong finishing fade, wind-resistant, reliable in all conditions." },
+  { brand:"discraft", type:"midrange", name:"Comet", plastic:"Z / ESP", speed:4, glide:5, turn:-2, fare:1, minDist:150, maxDist:350, skills:["beginner","intermediate"], desc:"Understable midrange with lots of glide. Great for turnover shots and hyzer-flips." },
+  { brand:"discraft", type:"midrange", name:"Drone", plastic:"Z", speed:3, glide:2, turn:0, fade:4, minDist:150, maxDist:500, skills:["advanced","pro"], desc:"One of the most overstable midranges available. Used for headwind shots and maximum fade control." },
+  { brand:"discraft", type:"midrange", name:"Mantis", plastic:"Z", speed:6, glide:4, turn:-1, fade:2, minDist:200, maxDist:420, skills:["intermediate","advanced"], desc:"Slightly faster midrange that bridges the gap to fairway drivers. Reliable, slightly understable." },
+  { brand:"discraft", type:"midrange", name:"Meteor", plastic:"Z", speed:5, glide:5, turn:-3, fade:1, minDist:150, maxDist:350, skills:["beginner","intermediate"], desc:"Understable midrange that turns and glides. Excellent for hyzer-flips and turnover shots." },
+  { brand:"discraft", type:"midrange", name:"Sol", plastic:"Putter Line / Z", speed:4, glide:5, turn:-2, fade:1, minDist:150, maxDist:320, skills:["beginner","intermediate"], desc:"Very high glide, understable disc. Floats beautifully for beginners learning disc control." },
+  { brand:"discraft", type:"midrange", name:"Quake", plastic:"Z", speed:5, glide:4, turn:0, fade:2, minDist:200, maxDist:420, skills:["intermediate","advanced"], desc:"Neutral to slightly overstable midrange. Good all-around choice when you need a bit of fade." },
+ 
+  // ── FAIRWAY DRIVERS ──
+  { brand:"innova", type:"fairway", name:"Leopard3", plastic:"Star / Champion", speed:7, glide:5, turn:-2, fade:1, minDist:200, maxDist:360, skills:["beginner","intermediate"], desc:"The go-to beginner fairway driver. Understable, forgiving, and gets good distance at lower arm speeds." },
+  { brand:"innova", type:"fairway", name:"Leopard", plastic:"DX / Star", speed:6, glide:5, turn:-2, fade:1, minDist:150, maxDist:330, skills:["beginner"], desc:"Even more understable than the Leopard3. Great first fairway driver for newer players." },
+  { brand:"innova", type:"fairway", name:"Teebird", plastic:"Star / Champion", speed:7, glide:5, turn:0, fade:2, minDist:280, maxDist:480, skills:["intermediate","advanced","pro"], desc:"A legendary accuracy fairway driver. Straight with a dependable fade used by pros for decades." },
+  { brand:"innova", type:"fairway", name:"Teebird3", plastic:"Star", speed:7, glide:4, turn:0, fade:3, minDist:280, maxDist:480, skills:["intermediate","advanced","pro"], desc:"More overstable version of the Teebird. Reliable in headwinds and for forehand approach shots." },
+  { brand:"innova", type:"fairway", name:"Firebird", plastic:"Star / Champion", speed:9, glide:3, turn:0, fade:4, minDist:300, maxDist:500, skills:["advanced","pro"], desc:"Very overstable driver. Excellent for forehand shots, hard fades, and fighting headwinds at distance." },
+  { brand:"innova", type:"fairway", name:"Valkyrie", plastic:"DX / Star", speed:9, glide:4, turn:-3, fade:2, minDist:250, maxDist:400, skills:["beginner","intermediate"], desc:"Understable fairway driver for players still developing arm speed. Gets great distance with a turn-and-fade flight." },
+  { brand:"innova", type:"fairway", name:"Sidewinder", plastic:"Star / Champion", speed:9, glide:5, turn:-3, fade:1, minDist:250, maxDist:420, skills:["intermediate","advanced"], desc:"Understable driver for hyzer-flips and long turnover shots. Excellent for rollers too." },
+  { brand:"innova", type:"fairway", name:"Thunderbird", plastic:"Star / Champion", speed:9, glide:5, turn:0, fade:2, minDist:280, maxDist:480, skills:["intermediate","advanced","pro"], desc:"Slightly faster and higher glide than the Teebird. Straight with a reliable left finish." },
+  { brand:"innova", type:"fairway", name:"Phantom", plastic:"Champion", speed:9, glide:4, turn:0, fade:3, minDist:300, maxDist:500, skills:["advanced","pro"], desc:"Overstable fairway driver with a consistent finish. Good for forehand lines and headwinds." },
+  { brand:"innova", type:"fairway", name:"Dragon", plastic:"DX", speed:8, glide:6, turn:-4, fade:0, minDist:150, maxDist:320, skills:["beginner"], desc:"Very understable and high-glide. Designed for beginners and players with slower arm speeds." },
+  { brand:"innova", type:"fairway", name:"Kite", plastic:"Star", speed:8, glide:5, turn:-2, fade:2, minDist:250, maxDist:430, skills:["intermediate","advanced"], desc:"Neutral fairway driver with a mild turn and consistent fade. Good all-around workhorse." },
+  { brand:"discraft", type:"fairway", name:"Undertaker", plastic:"Z / ESP", speed:9, glide:5, turn:-1, fade:2, minDist:270, maxDist:460, skills:["intermediate","advanced","pro"], desc:"Paul McBeth's signature driver. Neutral to slight understable — versatile and trusted by pros." },
+  { brand:"discraft", type:"fairway", name:"Surge SS", plastic:"Z", speed:9, glide:5, turn:-3, fade:1, minDist:230, maxDist:400, skills:["beginner","intermediate"], desc:"Understable fairway driver that helps players get more distance. Good for hyzer-flip shots." },
+  { brand:"discraft", type:"fairway", name:"Nuke OS", plastic:"Z / ESP", speed:13, glide:4, turn:0, fade:4, minDist:340, maxDist:500, skills:["advanced","pro"], desc:"Extremely overstable. Used for headwinds, forehand hyzers, and power throwers only." },
+  { brand:"discraft", type:"fairway", name:"Escape", plastic:"Z / ESP", speed:9, glide:5, turn:-1, fade:2, minDist:270, maxDist:460, skills:["intermediate","advanced","pro"], desc:"Neutral fairway driver that can flex or flip depending on angle. A versatile all-conditions disc." },
+  { brand:"discraft", type:"fairway", name:"Raptor", plastic:"Z / ESP", speed:9, glide:5, turn:0, fade:3, minDist:300, maxDist:480, skills:["advanced","pro"], desc:"Overstable fairway driver. Strong fade and wind resistance. Good for forehand throws." },
+  { brand:"discraft", type:"fairway", name:"Stalker", plastic:"Z", speed:7, glide:5, turn:-1, fade:2, minDist:250, maxDist:430, skills:["intermediate","advanced"], desc:"Neutral fairway driver with a slight turn and consistent finish. Reliable in most conditions." },
+  { brand:"discraft", type:"fairway", name:"Flick", plastic:"Z", speed:7, glide:3, turn:1, fade:4, minDist:280, maxDist:500, skills:["advanced","pro"], desc:"Uniquely overstable disc with a positive turn. Excellent forehand disc that fights hard to the left." },
+  { brand:"discraft", type:"fairway", name:"Heat", plastic:"Z", speed:9, glide:6, turn:-3, fade:1, minDist:220, maxDist:390, skills:["beginner","intermediate"], desc:"High-glide understable driver. Great for beginners who need a disc that gets airborne easily." },
+ 
+  // ── DISTANCE DRIVERS ──
+  { brand:"innova", type:"distance", name:"Boss", plastic:"Star / Champion", speed:13, glide:5, turn:-1, fade:3, minDist:360, maxDist:500, skills:["advanced","pro"], desc:"Maximum distance driver for big arms. Slightly understable for hyzer-flip power shots." },
+  { brand:"innova", type:"distance", name:"Destroyer", plastic:"Star / Champion", speed:12, glide:5, turn:-1, fade:3, minDist:340, maxDist:500, skills:["advanced","pro"], desc:"The world's best-selling distance driver. Versatile, dependable, and used at every level of pro play." },
+  { brand:"innova", type:"distance", name:"Wraith", plastic:"Star / Champion", speed:11, glide:5, turn:-1, fade:3, minDist:300, maxDist:500, skills:["advanced","pro"], desc:"Slightly slower and slightly more understable than the Destroyer. Good for controlled big distance." },
+  { brand:"innova", type:"distance", name:"Shryke", plastic:"Star / Champion", speed:13, glide:6, turn:-2, fade:2, minDist:350, maxDist:500, skills:["advanced","pro"], desc:"High-glide distance disc with a gentle turn. Great for hyzer-flip lines on long open holes." },
+  { brand:"innova", type:"distance", name:"Tern", plastic:"Star / Champion", speed:12, glide:6, turn:-3, fade:2, minDist:300, maxDist:500, skills:["advanced","pro"], desc:"Understable high-glide driver. Excellent for big turnover shots and rollers at high speed." },
+  { brand:"innova", type:"distance", name:"Katana", plastic:"Star / Champion", speed:13, glide:5, turn:-3, fade:3, minDist:350, maxDist:500, skills:["advanced","pro"], desc:"Extremely understable at high speed. Hyzer-flips into a huge right-turning shot before fading back." },
+  { brand:"innova", type:"distance", name:"Colossus", plastic:"Star", speed:11, glide:6, turn:-3, fade:1, minDist:280, maxDist:480, skills:["intermediate","advanced","pro"], desc:"Understable distance driver for players building arm speed. Lots of glide, gentle turn and fade." },
+  { brand:"innova", type:"distance", name:"Groove", plastic:"Star", speed:9, glide:5, turn:-2, fade:2, minDist:250, maxDist:420, skills:["intermediate","advanced"], desc:"Neutral to understable driver. Good for players moving from fairway to distance drivers." },
+  { brand:"innova", type:"distance", name:"Mystere", plastic:"Champion", speed:11, glide:6, turn:-2, fade:2, minDist:300, maxDist:480, skills:["advanced","pro"], desc:"High-glide understable distance disc. Excellent in tailwinds for maximum distance shots." },
+  { brand:"innova", type:"distance", name:"Corvette", plastic:"Star / Champion", speed:15, glide:5, turn:-2, fade:2, minDist:400, maxDist:500, skills:["pro"], desc:"One of the fastest discs Innova makes. Only for professional-level arm speeds." },
+  { brand:"innova", type:"distance", name:"Blizzard Boss", plastic:"Blizzard", speed:13, glide:5, turn:-1, fade:3, minDist:250, maxDist:500, skills:["intermediate","advanced","pro"], desc:"Lightweight version of the Boss. Can be thrown farther by players without maximum arm speed." },
+  { brand:"discraft", type:"distance", name:"Nuke", plastic:"Z / ESP", speed:13, glide:5, turn:-1, fade:3, minDist:350, maxDist:500, skills:["advanced","pro"], desc:"One of Discraft's flagship distance drivers. Straight with a reliable power fade — extremely popular on tour." },
+  { brand:"discraft", type:"distance", name:"Zeus", plastic:"Z / ESP", speed:12, glide:5, turn:-1, fade:3, minDist:340, maxDist:500, skills:["advanced","pro"], desc:"Paul McBeth's signature distance driver. Dependable, versatile, and widely used by touring pros." },
+  { brand:"discraft", type:"distance", name:"Surge", plastic:"Z / ESP", speed:10, glide:5, turn:-2, fade:2, minDist:290, maxDist:470, skills:["intermediate","advanced","pro"], desc:"Slightly understable distance driver. Great for controlled shots needing distance with a gentle turn." },
+  { brand:"discraft", type:"distance", name:"Force", plastic:"Z / ESP", speed:11, glide:5, turn:0, fade:3, minDist:320, maxDist:500, skills:["advanced","pro"], desc:"Very overstable distance driver. Strong fade, headwind fighter, and a forehand workhorse." },
+  { brand:"discraft", type:"distance", name:"Hades", plastic:"ESP", speed:12, glide:6, turn:-3, fade:2, minDist:320, maxDist:500, skills:["advanced","pro"], desc:"Paul McBeth's high-glide understable driver. Big hyzer-flips and maximum distance in good conditions." },
+  { brand:"discraft", type:"distance", name:"Crank SS", plastic:"Z", speed:13, glide:5, turn:-2, fade:2, minDist:320, maxDist:500, skills:["advanced","pro"], desc:"Understable distance driver for power throwers. Wide range of shots including hyzer-flip and roller." },
+  { brand:"discraft", type:"distance", name:"Avenger SS", plastic:"Z", speed:10, glide:5, turn:-3, fade:1, minDist:260, maxDist:430, skills:["intermediate","advanced"], desc:"Very understable distance driver. Great for players developing arm speed who want a turning shot." },
+  { brand:"discraft", type:"distance", name:"Thrasher", plastic:"Z", speed:12, glide:5, turn:-3, fade:2, minDist:320, maxDist:500, skills:["advanced","pro"], desc:"Big understable driver. Used by power throwers for maximum distance hyzer-flip shots." },
+  { brand:"discraft", type:"distance", name:"Nuke SS", plastic:"Z", speed:13, glide:5, turn:-2, fade:2, minDist:320, maxDist:500, skills:["advanced","pro"], desc:"Slightly understable Nuke. Better for players who want distance without maximum overstability." },
+  { brand:"discraft", type:"distance", name:"Flash", plastic:"ESP", speed:11, glide:6, turn:-2, fade:2, minDist:300, maxDist:480, skills:["intermediate","advanced","pro"], desc:"High-glide distance disc with a gentle turn. Good for longer holes in calm conditions." },
+];
+ 
+const TYPE_ORDER = ["putter","midrange","fairway","distance"];
+const TYPE_LABEL = { putter:"Putters", midrange:"Midranges", fairway:"Fairway Drivers", distance:"Distance Drivers" };
+const TYPE_COLOR = { putter:"var(--putter)", midrange:"var(--midrange)", fairway:"var(--fairway)", distance:"var(--distance)" };
+ 
+const TIPS = {
+  beginner: "<strong>Beginner tip:</strong> Resist the urge to throw drivers. A well-thrown midrange goes farther than a mis-thrown driver. Focus on form first.",
+  intermediate: "<strong>Intermediate tip:</strong> Start adding fairway drivers when your midrange consistently hits 250+ ft. Form and spin matter more than arm strength.",
+  advanced: "<strong>Advanced tip:</strong> Vary your bag with overstable and understable versions of each disc type to cover all wind conditions and shot shapes.",
+  pro: "<strong>Pro tip:</strong> Fine-tune your bag for the courses you play most. Doubles of key discs in different plastics give you different flight characteristics."
+};
+ 
+function getStability(turn, fade) {
+  const val = turn + fade;
+  if (val >= 3) return { label: "overstable", class: "overstable" };
+  if (val <= 0) return { label: "understable", class: "understable" };
+  return { label: "neutral", class: "neutral" };
+}
+ 
+let dist = 250, skill = "beginner", brand = "both";
+ 
+function getBag() {
+  return DISCS.filter(d =>
+    d.skills.includes(skill) &&
+    dist >= d.minDist &&
+    dist <= d.maxDist + 30 &&
+    (brand === "both" || d.brand === brand)
+  );
+}
+ 
+function render() {
+  const bag = getBag();
+  const output = document.getElementById("bag-output");
+  const statsRow = document.getElementById("stats-row");
+  const tipBar = document.getElementById("tip-bar");
+ 
+  tipBar.innerHTML = TIPS[skill];
+ 
+  // Stats
+  const counts = { putter:0, midrange:0, fairway:0, distance:0 };
+  bag.forEach(d => counts[d.type]++);
+  const dotColors = { putter:"var(--putter)", midrange:"var(--midrange)", fairway:"var(--fairway)", distance:"var(--distance)" };
+  statsRow.innerHTML = Object.entries(counts).map(([type, count]) =>
+    count > 0 ? `<div class="stat-pill"><div class="dot" style="background:${dotColors[type]}"></div><strong>${count}</strong> ${TYPE_LABEL[type].toLowerCase()}</div>` : ''
+  ).join('');
+ 
+  if (bag.length === 0) {
+    output.innerHTML = '<div class="empty-state"><div style="font-size:2rem">🥏</div><p>No discs matched your settings. Try adjusting your distance or experience level.</p></div>';
+    return;
+  }
+ 
+  output.innerHTML = TYPE_ORDER.map(type => {
+    const discs = bag.filter(d => d.type === type);
+    if (!discs.length) return '';
+    return `
+      <div class="type-group">
+        <div class="type-header">
+          <div class="type-dot" style="background:${TYPE_COLOR[type]}"></div>
+          <span class="type-title">${TYPE_LABEL[type]}</span>
+          <span class="type-count">${discs.length} disc${discs.length !== 1 ? 's' : ''}</span>
+        </div>
+        <div class="disc-grid">
+          ${discs.map(d => {
+            const stab = getStability(d.turn, d.fade);
+            const fadeVal = d.fade !== undefined ? d.fade : (d.fare || 1);
+            return `
+              <div class="disc-card">
+                <div class="card-top">
+                  <span class="brand-badge ${d.brand}">${d.brand === 'innova' ? 'Innova' : 'Discraft'}</span>
+                  <span class="stability-tag ${stab.class}">${stab.label}</span>
+                </div>
+                <div class="disc-name">${d.name}</div>
+                <div class="disc-plastic">${d.plastic}</div>
+                <div class="flight-row">
+                  <div class="fnum spd"><span class="v">${d.speed}</span><span class="l">Speed</span></div>
+                  <div class="fnum gli"><span class="v">${d.glide}</span><span class="l">Glide</span></div>
+                  <div class="fnum trn"><span class="v">${d.turn}</span><span class="l">Turn</span></div>
+                  <div class="fnum fad"><span class="v">${fadeVal}</span><span class="l">Fade</span></div>
+                </div>
+                <div class="disc-desc">${d.desc}</div>
+              </div>`;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+ 
+// Slider
+document.getElementById("dist-slider").addEventListener("input", e => {
+  dist = parseInt(e.target.value);
+  document.getElementById("dist-out").textContent = dist;
+  render();
+});
+ 
+// Skill buttons
+document.querySelectorAll(".filter-btn.skill").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".filter-btn.skill").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    skill = btn.dataset.skill;
+    render();
+  });
+});
+ 
+// Brand buttons
+document.querySelectorAll("[data-brand]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("[data-brand]").forEach(b => b.classList.remove("active","brand-innova","brand-discraft","brand-both"));
+    brand = btn.dataset.brand;
+    btn.classList.add("active");
+    if (brand === "innova") btn.classList.add("brand-innova");
+    else if (brand === "discraft") btn.classList.add("brand-discraft");
+    else btn.classList.add("brand-both");
+    render();
+  });
+});
+ 
+render();
+</script>
+</body>
+</html>
