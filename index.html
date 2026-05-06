@@ -207,6 +207,11 @@
       border-color: rgba(88,166,255,0.4);
       color: var(--discraft);
     }
+    .filter-btn.active.brand-dynamic {
+      background: rgba(163,113,247,0.12);
+      border-color: rgba(163,113,247,0.4);
+      color: #a371f7;
+    }
     .filter-btn.active.brand-both {
       background: rgba(163,113,247,0.12);
       border-color: rgba(163,113,247,0.4);
@@ -311,6 +316,7 @@
     }
     .brand-badge.innova { background: rgba(224,92,42,0.15); color: var(--innova); }
     .brand-badge.discraft { background: rgba(88,166,255,0.15); color: var(--discraft); }
+    .brand-badge.dynamic { background: rgba(163,113,247,0.15); color: #a371f7; }
  
     .disc-title-row {
       display: flex;
@@ -571,9 +577,10 @@
     </div>
 </div>
 <div class="brand-filter-row">
-  <button class="filter-btn brand-both active" id="filter-both">Both</button>
+  <button class="filter-btn brand-both active" id="filter-both">All</button>
   <button class="filter-btn brand-innova" id="filter-innova">Innova</button>
   <button class="filter-btn brand-discraft" id="filter-discraft">Discraft</button>
+  <button class="filter-btn brand-dynamic" id="filter-dynamic">Dynamic</button>
 </div>
 
 <div class="stats-row" id="stats-row"></div>
@@ -685,6 +692,7 @@ function setBrandFilter(filter) {
   brandFilter = filter;
   document.getElementById('filter-innova').classList.toggle('active', filter === 'innova');
   document.getElementById('filter-discraft').classList.toggle('active', filter === 'discraft');
+  document.getElementById('filter-dynamic').classList.toggle('active', filter === 'dynamic');
   document.getElementById('filter-both').classList.toggle('active', filter === 'both');
   render();
 }
@@ -724,7 +732,7 @@ function render() {
             return `
               <div class="disc-card">
                 <div class="card-top">
-                  <span class="brand-badge ${d.brand}">${d.brand === 'innova' ? 'Innova' : 'Discraft'}</span>
+                  <span class="brand-badge ${d.brand}">${d.brand === 'innova' ? 'Innova' : d.brand === 'discraft' ? 'Discraft' : d.brand === 'dynamic' ? 'Dynamic' : d.brand}</span>
                   <span class="stability-tag ${stab.class}">${stab.label}</span>
                 </div>
                 <div class="disc-title-row">
@@ -754,6 +762,7 @@ document.getElementById("back-slider").addEventListener("input", e => {
 
 document.getElementById('filter-innova').addEventListener('click', () => setBrandFilter('innova'));
 document.getElementById('filter-discraft').addEventListener('click', () => setBrandFilter('discraft'));
+document.getElementById('filter-dynamic').addEventListener('click', () => setBrandFilter('dynamic'));
 document.getElementById('filter-both').addEventListener('click', () => setBrandFilter('both'));
 
 
