@@ -577,10 +577,9 @@
     </div>
 </div>
 <div class="brand-filter-row">
-  <button class="filter-btn brand-both active" id="filter-both">All</button>
-  <button class="filter-btn brand-innova" id="filter-innova">Innova</button>
-  <button class="filter-btn brand-discraft" id="filter-discraft">Discraft</button>
-  <button class="filter-btn brand-dynamic" id="filter-dynamic">Dynamic</button>
+  <button class="filter-btn brand-innova active" id="filter-innova">Innova</button>
+  <button class="filter-btn brand-discraft active" id="filter-discraft">Discraft</button>
+  <button class="filter-btn brand-dynamic active" id="filter-dynamic">Dynamic</button>
 </div>
 
 <div class="stats-row" id="stats-row"></div>
@@ -682,18 +681,36 @@ function adjustCount(type, delta) {
   render();
 }
 
-let brandFilter = 'both';
+const ALL_BRANDS = ['innova', 'discraft', 'dynamic'];
+let selectedBrands = new Set(ALL_BRANDS);
 
 function applyBrandFilter(discs) {
-  return discs.filter(d => brandFilter === 'both' || d.brand === brandFilter);
+  return discs.filter(d => selectedBrands.has(d.brand));
+}
+
+function updateBrandFilterButtons() {
+  ALL_BRANDS.forEach(brand => {
+    document.getElementById(`filter-${brand}`).classList.toggle('active', selectedBrands.has(brand));
+  });
 }
 
 function setBrandFilter(filter) {
-  brandFilter = filter;
-  document.getElementById('filter-innova').classList.toggle('active', filter === 'innova');
-  document.getElementById('filter-discraft').classList.toggle('active', filter === 'discraft');
-  document.getElementById('filter-dynamic').classList.toggle('active', filter === 'dynamic');
-  document.getElementById('filter-both').classList.toggle('active', filter === 'both');
+  const allSelected = selectedBrands.size === ALL_BRANDS.length;
+  if (allSelected) {
+    selectedBrands = new Set([filter]);
+  } else {
+    if (selectedBrands.has(filter)) {
+      if (selectedBrands.size > 1) {
+        selectedBrands.delete(filter);
+      }
+    } else {
+      selectedBrands.add(filter);
+    }
+    if (selectedBrands.size === 0) {
+      selectedBrands = new Set(ALL_BRANDS);
+    }
+  }
+  updateBrandFilterButtons();
   render();
 }
 
@@ -763,7 +780,6 @@ document.getElementById("back-slider").addEventListener("input", e => {
 document.getElementById('filter-innova').addEventListener('click', () => setBrandFilter('innova'));
 document.getElementById('filter-discraft').addEventListener('click', () => setBrandFilter('discraft'));
 document.getElementById('filter-dynamic').addEventListener('click', () => setBrandFilter('dynamic'));
-document.getElementById('filter-both').addEventListener('click', () => setBrandFilter('both'));
 
 
 document.getElementById('total-count').addEventListener('input', e => {
