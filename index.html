@@ -714,6 +714,31 @@ const DIST_TABLE = [
   [1,2,1,1,0],[1,2,1,1,0]
 ];
 
+const PUTTER_TABLE = [
+  { maxDist: 175, counts: [0, 0, 1, 1, 1] },
+  { maxDist: 250, counts: [0, 1, 1, 0, 1] },
+  { maxDist: Infinity, counts: [0, 1, 1, 1, 0] },
+];
+
+function getPutterDistribution(dist, n) {
+  if (n <= 0) return { vos: 0, os: 0, ne: 0, us: 0, vus: 0 };
+  if (n === 1) return { vos: 0, os: 0, ne: 1, us: 0, vus: 0 };
+
+  const tier = PUTTER_TABLE.find(entry => dist <= entry.maxDist).counts;
+  if (n === 3) {
+    return { vos: tier[0], os: tier[1], ne: tier[2], us: tier[3], vus: tier[4] };
+  }
+
+  // For other putter counts, use the same proportions and round toward the center.
+  const counts = tier.map(v => Math.floor(v / 3 * n));
+  const rem = n - counts.reduce((a, b) => a + b, 0);
+  const order = [2, 1, 3, 0, 4];
+  for (let i = 0; i < rem; i++) {
+    counts[order[i]]++;
+  }
+  return { vos: counts[0], os: counts[1], ne: counts[2], us: counts[3], vus: counts[4] };
+}
+
 function getDistribution(dist, n) {
   if (n <= 0) return { vos: 0, os: 0, ne: 0, us: 0, vus: 0 };
   if (n === 1) return { vos: 0, os: 0, ne: 1, us: 0, vus: 0 };
@@ -739,17 +764,39 @@ function getBag() {
 
   const byType = type => eligible.filter(d => d.type === type);
   const byStab = (pool, s) => pool.filter(d => d.stability === s);
+  const pickNUnique = (pool, n, usedKeys) => {
+    if (!n || !pool.length) return [];
+    const available = pool.filter(d => !usedKeys.has(discKey(d)));
+    const picked = pickN(available, n);
+    picked.forEach(d => usedKeys.add(discKey(d)));
+    return picked;
+  };
 
   const selectCategory = type => {
     const pool = byType(type);
-    const { vos, os, ne, us, vus } = getDistribution(dist, discCounts[type]);
-    return [
-      ...pickN(byStab(pool, "very overstable"), vos),
-      ...pickN(byStab(pool, "overstable"), os),
-      ...pickN(byStab(pool, "neutral"), ne),
-      ...pickN(byStab(pool, "understable"), us),
-      ...pickN(byStab(pool, "very understable"), vus),
-    ];
+    const distCounts = type === 'putter'
+      ? getPutterDistribution(dist, discCounts[type])
+      : getDistribution(dist, discCounts[type]);
+    const { vos, os, ne, us, vus } = distCounts;
+    const selected = [];
+    const usedKeys = new Set();
+
+    selected.push(...pickNUnique(byStab(pool, "very overstable"), vos, usedKeys));
+
+    let overstablePool;
+    if (type === 'putter' && dist >= 450) {
+      const vosDiscs = byStab(pool, "very overstable");
+      overstablePool = vosDiscs.length > 0 && Math.random() < 0.5 ? vosDiscs : byStab(pool, "overstable");
+    } else {
+      overstablePool = byStab(pool, "overstable");
+    }
+    selected.push(...pickNUnique(overstablePool, os, usedKeys));
+
+    selected.push(...pickNUnique(byStab(pool, "neutral"), ne, usedKeys));
+    selected.push(...pickNUnique(byStab(pool, "understable"), us, usedKeys));
+    selected.push(...pickNUnique(byStab(pool, "very understable"), vus, usedKeys));
+
+    return selected;
   };
 
   return [
@@ -918,9 +965,13 @@ function refreshDisc(button) {
   const currentKey = button.dataset.key;
   const currentKeys = new Set(currentBag.map(discKey));
   currentKeys.delete(currentKey);
+  const stabilities = type === 'putter' && dist >= 450 &&
+    (stability === 'overstable' || stability === 'very overstable')
+    ? ['overstable', 'very overstable']
+    : [stability];
   const pool = applyBrandFilter(DISCS).filter(d =>
     d.type === type &&
-    d.stability === stability &&
+    stabilities.includes(d.stability) &&
     !currentKeys.has(discKey(d)) &&
     discKey(d) !== currentKey
   );
