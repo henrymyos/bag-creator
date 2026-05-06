@@ -3,9 +3,11 @@ const DISCS = [
   { brand:"innova", type:"putter", name:"Rhyno", speed:2, glide:1, turn:0, fade:3, desc:"Very overstable putter. Excellent in headwinds and for hard fade approach shots.", stability:"overstable" },
   { brand:"innova", type:"putter", name:"Aviarx3", speed:3, glide:2, turn:0, fade:3, desc:"The AviarX3 is the ideal Putt &amp; Approach disc for headwind upshots and drives.", stability:"overstable" },
   { brand:"discraft", type:"putter", name:"Zone", speed:4, glide:3, turn:0, fade:3, desc:"One of the most popular overstable approach discs ever. A must-have for tight fairways and headwinds.", stability:"overstable" },
+  { brand:"discraft", type:"putter", name:"Zone GT", speed:4, glide:3, turn:0, fade:3, desc:"A slightly more overstable version of the Zone with a different GT feel.", stability:"overstable" },
   { brand:"discraft", type:"putter", name:"Zone OS", speed:4, glide:2, turn:1, fade:5, desc:"A more overstable version of the Zone for stronger headwinds and extra fade.", stability:"overstable" },
   { brand:"discraft", type:"putter", name:"Challenger OS", speed:2, glide:3, turn:0, fade:3, desc:"A more overstable Challenger for reliable, strong finishes on approach shots.", stability:"overstable" },
   { brand:"discraft", type:"putter", name:"Ringer GT", speed:4, glide:4, turn:0, fade:3, desc:"Ringer with GT feel, more stable than the Ringer.", stability:"overstable" },
+  { brand:"discraft", type:"putter", name:"Fossil", speed:4, glide:3, turn:0, fade:3, desc:"A newer model, the Fossil is like an ovestable zone that dies out quick. Great for forehand and backhand approaches", stability:"overstable" },
 
 
   { brand:"innova", type:"putter", name:"Aviar", speed:2, glide:3, turn:0, fade:1, desc:"The most popular putter ever made. Dependable, consistent, and forgiving in all conditions.", stability:"neutral" },
@@ -20,12 +22,15 @@ const DISCS = [
   { brand:"innova", type:"putter", name:"Whale", speed:2, glide:3, turn:0, fade:1, desc:"The Whale is a beefy, Aviar-like Putter that has the stability of our Big-Bead Aviar Driver with nearly the same low-speed over stability as our Putt and Approach.", stability:"neutral" },
   { brand:"innova", type:"putter", name:"Yeti Aviar", speed:2, glide:3, turn:0, fade:1, desc:"The Yeti Aviar is for Big Bead Aviar lovers looking for a straight flying putter with a lower profile.", stability:"neutral" },
   { brand:"discraft", type:"putter", name:"Luna", speed:3, glide:3, turn:0, fade:3, desc:"Paul McBeth's signature putter. Straight-flying, comfortable grip, holds any line perfectly.", stability:"neutral" },
+  { brand:"discraft", type:"putter", name:"Kratos", speed:3, glide:3, turn:0, fade:3, desc:"Similar to the luna, the Kratos is a versatile putter with a consistent flight pattern.", stability:"neutral" },
   { brand:"discraft", type:"putter", name:"Banger GT", speed:2, glide:3, turn:0, fade:1, desc:"Beaded putter with a comfortable grip and predictable flight. Great for straddle putts.", stability:"neutral" },
   { brand:"discraft", type:"putter", name:"Roach", speed:2, glide:4, turn:0, fade:1, desc:"Neutral, reliable putter. Easy to throw straight with minimal dome — a popular choice at all skill levels.", stability:"neutral" },
   { brand:"discraft", type:"putter", name:"Challenger", speed:2, glide:3, turn:0, fade:2, desc:"Simple, neutral putter. Very popular for recreational and beginner players wanting reliability.", stability:"neutral" },
   { brand:"discraft", type:"putter", name:"Magnet", speed:2, glide:3, turn:-1, fade:1, desc:"High-glide putter that floats to the basket. Good for distance putting on shorter holes.", stability:"neutral" },
   { brand:"discraft", type:"putter", name:"Ringer", speed:4, glide:4, turn:0, fade:2, desc:"Reliable putter with a consistent flight pattern. Great for players who want a dependable disc.", stability:"neutral" },
   { brand:"discraft", type:"putter", name:"Focus", speed:2, glide:2, turn:-1, fade:2, desc:"Straight flying putter with a comfortable grip.", stability:"neutral" },
+  { brand:"discraft", type:"putter", name:"Sled", speed:3, glide:2, turn:-1, fade:2, desc:"A newer model, great for dead straight shots that die out.", stability:"neutral" },
+  { brand:"discraft", type:"putter", name:"Roost", speed:2, glide:5, turn:0, fade:2, desc:"Reliable putter with a consistent flight pattern. Great for players who want a dependable disc.", stability:"neutral" },
 
 
   { brand:"innova", type:"putter", name:"Aero", speed:3, glide:6, turn:0, fade:0, desc:"The Aero is a great disc for new players. It&#039;s the straightest point-to-point golf disc and the easiest disc to keep on the fairway for novice players.", stability:"understable" },
@@ -36,7 +41,9 @@ const DISCS = [
   { brand:"innova", type:"putter", name:"Sonic", speed:1, glide:2, turn:-4, fade:0, desc:"The Sonic, based on the Hero 235, is a new putt and approach disc. This disc has a comfortable low profile grip with great thumb traction.", stability:"understable" },
   { brand:"innova", type:"putter", name:"Xero", speed:2, glide:3, turn:0, fade:0, desc:"The Innova Xero Putt &amp; Approach disc has more range and torque resistance than other straight-flying putters in our catalog.", stability:"understable" },
   { brand:"discraft", type:"putter", name:"Fierce", speed:3, glide:4, turn:-2, fade:0, desc:"Paige Pierce's signature disc. Comfortable in the hand and great for beginners learning approach shots.", stability:"understable" },
+  { brand:"discraft", type:"putter", name:"Zone SS", speed:4, glide:4, turn:-1, fade:2, desc:"A more understable version of the Zone for straighter shots and a similar feel.", stability:"understable" },
   { brand:"discraft", type:"putter", name:"Challenger SS", speed:2, glide:3, turn:-1, fade:2, desc:"A more understable Challenger for flippy approach shots.", stability:"understable" },
+  { brand:"discraft", type:"putter", name:"Rattler", speed:2, glide:2, turn:-3, fade:1, desc:"Discraft's most understable putter, the Rattler has a reliable turn on any shot shape.", stability:"understable" },
 
   // ── MIDRANGES ──
   { brand:"innova", type:"midrange", name:"Roc3", speed:5, glide:4, turn:0, fade:3, desc:"Overstable workhorse. Reliable, strong fade in all conditions. Used heavily by pros worldwide.", stability:"overstable" },
@@ -51,6 +58,7 @@ const DISCS = [
   { brand:"discraft", type:"midrange", name:"Malta", speed:5, glide:4, turn:1, fade:3, desc:"A very overstable midrange. Used for headwind shots and maximum fade control.", stability:"overstable" },
   { brand:"discraft", type:"midrange", name:"Wasp", speed:5, glide:3, turn:0, fade:2, desc:"Overstable  midrange that finishes left. Great overstable option for midrange shots.", stability:"overstable" },
   { brand:"discraft", type:"midrange", name:"Swarm", speed:5, glide:3, turn:0, fade:4, desc:"Very overstable  midrange that finishes strongly left. Great overstable option for midrange shots, backhand and forehand.", stability:"overstable" },
+  { brand:"discraft", type:"midrange", name:"Hornet", speed:5, glide:5, turn:0, fade:4, desc:"Very overstable midrange with a powerful fade. Fights headwinds and finishes hard left — great for forehand approaches.", stability:"overstable" },
 
 
   { brand:"innova", type:"midrange", name:"Mako3", speed:5, glide:5, turn:0, fade:0, desc:"One of the straightest discs ever made. Throws exactly where you aim it with no movement.", stability:"neutral" },
@@ -63,6 +71,7 @@ const DISCS = [
   { brand:"innova", type:"midrange", name:"Skeeter", speed:5, glide:5, turn:-1, fade:1, desc:"The Skeeter is a straight flyer with a dependable fade. Great for putting, approaching, and short drives.", stability:"neutral" },
   { brand:"discraft", type:"midrange", name:"Buzzz", speed:5, glide:4, turn:-1, fade:1, desc:"The most popular midrange disc in the world. Consistent, straight flight used by players at every level.", stability:"neutral" },
   { brand:"discraft", type:"midrange", name:"Zombee", speed:6, glide:4, turn:-1, fade:1, desc:"A small-diameter midrange built for distance and precise turnover shots.", stability:"neutral" },
+  { brand:"discraft", type:"midrange", name:"Joy", speed:4, glide:5, turn:-1, fade:1, desc:"Paige Pierce's signature midrange. High-glide neutral flier that holds any line with ease.", stability:"neutral" },
 
 
   { brand:"innova", type:"midrange", name:"Meteor", speed:5, glide:5, turn:-3, fade:0, desc:"Understable midrange for big turning shots and rollers. Ideal when arm speed is lower.", stability:"understable" },
@@ -81,6 +90,7 @@ const DISCS = [
   { brand:"discraft", type:"midrange", name:"Comet", speed:4, glide:5, turn:-2, fade:1, desc:"Understable midrange with lots of glide. Great for turnover shots and hyzer-flips.", stability:"understable" },
   { brand:"discraft", type:"midrange", name:"Meteor", speed:5, glide:5, turn:-3, fade:1, desc:"Understable midrange that turns and glides. Excellent for hyzer-flips and turnover shots.", stability:"understable" },
   { brand:"discraft", type:"midrange", name:"Sol", speed:4, glide:5, turn:-3, fade:0, desc:"Very high glide, understable disc. Floats beautifully for beginners learning disc control.", stability:"understable" },
+  { brand:"discraft", type:"midrange", name:"Malita", speed:5, glide:5, turn:-1, fade:1, desc:"Paul McBeth's understable midrange. High glide and a forgiving flight make it easy to shape turnover shots.", stability:"understable" },
 
   // ── FAIRWAY DRIVERS ──
   { brand:"innova", type:"fairway", name:"Teebird3", speed:8, glide:4, turn:0, fade:3, desc:"More overstable version of the Teebird. Reliable in headwinds and for forehand approach shots.", stability:"overstable" },
@@ -100,6 +110,8 @@ const DISCS = [
   { brand:"discraft", type:"fairway", name:"Undertaker", speed:9, glide:5, turn:-1, fade:2, desc:"Paul McBeth's signature driver. Neutral to slight understable — versatile and trusted by pros.", stability:"neutral" },
   { brand:"discraft", type:"fairway", name:"Stalker", speed:7, glide:5, turn:-1, fade:2, desc:"Neutral fairway driver with a slight turn and consistent finish. Reliable in most conditions.", stability:"neutral" },
   { brand:"discraft", type:"fairway", name:"Athena", speed:7, glide:5, turn:0, fade:2, desc:"Straight-flying fairway with dependable distance and a soft fade. Great for controlled lines.", stability:"neutral" },
+  { brand:"discraft", type:"fairway", name:"Cyclone", speed:7, glide:4, turn:-1, fade:2, desc:"Versatile neutral fairway driver with a dependable fade. Accurate and consistent for a wide range of controlled shots.", stability:"neutral" },
+  { brand:"discraft", type:"fairway", name:"Cigarra", speed:7, glide:6, turn:-1, fade:2, desc:"Anthony Barela's signature fairway. High-glide neutral flier with a smooth, predictable finish.", stability:"neutral" },
 
 
   { brand:"innova", type:"fairway", name:"Leopard3", speed:7, glide:5, turn:-2, fade:1, desc:"The go-to beginner fairway driver. Understable, forgiving, and gets good distance at lower arm speeds.", stability:"understable" },
@@ -115,6 +127,7 @@ const DISCS = [
   { brand:"discraft", type:"fairway", name:"Mantis", speed:8, glide:4, turn:-2, fade:2, desc:"Understable midrange with solid glide. Great for turnover lines and beginner-friendly control.", stability:"understable" },
   { brand:"discraft", type:"fairway", name:"Cicada", speed:7, glide:6, turn:-1, fade:1, desc:"Straight-flying fairway with dependable distance and a soft turn. Great for controlled turnover lines.", stability:"understable" },
   { brand:"discraft", type:"fairway", name:"Sting", speed:7, glide:5, turn:-2, fade:1, desc:"Understable fairway driver with a reliable turn.", stability:"understable" },
+  { brand:"discraft", type:"fairway", name:"Glide", speed:6, glide:5, turn:-3, fade:2, desc:"High-glide understable fairway driver. Great for players looking for extra distance with a controlled turn.", stability:"understable" },
 
   // ── DISTANCE DRIVERS ──
   { brand:"innova", type:"distance", name:"Boss", speed:13, glide:5, turn:-1, fade:3, desc:"Maximum distance driver for big arms. Slightly understable for hyzer-flip power shots.", stability:"overstable" },
@@ -136,6 +149,10 @@ const DISCS = [
   { brand:"discraft", type:"distance", name:"Surge", speed:11, glide:5, turn:-1, fade:3, desc:"Consistent distance driver, a more controlled version of the Nuke.", stability:"overstable" },
   { brand:"discraft", type:"distance", name:"Force", speed:12, glide:5, turn:0, fade:3, desc:"Very overstable distance driver. Strong fade, headwind fighter, and a forehand workhorse.", stability:"overstable" },
   { brand:"discraft", type:"distance", name:"Flick", speed:12, glide:3, turn:1, fade:5, desc:"Uniquely overstable disc with a positive turn. Excellent forehand disc that fights hard to the left.", stability:"overstable" },
+  { brand:"discraft", type:"distance", name:"Crush", speed:11, glide:5, turn:0, fade:4, desc:"Very overstable distance driver with a powerful fade. A reliable headwind fighter and forehand workhorse.", stability:"overstable" },
+  { brand:"discraft", type:"distance", name:"Pulse", speed:11, glide:4, turn:0, fade:4, desc:"Extremely overstable distance driver. Fights headwinds hard and fades reliably — for experienced power throwers.", stability:"overstable" },
+  { brand:"discraft", type:"distance", name:"Avenger", speed:10, glide:5, turn:0, fade:3, desc:"Overstable distance driver with a dependable fade. A reliable disc for power backhand and forehand shots.", stability:"overstable" },
+  { brand:"discraft", type:"distance", name:"Hallux", speed:10, glide:5, turn:0, fade:3, desc:"Ricky Wysocki's signature disc. Overstable control driver with predictable distance and a reliable fade.", stability:"overstable" },
 
 
   { brand:"innova", type:"distance", name:"Shryke", speed:13, glide:6, turn:-2, fade:2, desc:"High-glide distance disc with a gentle turn. Great for hyzer-flip lines on long open holes.", stability:"neutral" },
@@ -144,6 +161,8 @@ const DISCS = [
   { brand:"discraft", type:"distance", name:"Anax", speed:10, glide:6, turn:0, fade:3, desc:"Long-range, high-glide distance driver with a steady finish. Great for controlled distance.", stability:"neutral" },
   { brand:"discraft", type:"distance", name:"Vulture", speed:10, glide:5, turn:0, fade:2, desc:"A shorter, more controlled version of the Anax.", stability:"neutral" },
   { brand:"discraft", type:"distance", name:"Crank", speed:13, glide:5, turn:-2, fade:2, desc:"Understable distance driver for power throwers. Wide range of shots including hyzer-flip and roller.", stability:"neutral" },
+  { brand:"discraft", type:"distance", name:"Drive", speed:11, glide:5, turn:-1, fade:2, desc:"Paige Pierce's signature distance driver. Neutral flight with a soft fade for controlled distance shots.", stability:"neutral" },
+  { brand:"discraft", type:"distance", name:"Ares", speed:12, glide:6, turn:-1, fade:2, desc:"Paul McBeth's high-glide distance driver. Neutral flier with extra distance potential compared to the Zeus.", stability:"neutral" },
 
   
   { brand:"innova", type:"distance", name:"Tern", speed:12, glide:6, turn:-3, fade:2, desc:"Understable high-glide driver. Excellent for big turnover shots and rollers at high speed.", stability:"understable" },
