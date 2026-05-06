@@ -661,6 +661,8 @@ function setCount(type, val) {
 
 function adjustCount(type, delta) {
   setCount(type, discCounts[type] + delta);
+  document.getElementById('total-count').value =
+    discCounts.putter + discCounts.midrange + discCounts.fairway + discCounts.distance;
   render();
 }
 
