@@ -416,6 +416,124 @@
     }
     .tip-bar strong { color: var(--accent); }
  
+    /* ADVANCED OPTIONS */
+    .advanced-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: none;
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 6px 14px;
+      color: var(--muted);
+      font-family: 'Barlow', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      margin-bottom: 1.25rem;
+    }
+    .advanced-toggle:hover, .advanced-toggle.open {
+      color: var(--text);
+      border-color: rgba(255,255,255,0.25);
+    }
+    .advanced-toggle .chevron { transition: transform 0.2s; }
+    .advanced-toggle.open .chevron { transform: rotate(180deg); }
+
+    .advanced-panel {
+      display: none;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.1rem 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+    .advanced-panel.open { display: block; }
+    .advanced-panel-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .disc-count-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+    @media (max-width: 700px) { .disc-count-row { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 400px) { .disc-count-row { grid-template-columns: 1fr; } }
+
+    .disc-count-item > label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 8px;
+    }
+    .stepper {
+      display: flex;
+      align-items: center;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .stepper-btn {
+      width: 36px; height: 38px;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 20px;
+      line-height: 1;
+      cursor: pointer;
+      transition: color 0.15s, background 0.15s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .stepper-btn:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+    .stepper-btn:disabled { opacity: 0.3; cursor: default; }
+    .stepper-val {
+      flex: 1;
+      text-align: center;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .total-input-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 1rem;
+    }
+    .total-input-row > span {
+      font-size: 12px;
+      color: var(--muted);
+      flex: 1;
+    }
+    .total-input {
+      width: 72px;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 5px 10px;
+      color: var(--text);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      text-align: center;
+      outline: none;
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+    .total-input::-webkit-inner-spin-button,
+    .total-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .total-input:focus { border-color: rgba(57,211,83,0.4); }
+
     footer {
       text-align: center;
       padding: 2rem;
@@ -467,6 +585,55 @@
   <button class="filter-btn brand-discraft" id="filter-discraft">Discraft</button>
 </div>
  
+<div class="controls" style="padding-top:0">
+  <button class="advanced-toggle" id="advanced-toggle">
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="8" cy="6" r="2.5" fill="currentColor" stroke="none"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="16" cy="12" r="2.5" fill="currentColor" stroke="none"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="10" cy="18" r="2.5" fill="currentColor" stroke="none"/></svg>
+    Change Bag Size
+    <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+  </button>
+  <div class="advanced-panel" id="advanced-panel">
+    <div class="advanced-panel-label">Discs per category</div>
+    <div class="total-input-row">
+      <span>Total discs in bag</span>
+      <input type="number" class="total-input" id="total-count" min="0" max="36" value="18" />
+    </div>
+    <div class="disc-count-row">
+      <div class="disc-count-item">
+        <label style="color:var(--putter)">Putters</label>
+        <div class="stepper">
+          <button class="stepper-btn" id="put-dec" onclick="adjustCount('putter',-1)">−</button>
+          <span class="stepper-val" id="count-putter">3</span>
+          <button class="stepper-btn" id="put-inc" onclick="adjustCount('putter',1)">+</button>
+        </div>
+      </div>
+      <div class="disc-count-item">
+        <label style="color:var(--midrange)">Midranges</label>
+        <div class="stepper">
+          <button class="stepper-btn" id="mid-dec" onclick="adjustCount('midrange',-1)">−</button>
+          <span class="stepper-val" id="count-midrange">5</span>
+          <button class="stepper-btn" id="mid-inc" onclick="adjustCount('midrange',1)">+</button>
+        </div>
+      </div>
+      <div class="disc-count-item">
+        <label style="color:var(--fairway)">Fairway Drivers</label>
+        <div class="stepper">
+          <button class="stepper-btn" id="fw-dec" onclick="adjustCount('fairway',-1)">−</button>
+          <span class="stepper-val" id="count-fairway">5</span>
+          <button class="stepper-btn" id="fw-inc" onclick="adjustCount('fairway',1)">+</button>
+        </div>
+      </div>
+      <div class="disc-count-item">
+        <label style="color:var(--distance)">Distance Drivers</label>
+        <div class="stepper">
+          <button class="stepper-btn" id="dist-dec" onclick="adjustCount('distance',-1)">−</button>
+          <span class="stepper-val" id="count-distance">5</span>
+          <button class="stepper-btn" id="dist-inc" onclick="adjustCount('distance',1)">+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="stats-row" id="stats-row"></div>
  
 <div class="bag-section">
@@ -498,11 +665,23 @@ function pickN(pool, n) {
   return [...pool].sort(() => Math.random() - 0.5).slice(0, n);
 }
 
-// Returns {os, ne, us} counts for 5 discs based on throw distance
-function getDistribution(stabPref) {
-  if (stabPref < 0.375)  return { os: 1, ne: 2, us: 2 }; // < 250 ft
-  if (stabPref < 0.625)  return { os: 2, ne: 2, us: 1 }; // 250–350 ft
-  return                         { os: 3, ne: 1, us: 1 }; // > 350 ft
+// n=1 → neutral; n=2 → OS+US; n=3 → 1 of each; n>3 → extras go to OS/NE/US by distance pref
+function getDistribution(stabPref, n) {
+  if (n <= 0) return { os: 0, ne: 0, us: 0 };
+  if (n === 1) return { os: 0, ne: 1, us: 0 };
+  if (n === 2) return { os: 1, ne: 0, us: 1 };
+  const flex = n - 3;
+  if (flex === 0) return { os: 1, ne: 1, us: 1 };
+  // Low dist: extras → NE + US; Mid: OS + NE; High: all OS
+  let extraOs, extraNe, extraUs;
+  if (stabPref < 0.375) {
+    extraOs = 0; extraUs = Math.ceil(flex / 2); extraNe = flex - extraUs;
+  } else if (stabPref < 0.625) {
+    extraUs = 0; extraOs = Math.floor(flex / 2); extraNe = flex - extraOs;
+  } else {
+    extraOs = flex; extraNe = 0; extraUs = 0;
+  }
+  return { os: 1 + extraOs, ne: 1 + extraNe, us: 1 + extraUs };
 }
 
 function getBag() {
@@ -512,18 +691,9 @@ function getBag() {
   const byType = type => eligible.filter(d => d.type === type);
   const byStab = (pool, s) => pool.filter(d => d.stability === s);
 
-  // Putters: always 1 overstable, 1 neutral, 1 understable
-  const putters = byType("putter");
-  const selectedPutters = [
-    ...pickN(byStab(putters, "overstable"), 1),
-    ...pickN(byStab(putters, "neutral"), 1),
-    ...pickN(byStab(putters, "understable"), 1),
-  ];
-
-  // Other categories: distribution shifts with distance
-  const { os, ne, us } = getDistribution(stabPref);
   const selectCategory = type => {
     const pool = byType(type);
+    const { os, ne, us } = getDistribution(stabPref, discCounts[type]);
     return [
       ...pickN(byStab(pool, "overstable"), os),
       ...pickN(byStab(pool, "neutral"), ne),
@@ -532,13 +702,30 @@ function getBag() {
   };
 
   return [
-    ...selectedPutters,
+    ...selectCategory("putter"),
     ...selectCategory("midrange"),
     ...selectCategory("fairway"),
     ...selectCategory("distance"),
   ];
 }
  
+const discCounts = { putter: 3, midrange: 5, fairway: 5, distance: 5 };
+const COUNT_MIN = 0, COUNT_MAX = 9;
+const STEPPER_IDS = { putter: ['put-dec','put-inc'], midrange: ['mid-dec','mid-inc'], fairway: ['fw-dec','fw-inc'], distance: ['dist-dec','dist-inc'] };
+
+function setCount(type, val) {
+  discCounts[type] = Math.max(COUNT_MIN, Math.min(COUNT_MAX, val));
+  document.getElementById(`count-${type}`).textContent = discCounts[type];
+  const [decId, incId] = STEPPER_IDS[type];
+  document.getElementById(decId).disabled = discCounts[type] <= COUNT_MIN;
+  document.getElementById(incId).disabled = discCounts[type] >= COUNT_MAX;
+}
+
+function adjustCount(type, delta) {
+  setCount(type, discCounts[type] + delta);
+  render();
+}
+
 let brandFilter = 'both';
 
 function applyBrandFilter(discs) {
@@ -626,6 +813,25 @@ document.getElementById("fore-slider").addEventListener("input", e => {
 document.getElementById('filter-innova').addEventListener('click', () => setBrandFilter('innova'));
 document.getElementById('filter-discraft').addEventListener('click', () => setBrandFilter('discraft'));
 document.getElementById('filter-both').addEventListener('click', () => setBrandFilter('both'));
+
+document.getElementById('advanced-toggle').addEventListener('click', () => {
+  document.getElementById('advanced-toggle').classList.toggle('open');
+  document.getElementById('advanced-panel').classList.toggle('open');
+});
+
+document.getElementById('total-count').addEventListener('input', e => {
+  const total = Math.max(0, Math.min(36, parseInt(e.target.value) || 0));
+  // Putter count drops at fixed thresholds: 3 at 15+, 2 at 8-14, 1 at 1-7, 0 at 0
+  const putters = total === 0 ? 0 : total < 8 ? 1 : total < 15 ? 2 : 3;
+  const rest = total - putters;
+  const each = Math.floor(rest / 3);
+  const rem = rest % 3;
+  setCount('putter',   putters);
+  setCount('midrange', each);
+  setCount('fairway',  each + (rem >= 2 ? 1 : 0));
+  setCount('distance', each + (rem >= 1 ? 1 : 0));
+  render();
+});
 
 render();
 </script>
