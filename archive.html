@@ -128,6 +128,7 @@
     .filter-btn:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
     .filter-btn.active.brand-innova { background: rgba(224,92,42,0.12); border-color: rgba(224,92,42,0.4); color: var(--innova); }
     .filter-btn.active.brand-discraft { background: rgba(88,166,255,0.12); border-color: rgba(88,166,255,0.4); color: var(--discraft); }
+    .filter-btn.active.brand-dynamic { background: rgba(163,113,247,0.12); border-color: rgba(163,113,247,0.4); color: #a371f7; }
     .filter-btn.active.brand-both { background: rgba(163,113,247,0.12); border-color: rgba(163,113,247,0.4); color: #a371f7; }
     .filter-btn.active.stab-all { background: rgba(57,211,83,0.12); border-color: rgba(57,211,83,0.4); color: var(--accent); }
     .filter-btn.active.stab-overstable { background: rgba(247,129,102,0.15); border-color: rgba(247,129,102,0.4); color: #f78166; }
@@ -206,6 +207,7 @@
     }
     .brand-badge.innova { background: rgba(224,92,42,0.15); color: var(--innova); }
     .brand-badge.discraft { background: rgba(88,166,255,0.15); color: var(--discraft); }
+    .brand-badge.dynamic { background: rgba(163,113,247,0.15); color: #a371f7; }
 
     .stability-tag {
       font-size: 10px;
@@ -317,6 +319,7 @@
   <button class="filter-btn brand-both active" id="f-both">Both</button>
   <button class="filter-btn brand-innova" id="f-innova">Innova</button>
   <button class="filter-btn brand-discraft" id="f-discraft">Discraft</button>
+  <button class="filter-btn brand-dynamic" id="f-dynamic">Dynamic</button>
   <div class="filter-sep"></div>
   <span class="filter-label">Stability</span>
   <button class="filter-btn stab-all active" id="f-stab-all">All</button>
@@ -342,7 +345,7 @@ let stabFilter  = "all";
 function setFilter(brand, stab) {
   brandFilter = brand;
   stabFilter  = stab;
-  ["both","innova","discraft"].forEach(b =>
+  ["both","innova","discraft","dynamic"].forEach(b =>
     document.getElementById("f-"+b).classList.toggle("active", b === brand));
   ["all","overstable","neutral","understable"].forEach(s =>
     document.getElementById("f-stab-"+s).classList.toggle("active", s === stab));
@@ -352,6 +355,7 @@ function setFilter(brand, stab) {
 document.getElementById("f-both").addEventListener("click",     () => setFilter("both",        stabFilter));
 document.getElementById("f-innova").addEventListener("click",   () => setFilter("innova",      stabFilter));
 document.getElementById("f-discraft").addEventListener("click", () => setFilter("discraft",    stabFilter));
+document.getElementById("f-dynamic").addEventListener("click",  () => setFilter("dynamic",     stabFilter));
 document.getElementById("f-stab-all").addEventListener("click",         () => setFilter(brandFilter, "all"));
 document.getElementById("f-stab-overstable").addEventListener("click",  () => setFilter(brandFilter, "overstable"));
 document.getElementById("f-stab-neutral").addEventListener("click",     () => setFilter(brandFilter, "neutral"));
@@ -361,7 +365,7 @@ function discCard(d) {
   return `
     <div class="disc-card">
       <div class="card-top">
-        <span class="brand-badge ${d.brand}">${d.brand === "innova" ? "Innova" : "Discraft"}</span>
+        <span class="brand-badge ${d.brand}">${d.brand === "innova" ? "Innova" : d.brand === "discraft" ? "Discraft" : d.brand === "dynamic" ? "Dynamic" : d.brand}</span>
         <span class="stability-tag ${d.stability}">${d.stability}</span>
       </div>
       <div class="disc-title-row">
