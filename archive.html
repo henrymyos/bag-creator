@@ -321,10 +321,9 @@
   <button class="filter-btn brand-dynamic active" id="f-dynamic">Dynamic</button>
   <div class="filter-sep"></div>
   <span class="filter-label">Stability</span>
-  <button class="filter-btn stab-all active" id="f-stab-all">All</button>
-  <button class="filter-btn stab-overstable" id="f-stab-overstable">Overstable</button>
-  <button class="filter-btn stab-neutral" id="f-stab-neutral">Neutral</button>
-  <button class="filter-btn stab-understable" id="f-stab-understable">Understable</button>
+  <button class="filter-btn stab-overstable active" id="f-stab-overstable">Overstable</button>
+  <button class="filter-btn stab-neutral active" id="f-stab-neutral">Neutral</button>
+  <button class="filter-btn stab-understable active" id="f-stab-understable">Understable</button>
 </div>
 
 <div class="content" id="content"></div>
@@ -340,7 +339,8 @@ const STAB_ORDER = ["overstable","neutral","understable"];
 
 const ALL_BRANDS = ["innova","discraft","dynamic"];
 let selectedBrands = new Set(ALL_BRANDS);
-let stabFilter  = "all";
+const ALL_STABILITIES = ["overstable","neutral","understable"];
+let selectedStabilities = new Set(ALL_STABILITIES);
 
 function updateBrandFilterButtons() {
   ALL_BRANDS.forEach(brand => {
@@ -368,20 +368,38 @@ function setBrandFilter(filter) {
   render();
 }
 
-function setStabilityFilter(stab) {
-  stabFilter = stab;
-  ["all","overstable","neutral","understable"].forEach(s =>
-    document.getElementById("f-stab-"+s).classList.toggle("active", s === stab));
+function updateStabilityFilterButtons() {
+  ALL_STABILITIES.forEach(stab => {
+    document.getElementById(`f-stab-${stab}`).classList.toggle("active", selectedStabilities.has(stab));
+  });
+}
+
+function toggleStabilityFilter(stab) {
+  const allSelected = selectedStabilities.size === ALL_STABILITIES.length;
+  if (allSelected) {
+    selectedStabilities = new Set([stab]);
+  } else {
+    if (selectedStabilities.has(stab)) {
+      if (selectedStabilities.size > 1) {
+        selectedStabilities.delete(stab);
+      }
+    } else {
+      selectedStabilities.add(stab);
+    }
+    if (selectedStabilities.size === 0) {
+      selectedStabilities = new Set(ALL_STABILITIES);
+    }
+  }
+  updateStabilityFilterButtons();
   render();
 }
 
 document.getElementById("f-innova").addEventListener("click",   () => setBrandFilter("innova"));
 document.getElementById("f-discraft").addEventListener("click", () => setBrandFilter("discraft"));
 document.getElementById("f-dynamic").addEventListener("click",  () => setBrandFilter("dynamic"));
-document.getElementById("f-stab-all").addEventListener("click",         () => setStabilityFilter("all"));
-document.getElementById("f-stab-overstable").addEventListener("click",  () => setStabilityFilter("overstable"));
-document.getElementById("f-stab-neutral").addEventListener("click",     () => setStabilityFilter("neutral"));
-document.getElementById("f-stab-understable").addEventListener("click", () => setStabilityFilter("understable"));
+document.getElementById("f-stab-overstable").addEventListener("click",  () => toggleStabilityFilter("overstable"));
+document.getElementById("f-stab-neutral").addEventListener("click",     () => toggleStabilityFilter("neutral"));
+document.getElementById("f-stab-understable").addEventListener("click", () => toggleStabilityFilter("understable"));
 
 function discCard(d) {
   return `
@@ -407,7 +425,7 @@ function discCard(d) {
 function render() {
   const visible = DISCS.filter(d =>
     selectedBrands.has(d.brand) &&
-    (stabFilter  === "all"  || d.stability === stabFilter));
+    selectedStabilities.has(d.stability));
 
   const content = document.getElementById("content");
 
