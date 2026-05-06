@@ -136,6 +136,40 @@
     .filter-btn.active.stab-understable { background: rgba(88,166,255,0.12); border-color: rgba(88,166,255,0.4); color: var(--accent2); }
     .filter-sep { width: 1px; height: 24px; background: var(--border2); margin: 0 4px; }
 
+    .search-wrap {
+      position: relative;
+      margin-left: auto;
+    }
+    .search-input {
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: 'Barlow', sans-serif;
+      font-size: 13px;
+      padding: 6px 28px 6px 10px;
+      width: 200px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .search-input::placeholder { color: var(--muted); }
+    .search-input:focus { border-color: rgba(255,255,255,0.25); }
+    .search-clear {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      padding: 0;
+      display: none;
+    }
+    .search-clear:hover { color: var(--text); }
+
     /* MAIN CONTENT */
     .content {
       max-width: 1200px;
@@ -326,6 +360,10 @@
   <button class="filter-btn stab-overstable active" id="f-stab-overstable">Overstable</button>
   <button class="filter-btn stab-neutral active" id="f-stab-neutral">Neutral</button>
   <button class="filter-btn stab-understable active" id="f-stab-understable">Understable</button>
+  <div class="search-wrap">
+    <input class="search-input" id="search-input" type="text" placeholder="Search discs…" autocomplete="off" />
+    <button class="search-clear" id="search-clear" aria-label="Clear search">✕</button>
+  </div>
 </div>
 
 <div class="content" id="content"></div>
@@ -343,6 +381,7 @@ const ALL_BRANDS = ["innova","discraft","dynamic"];
 let selectedBrands = new Set(ALL_BRANDS);
 const ALL_STABILITIES = ["overstable","neutral","understable"];
 let selectedStabilities = new Set(ALL_STABILITIES);
+let searchQuery = "";
 
 function updateBrandFilterButtons() {
   ALL_BRANDS.forEach(brand => {
@@ -403,6 +442,21 @@ document.getElementById("f-stab-overstable").addEventListener("click",  () => to
 document.getElementById("f-stab-neutral").addEventListener("click",     () => toggleStabilityFilter("neutral"));
 document.getElementById("f-stab-understable").addEventListener("click", () => toggleStabilityFilter("understable"));
 
+const searchInput = document.getElementById("search-input");
+const searchClear = document.getElementById("search-clear");
+searchInput.addEventListener("input", () => {
+  searchQuery = searchInput.value.trim().toLowerCase();
+  searchClear.style.display = searchQuery ? "block" : "none";
+  render();
+});
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  searchQuery = "";
+  searchClear.style.display = "none";
+  searchInput.focus();
+  render();
+});
+
 function discCard(d) {
   return `
     <div class="disc-card">
@@ -434,7 +488,8 @@ function isStabilitySelected(stab) {
 function render() {
   const visible = DISCS.filter(d =>
     selectedBrands.has(d.brand) &&
-    isStabilitySelected(d.stability));
+    isStabilitySelected(d.stability) &&
+    (!searchQuery || d.name.toLowerCase().includes(searchQuery)));
 
   const content = document.getElementById("content");
 
