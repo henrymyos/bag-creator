@@ -316,10 +316,9 @@
 
 <div class="filters">
   <span class="filter-label">Brand</span>
-  <button class="filter-btn brand-both active" id="f-both">Both</button>
-  <button class="filter-btn brand-innova" id="f-innova">Innova</button>
-  <button class="filter-btn brand-discraft" id="f-discraft">Discraft</button>
-  <button class="filter-btn brand-dynamic" id="f-dynamic">Dynamic</button>
+  <button class="filter-btn brand-innova active" id="f-innova">Innova</button>
+  <button class="filter-btn brand-discraft active" id="f-discraft">Discraft</button>
+  <button class="filter-btn brand-dynamic active" id="f-dynamic">Dynamic</button>
   <div class="filter-sep"></div>
   <span class="filter-label">Stability</span>
   <button class="filter-btn stab-all active" id="f-stab-all">All</button>
@@ -335,31 +334,54 @@
 <script src="discs.js"></script>
 <script>
 const TYPE_ORDER = ["putter","midrange","fairway","distance"];
-const TYPE_LABEL = { putter:"Putters", midrange:"Midranges", fairway:"Fairway Drivers", distance:"Distance Drivers" };
+const TYPE_LABEL = { putter:"Throwing Putters", midrange:"Midranges", fairway:"Fairway Drivers", distance:"Distance Drivers" };
 const TYPE_COLOR = { putter:"var(--putter)", midrange:"var(--midrange)", fairway:"var(--fairway)", distance:"var(--distance)" };
 const STAB_ORDER = ["overstable","neutral","understable"];
 
-let brandFilter = "both";
+const ALL_BRANDS = ["innova","discraft","dynamic"];
+let selectedBrands = new Set(ALL_BRANDS);
 let stabFilter  = "all";
 
-function setFilter(brand, stab) {
-  brandFilter = brand;
-  stabFilter  = stab;
-  ["both","innova","discraft","dynamic"].forEach(b =>
-    document.getElementById("f-"+b).classList.toggle("active", b === brand));
+function updateBrandFilterButtons() {
+  ALL_BRANDS.forEach(brand => {
+    document.getElementById(`f-${brand}`).classList.toggle("active", selectedBrands.has(brand));
+  });
+}
+
+function setBrandFilter(filter) {
+  const allSelected = selectedBrands.size === ALL_BRANDS.length;
+  if (allSelected) {
+    selectedBrands = new Set([filter]);
+  } else {
+    if (selectedBrands.has(filter)) {
+      if (selectedBrands.size > 1) {
+        selectedBrands.delete(filter);
+      }
+    } else {
+      selectedBrands.add(filter);
+    }
+    if (selectedBrands.size === 0) {
+      selectedBrands = new Set(ALL_BRANDS);
+    }
+  }
+  updateBrandFilterButtons();
+  render();
+}
+
+function setStabilityFilter(stab) {
+  stabFilter = stab;
   ["all","overstable","neutral","understable"].forEach(s =>
     document.getElementById("f-stab-"+s).classList.toggle("active", s === stab));
   render();
 }
 
-document.getElementById("f-both").addEventListener("click",     () => setFilter("both",        stabFilter));
-document.getElementById("f-innova").addEventListener("click",   () => setFilter("innova",      stabFilter));
-document.getElementById("f-discraft").addEventListener("click", () => setFilter("discraft",    stabFilter));
-document.getElementById("f-dynamic").addEventListener("click",  () => setFilter("dynamic",     stabFilter));
-document.getElementById("f-stab-all").addEventListener("click",         () => setFilter(brandFilter, "all"));
-document.getElementById("f-stab-overstable").addEventListener("click",  () => setFilter(brandFilter, "overstable"));
-document.getElementById("f-stab-neutral").addEventListener("click",     () => setFilter(brandFilter, "neutral"));
-document.getElementById("f-stab-understable").addEventListener("click", () => setFilter(brandFilter, "understable"));
+document.getElementById("f-innova").addEventListener("click",   () => setBrandFilter("innova"));
+document.getElementById("f-discraft").addEventListener("click", () => setBrandFilter("discraft"));
+document.getElementById("f-dynamic").addEventListener("click",  () => setBrandFilter("dynamic"));
+document.getElementById("f-stab-all").addEventListener("click",         () => setStabilityFilter("all"));
+document.getElementById("f-stab-overstable").addEventListener("click",  () => setStabilityFilter("overstable"));
+document.getElementById("f-stab-neutral").addEventListener("click",     () => setStabilityFilter("neutral"));
+document.getElementById("f-stab-understable").addEventListener("click", () => setStabilityFilter("understable"));
 
 function discCard(d) {
   return `
@@ -384,7 +406,7 @@ function discCard(d) {
 
 function render() {
   const visible = DISCS.filter(d =>
-    (brandFilter === "both" || d.brand === brandFilter) &&
+    selectedBrands.has(d.brand) &&
     (stabFilter  === "all"  || d.stability === stabFilter));
 
   const content = document.getElementById("content");
@@ -420,6 +442,7 @@ function render() {
   }).join("");
 }
 
+updateBrandFilterButtons();
 render();
 </script>
 </body>

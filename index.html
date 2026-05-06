@@ -537,12 +537,12 @@
     <div class="control-card">
       <label>Change Bag Size</label>
       <div class="total-input-row">
-        <span>Total discs in bag &nbsp;<span style="color:var(--muted);font-weight:400">(excluding putting putters)</span></span>
+        <span>Total discs in bag &nbsp;<span style="color:var(--muted);font-weight:400">(excluding putting discs)</span></span>
         <input type="number" class="total-input" id="total-count" min="0" max="36" value="18" />
       </div>
       <div class="disc-count-row">
         <div class="disc-count-item">
-          <label style="color:var(--putter)">Putters</label>
+          <label style="color:var(--putter)">Throwing Putters</label>
           <div class="stepper">
             <button class="stepper-btn" id="put-dec" onclick="adjustCount('putter',-1)">−</button>
             <span class="stepper-val" id="count-putter">3</span>
@@ -594,7 +594,7 @@
 <script>
  
 const TYPE_ORDER = ["putter","midrange","fairway","distance"];
-const TYPE_LABEL = { putter:"Putters", midrange:"Midranges", fairway:"Fairway Drivers", distance:"Distance Drivers" };
+const TYPE_LABEL = { putter:"Throwing Putters", midrange:"Midranges", fairway:"Fairway Drivers", distance:"Distance Drivers" };
 const TYPE_COLOR = { putter:"var(--putter)", midrange:"var(--midrange)", fairway:"var(--fairway)", distance:"var(--distance)" };
  
 const STAB_SCORE = { "very overstable": 4, overstable: 3, neutral: 2, understable: 1, "very understable": 0 };
