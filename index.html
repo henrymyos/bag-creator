@@ -96,7 +96,7 @@
  
     /* CONTROLS */
     .controls {
-      max-width: 900px;
+      max-width: 90%;
       margin: 0 auto;
       padding: 2rem 1.5rem 0;
     }
@@ -212,7 +212,7 @@
     .stats-row {
       display: flex;
       gap: 10px;
-      max-width: 900px;
+      max-width: 100%;
       margin: 1.25rem auto 0;
       padding: 0 1.5rem;
     }
@@ -235,13 +235,20 @@
  
     /* BAG SECTION */
     .bag-section {
-      max-width: 1200px;
+      max-width: 100%;
       margin: 0 auto;
-      padding: 2rem 1.5rem 4rem;
+      padding: 2rem 2rem 4rem;
     }
+    #bag-output {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      align-items: start;
+    }
+    @media (max-width: 900px) { #bag-output { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 500px) { #bag-output { grid-template-columns: 1fr; } }
     .type-group {
       display: block;
-      margin-bottom: 2.5rem;
     }
     .type-header {
       display: flex;
@@ -264,7 +271,7 @@
  
     .disc-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      grid-template-columns: 1fr;
       gap: 10px;
     }
     .disc-card {
