@@ -448,7 +448,7 @@
         <span class="num" id="back-out">300</span>
         <span class="unit">feet</span>
       </div>
-      <input type="range" id="back-slider" min="100" max="500" step="10" value="300" />
+      <input type="range" id="back-slider" min="100" max="500" step="25" value="300" />
       <div class="range-labels"><span>100 ft</span><span>300 ft</span><span>500 ft</span></div>
     </div>
     <div class="control-card">
@@ -457,7 +457,7 @@
         <span class="num" id="fore-out">300</span>
         <span class="unit">feet</span>
       </div>
-      <input type="range" id="fore-slider" min="100" max="500" step="10" value="300" />
+      <input type="range" id="fore-slider" min="100" max="500" step="25" value="300" />
       <div class="range-labels"><span>100 ft</span><span>300 ft</span><span>500 ft</span></div>
     </div>
 </div>
@@ -492,38 +492,51 @@ function getStabilityPreference() {
   return (Math.max(backDist, foreDist) - 100) / (500 - 100);
 }
 
-function selectByPreference(discs, count, stabPref) {
-  if (discs.length === 0) return [];
-  // Sort by how well they match stability preference
-  const targetStab = stabPref * 2;
-  discs.sort((a, b) => Math.abs(STAB_SCORE[a.stability] - targetStab) - Math.abs(STAB_SCORE[b.stability] - targetStab));
-  return discs.slice(0, count);
+// Pick n random discs from pool; returns all if pool is smaller
+function pickN(pool, n) {
+  if (!n || !pool.length) return [];
+  return [...pool].sort(() => Math.random() - 0.5).slice(0, n);
+}
+
+// Returns {os, ne, us} counts for 5 discs based on throw distance
+function getDistribution(stabPref) {
+  if (stabPref < 0.375)  return { os: 1, ne: 2, us: 2 }; // < 250 ft
+  if (stabPref < 0.625)  return { os: 2, ne: 2, us: 1 }; // 250–350 ft
+  return                         { os: 3, ne: 1, us: 1 }; // > 350 ft
 }
 
 function getBag() {
   const eligible = applyBrandFilter(DISCS);
   const stabPref = getStabilityPreference();
-  
-  // Separate by type
-  const putters = eligible.filter(d => d.type === "putter" && d.speed >= 3);
-  const midranges = eligible.filter(d => d.type === "midrange");
-  const fairways = eligible.filter(d => d.type === "fairway");
-  const distances = eligible.filter(d => d.type === "distance");
-  
-  // Select based on stability preference
-  const selectedPutters = selectByPreference(putters, 3, stabPref);
-  const selectedMidranges = selectByPreference(midranges, 5, stabPref);
-  const selectedFairways = selectByPreference(fairways, 5, stabPref);
-  const selectedDistances = selectByPreference(distances, 5, stabPref);
-  
-  const bag = [
-    ...selectedPutters,
-    ...selectedMidranges,
-    ...selectedFairways,
-    ...selectedDistances
+
+  const byType = type => eligible.filter(d => d.type === type);
+  const byStab = (pool, s) => pool.filter(d => d.stability === s);
+
+  // Putters: always 1 overstable, 1 neutral, 1 understable
+  const putters = byType("putter");
+  const selectedPutters = [
+    ...pickN(byStab(putters, "overstable"), 1),
+    ...pickN(byStab(putters, "neutral"), 1),
+    ...pickN(byStab(putters, "understable"), 1),
   ];
-  
-  return bag;
+
+  // Other categories: distribution shifts with distance
+  const { os, ne, us } = getDistribution(stabPref);
+  const selectCategory = type => {
+    const pool = byType(type);
+    return [
+      ...pickN(byStab(pool, "overstable"), os),
+      ...pickN(byStab(pool, "neutral"), ne),
+      ...pickN(byStab(pool, "understable"), us),
+    ];
+  };
+
+  return [
+    ...selectedPutters,
+    ...selectCategory("midrange"),
+    ...selectCategory("fairway"),
+    ...selectCategory("distance"),
+  ];
 }
  
 let brandFilter = 'both';
