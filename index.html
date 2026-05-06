@@ -511,18 +511,10 @@ function getBag() {
   const distances = eligible.filter(d => d.type === "distance");
   
   // Select based on stability preference
-  const selectedPutters = selectByPreference(putters, 2, stabPref);
+  const selectedPutters = selectByPreference(putters, 3, stabPref);
   const selectedMidranges = selectByPreference(midranges, 5, stabPref);
   const selectedFairways = selectByPreference(fairways, 5, stabPref);
   const selectedDistances = selectByPreference(distances, 5, stabPref);
-  
-  // Add one extra random distance driver
-  if (distances.length > 5) {
-    const remaining = distances.filter(d => !selectedDistances.includes(d));
-    if (remaining.length > 0) {
-      selectedDistances.push(remaining[Math.floor(Math.random() * remaining.length)]);
-    }
-  }
   
   const bag = [
     ...selectedPutters,
