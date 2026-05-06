@@ -392,9 +392,11 @@
       border-radius: 4px;
       margin-bottom: 8px;
     }
+    .stability-tag.very-overstable { background: rgba(200,30,30,0.18); color: #e03535; }
     .stability-tag.overstable { background: rgba(247,129,102,0.15); color: #f78166; }
-    .stability-tag.understable { background: rgba(88,166,255,0.15); color: var(--accent2); }
     .stability-tag.neutral { background: rgba(57,211,83,0.12); color: var(--accent); }
+    .stability-tag.understable { background: rgba(88,166,255,0.15); color: var(--accent2); }
+    .stability-tag.very-understable { background: rgba(30,100,220,0.18); color: #4499ee; }
  
     .empty-state {
       text-align: center;
@@ -589,7 +591,7 @@ const TYPE_ORDER = ["putter","midrange","fairway","distance"];
 const TYPE_LABEL = { putter:"Putters", midrange:"Midranges", fairway:"Fairway Drivers", distance:"Distance Drivers" };
 const TYPE_COLOR = { putter:"var(--putter)", midrange:"var(--midrange)", fairway:"var(--fairway)", distance:"var(--distance)" };
  
-const STAB_SCORE = { overstable: 2, neutral: 1, understable: 0 };
+const STAB_SCORE = { "very overstable": 4, overstable: 3, neutral: 2, understable: 1, "very understable": 0 };
  
 let dist = 300;
 
@@ -627,7 +629,11 @@ function getBag() {
   const stabPref = getStabilityPreference();
 
   const byType = type => eligible.filter(d => d.type === type);
-  const byStab = (pool, s) => pool.filter(d => d.stability === s);
+  const byStab = (pool, s) => {
+    if (s === 'overstable') return pool.filter(d => d.stability === 'overstable' || d.stability === 'very overstable');
+    if (s === 'understable') return pool.filter(d => d.stability === 'understable' || d.stability === 'very understable');
+    return pool.filter(d => d.stability === s);
+  };
 
   const selectCategory = type => {
     const pool = byType(type);
@@ -710,7 +716,7 @@ function render() {
         </div>
         <div class="disc-grid">
           ${discs.map(d => {
-            const stab = { label: d.stability, class: d.stability };
+            const stab = { label: d.stability, class: d.stability.replace(/ /g, '-') };
             const fadeVal = d.fade !== undefined ? d.fade : (d.fare || 1);
             return `
               <div class="disc-card">
