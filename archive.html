@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Disc Archive — BagCreator</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d1117;
+      --bg2: #161b22;
+      --bg3: #21262d;
+      --border: rgba(255,255,255,0.08);
+      --border2: rgba(255,255,255,0.14);
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #39d353;
+      --accent2: #58a6ff;
+      --innova: #e05c2a;
+      --discraft: #58a6ff;
+      --putter: #3fb950;
+      --midrange: #d29922;
+      --fairway: #a371f7;
+      --distance: #f78166;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Barlow', sans-serif;
+      min-height: 100vh;
+    }
+
+    header {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--text);
+    }
+    .logo span { color: var(--accent); }
+    .nav-link {
+      font-size: 13px; font-weight: 600; color: var(--muted);
+      text-decoration: none; letter-spacing: 0.05em;
+      padding: 6px 14px; border: 1px solid var(--border2);
+      border-radius: 6px; transition: color 0.15s, border-color 0.15s;
+    }
+    .nav-link:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
+
+    .hero {
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+      padding: 2.5rem 2rem 2rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(57,211,83,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero h1 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .hero h1 em { color: var(--accent); font-style: normal; }
+    .hero p { font-size: 14px; color: var(--muted); }
+
+    /* FILTERS */
+    .filters {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem 2rem 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
+    }
+    .filter-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-right: 4px;
+    }
+    .filter-btn {
+      padding: 6px 14px;
+      font-family: 'Barlow', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 6px;
+      border: 1px solid var(--border2);
+      background: var(--bg3);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .filter-btn:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
+    .filter-btn.active.brand-innova { background: rgba(224,92,42,0.12); border-color: rgba(224,92,42,0.4); color: var(--innova); }
+    .filter-btn.active.brand-discraft { background: rgba(88,166,255,0.12); border-color: rgba(88,166,255,0.4); color: var(--discraft); }
+    .filter-btn.active.brand-both { background: rgba(163,113,247,0.12); border-color: rgba(163,113,247,0.4); color: #a371f7; }
+    .filter-btn.active.stab-all { background: rgba(57,211,83,0.12); border-color: rgba(57,211,83,0.4); color: var(--accent); }
+    .filter-btn.active.stab-overstable { background: rgba(247,129,102,0.15); border-color: rgba(247,129,102,0.4); color: #f78166; }
+    .filter-btn.active.stab-neutral { background: rgba(57,211,83,0.12); border-color: rgba(57,211,83,0.4); color: var(--accent); }
+    .filter-btn.active.stab-understable { background: rgba(88,166,255,0.12); border-color: rgba(88,166,255,0.4); color: var(--accent2); }
+    .filter-sep { width: 1px; height: 24px; background: var(--border2); margin: 0 4px; }
+
+    /* MAIN CONTENT */
+    .content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 2rem 4rem;
+    }
+
+    /* TYPE SECTION */
+    .type-section { margin-bottom: 3rem; }
+    .type-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1.25rem;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border);
+    }
+    .type-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .type-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .type-count { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+    /* STABILITY GROUP */
+    .stab-group { margin-bottom: 1.5rem; }
+    .stab-group-header {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+      padding-left: 2px;
+    }
+
+    /* DISC GRID */
+    .disc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 10px;
+    }
+
+    .disc-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .disc-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .brand-badge {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+    .brand-badge.innova { background: rgba(224,92,42,0.15); color: var(--innova); }
+    .brand-badge.discraft { background: rgba(88,166,255,0.15); color: var(--discraft); }
+
+    .stability-tag {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+    .stability-tag.overstable { background: rgba(247,129,102,0.15); color: #f78166; }
+    .stability-tag.understable { background: rgba(88,166,255,0.15); color: var(--accent2); }
+    .stability-tag.neutral { background: rgba(57,211,83,0.12); color: var(--accent); }
+
+    .disc-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .disc-name {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .disc-link {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(88,166,255,0.12);
+      color: var(--accent2);
+      text-decoration: none;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .disc-link:hover { background: rgba(88,166,255,0.2); }
+
+    .flight-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5px;
+      margin-bottom: 10px;
+    }
+    .fnum {
+      background: var(--bg3);
+      border-radius: 6px;
+      padding: 5px 4px;
+      text-align: center;
+    }
+    .fnum .v {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      display: block;
+      line-height: 1;
+    }
+    .fnum .l {
+      font-size: 9px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: block;
+      margin-top: 2px;
+    }
+    .fnum.spd .v { color: #f78166; }
+    .fnum.gli .v { color: var(--accent); }
+    .fnum.trn .v { color: var(--accent2); }
+    .fnum.fad .v { color: #f78166; }
+
+    .disc-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+    .empty { text-align: center; padding: 3rem; color: var(--muted); font-size: 14px; }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Bag<span>Creator</span></div>
+  <a class="nav-link" href="index.html">&#8592; Bag Builder</a>
+</header>
+
+<div class="hero">
+  <h1>Disc <em>Archive</em></h1>
+  <p>Every disc in the database — sorted by type and stability.</p>
+</div>
+
+<div class="filters">
+  <span class="filter-label">Brand</span>
+  <button class="filter-btn brand-both active" id="f-both">Both</button>
+  <button class="filter-btn brand-innova" id="f-innova">Innova</button>
+  <button class="filter-btn brand-discraft" id="f-discraft">Discraft</button>
+  <div class="filter-sep"></div>
+  <span class="filter-label">Stability</span>
+  <button class="filter-btn stab-all active" id="f-stab-all">All</button>
+  <button class="filter-btn stab-overstable" id="f-stab-overstable">Overstable</button>
+  <button class="filter-btn stab-neutral" id="f-stab-neutral">Neutral</button>
+  <button class="filter-btn stab-understable" id="f-stab-understable">Understable</button>
+</div>
+
+<div class="content" id="content"></div>
+
+<footer>Flight numbers: Speed · Glide · Turn · Fade &nbsp;|&nbsp; Data based on manufacturer specs</footer>
+
+<script src="discs.js"></script>
+<script>
+const TYPE_ORDER = ["putter","midrange","fairway","distance"];
+const TYPE_LABEL = { putter:"Putters", midrange:"Midranges", fairway:"Fairway Drivers", distance:"Distance Drivers" };
+const TYPE_COLOR = { putter:"var(--putter)", midrange:"var(--midrange)", fairway:"var(--fairway)", distance:"var(--distance)" };
+const STAB_ORDER = ["overstable","neutral","understable"];
+
+let brandFilter = "both";
+let stabFilter  = "all";
+
+function setFilter(brand, stab) {
+  brandFilter = brand;
+  stabFilter  = stab;
+  ["both","innova","discraft"].forEach(b =>
+    document.getElementById("f-"+b).classList.toggle("active", b === brand));
+  ["all","overstable","neutral","understable"].forEach(s =>
+    document.getElementById("f-stab-"+s).classList.toggle("active", s === stab));
+  render();
+}
+
+document.getElementById("f-both").addEventListener("click",     () => setFilter("both",        stabFilter));
+document.getElementById("f-innova").addEventListener("click",   () => setFilter("innova",      stabFilter));
+document.getElementById("f-discraft").addEventListener("click", () => setFilter("discraft",    stabFilter));
+document.getElementById("f-stab-all").addEventListener("click",         () => setFilter(brandFilter, "all"));
+document.getElementById("f-stab-overstable").addEventListener("click",  () => setFilter(brandFilter, "overstable"));
+document.getElementById("f-stab-neutral").addEventListener("click",     () => setFilter(brandFilter, "neutral"));
+document.getElementById("f-stab-understable").addEventListener("click", () => setFilter(brandFilter, "understable"));
+
+function discCard(d) {
+  return `
+    <div class="disc-card">
+      <div class="card-top">
+        <span class="brand-badge ${d.brand}">${d.brand === "innova" ? "Innova" : "Discraft"}</span>
+        <span class="stability-tag ${d.stability}">${d.stability}</span>
+      </div>
+      <div class="disc-title-row">
+        <div class="disc-name">${d.name}</div>
+        <a class="disc-link" href="https://1010discs.com/catalogsearch/result/?q=${encodeURIComponent(d.name)}&disc_type=" target="_blank" rel="noopener">Search</a>
+      </div>
+      <div class="flight-row">
+        <div class="fnum spd"><span class="v">${d.speed}</span><span class="l">Speed</span></div>
+        <div class="fnum gli"><span class="v">${d.glide}</span><span class="l">Glide</span></div>
+        <div class="fnum trn"><span class="v">${d.turn}</span><span class="l">Turn</span></div>
+        <div class="fnum fad"><span class="v">${d.fade}</span><span class="l">Fade</span></div>
+      </div>
+      <div class="disc-desc">${d.desc}</div>
+    </div>`;
+}
+
+function render() {
+  const visible = DISCS.filter(d =>
+    (brandFilter === "both" || d.brand === brandFilter) &&
+    (stabFilter  === "all"  || d.stability === stabFilter));
+
+  const content = document.getElementById("content");
+
+  if (!visible.length) {
+    content.innerHTML = '<div class="empty">No discs match the current filters.</div>';
+    return;
+  }
+
+  content.innerHTML = TYPE_ORDER.map(type => {
+    const typeDiscs = visible.filter(d => d.type === type);
+    if (!typeDiscs.length) return "";
+
+    const stabGroups = STAB_ORDER.map(stab => {
+      const group = typeDiscs.filter(d => d.stability === stab);
+      if (!group.length) return "";
+      return `
+        <div class="stab-group">
+          <div class="stab-group-header">${stab}</div>
+          <div class="disc-grid">${group.map(discCard).join("")}</div>
+        </div>`;
+    }).join("");
+
+    return `
+      <div class="type-section">
+        <div class="type-header">
+          <div class="type-dot" style="background:${TYPE_COLOR[type]}"></div>
+          <span class="type-title">${TYPE_LABEL[type]}</span>
+          <span class="type-count">${typeDiscs.length} disc${typeDiscs.length !== 1 ? "s" : ""}</span>
+        </div>
+        ${stabGroups}
+      </div>`;
+  }).join("");
+}
+
+render();
+</script>
+</body>
+</html>
