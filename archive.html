@@ -40,7 +40,7 @@
       padding: 0 2rem;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-start;
       height: 64px;
       position: sticky;
       top: 0;
@@ -54,13 +54,19 @@
       color: var(--text);
     }
     .logo span { color: var(--accent); }
+    .nav-tabs { display: flex; gap: 6px; position: absolute; left: 50%; transform: translateX(-50%); }
     .nav-link {
       font-size: 13px; font-weight: 600; color: var(--muted);
       text-decoration: none; letter-spacing: 0.05em;
-      padding: 6px 14px; border: 1px solid var(--border2);
-      border-radius: 6px; transition: color 0.15s, border-color 0.15s;
+      padding: 6px 16px; border: 1px solid var(--border2);
+      border-radius: 6px; transition: color 0.15s, border-color 0.15s, background 0.15s;
     }
     .nav-link:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
+    .nav-link.active {
+      background: rgba(57,211,83,0.12);
+      border-color: rgba(57,211,83,0.4);
+      color: var(--accent);
+    }
 
     .hero {
       background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
@@ -295,7 +301,10 @@
 
 <header>
   <div class="logo">Bag<span>Creator</span></div>
-  <a class="nav-link" href="index.html">&#8592; Bag Builder</a>
+  <nav class="nav-tabs">
+    <a class="nav-link" href="index.html">Bag Builder</a>
+    <a class="nav-link active" href="archive.html">Disc Archive</a>
+  </nav>
 </header>
 
 <div class="hero">
