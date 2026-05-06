@@ -236,18 +236,12 @@
     /* BAG SECTION */
     .bag-section {
       max-width: 1200px;
-      margin: 0 auto 0 0;
-      padding: 2rem 1.5rem 4rem 0;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
     }
     .type-group {
-      display: inline-block;
-      width: 23%;
-      margin-right: 2%;
-      vertical-align: top;
-      margin-bottom: 2rem;
-    }
-    .type-group:last-child {
-      margin-right: 0;
+      display: block;
+      margin-bottom: 2.5rem;
     }
     .type-header {
       display: flex;
@@ -270,7 +264,7 @@
  
     .disc-grid {
       display: grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
       gap: 10px;
     }
     .disc-card {
