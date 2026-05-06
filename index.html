@@ -325,6 +325,12 @@
       gap: 10px;
       margin-bottom: 8px;
     }
+    .disc-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
     .disc-name {
       font-family: 'Barlow Condensed', sans-serif;
       font-size: 19px;
@@ -335,6 +341,33 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+    .refresh-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(88,166,255,0.16);
+      color: var(--accent2);
+      font-size: 0;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .refresh-btn svg {
+      width: 22px;
+      height: 22px;
+    }
+    .refresh-btn:hover {
+      background: rgba(88,166,255,0.24);
+      transform: translateY(-1px);
+    }
+    .refresh-btn:active {
+      transform: translateY(0);
     }
     .disc-link {
       font-size: 11px;
@@ -480,8 +513,13 @@
       color: var(--muted);
       flex: 1;
     }
+    .total-input-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
     .total-input {
-      width: 72px;
+      width: 60px;
       background: var(--bg3);
       border: 1px solid var(--border2);
       border-radius: 6px;
@@ -538,7 +576,11 @@
       <label>Change Bag Size</label>
       <div class="total-input-row">
         <span>Total discs in bag &nbsp;<span style="color:var(--muted);font-weight:400">(excluding putting discs)</span></span>
-        <input type="number" class="total-input" id="total-count" min="0" max="36" value="18" />
+        <div class="total-input-group">
+          <button type="button" class="stepper-btn" onclick="adjustTotal(-1)">−</button>
+          <input type="number" class="total-input" id="total-count" min="0" max="36" value="18" />
+          <button type="button" class="stepper-btn" onclick="adjustTotal(1)">+</button>
+        </div>
       </div>
       <div class="disc-count-row">
         <div class="disc-count-item">
@@ -600,6 +642,62 @@ const TYPE_COLOR = { putter:"var(--putter)", midrange:"var(--midrange)", fairway
 const STAB_SCORE = { "very overstable": 4, overstable: 3, neutral: 2, understable: 1, "very understable": 0 };
  
 let dist = 300;
+const BAG_STATE_KEY = 'bagCreatorState';
+let currentBag = [];
+let lastBagSettings = null;
+
+function discKey(d) {
+  return `${d.brand}|${d.type}|${d.name}`;
+}
+
+function discFromKey(key) {
+  return DISCS.find(d => discKey(d) === key);
+}
+
+function currentSettings() {
+  return {
+    dist,
+    discCounts: { ...discCounts },
+    selectedBrands: [...selectedBrands].sort(),
+  };
+}
+
+function settingsMatch(a, b) {
+  if (!a || !b) return false;
+  if (a.dist !== b.dist) return false;
+  if (a.selectedBrands.length !== b.selectedBrands.length) return false;
+  if (a.selectedBrands.some((val, index) => val !== b.selectedBrands[index])) return false;
+  return TYPE_ORDER.every(type => a.discCounts[type] === b.discCounts[type]);
+}
+
+function loadSavedBag() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(BAG_STATE_KEY));
+    if (!stored || !settingsMatch(stored.settings, currentSettings())) return false;
+    const bag = stored.bag.map(discFromKey).filter(Boolean);
+    if (bag.length !== TYPE_ORDER.reduce((sum, type) => sum + discCounts[type], 0)) return false;
+    currentBag = bag;
+    lastBagSettings = stored.settings;
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+function saveCurrentBag() {
+  localStorage.setItem(BAG_STATE_KEY, JSON.stringify({
+    settings: currentSettings(),
+    bag: currentBag.map(discKey),
+  }));
+}
+
+function loadBag() {
+  if (!loadSavedBag()) {
+    currentBag = getBag();
+    lastBagSettings = currentSettings();
+    saveCurrentBag();
+  }
+}
 
 // Pick n random discs from pool; returns all if pool is smaller
 function pickN(pool, n) {
@@ -674,6 +772,26 @@ function setCount(type, val) {
   document.getElementById(incId).disabled = discCounts[type] >= COUNT_MAX;
 }
 
+function setTotalCount(total) {
+  const clamped = Math.max(0, Math.min(36, total));
+  document.getElementById('total-count').value = clamped;
+  const putters = clamped === 0 ? 0 : clamped < 8 ? 1 : clamped < 15 ? 2 : 3;
+  const rest = clamped - putters;
+  const each = Math.floor(rest / 3);
+  const rem = rest % 3;
+  setCount('putter',   putters);
+  setCount('midrange', each);
+  setCount('fairway',  each + (rem >= 2 ? 1 : 0));
+  setCount('distance', each + (rem >= 1 ? 1 : 0));
+  render();
+}
+
+function adjustTotal(delta) {
+  const input = document.getElementById('total-count');
+  const total = parseInt(input.value) || 0;
+  setTotalCount(total + delta);
+}
+
 function adjustCount(type, delta) {
   setCount(type, discCounts[type] + delta);
   document.getElementById('total-count').value =
@@ -715,7 +833,14 @@ function setBrandFilter(filter) {
 }
 
 function render() {
-  const bag = getBag();
+  const settings = currentSettings();
+  if (!currentBag.length || !settingsMatch(settings, lastBagSettings)) {
+    currentBag = getBag();
+    lastBagSettings = settings;
+    saveCurrentBag();
+  }
+
+  const bag = currentBag;
   const output = document.getElementById("bag-output");
   const statsRow = document.getElementById("stats-row");
  
@@ -754,7 +879,17 @@ function render() {
                 </div>
                 <div class="disc-title-row">
                   <div class="disc-name">${d.name}</div>
-                  <a class="disc-link" href="https://1010discs.com/catalogsearch/result/?q=${encodeURIComponent(d.name)}&disc_type=" target="_blank" rel="noopener">Buy <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></a>
+                  <div class="disc-actions">
+                    <button type="button" class="refresh-btn" data-key="${discKey(d)}" data-type="${d.type}" data-stability="${d.stability}" title="Swap this disc">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 4v6h-6" />
+                        <path d="M1 20v-6h6" />
+                        <path d="M3.51 9a9 9 0 0 1 14.13-3.04L23 10" />
+                        <path d="M20.49 15a9 9 0 0 1-14.13 3.04L1 14" />
+                      </svg>
+                    </button>
+                    <a class="disc-link" href="https://1010discs.com/catalogsearch/result/?q=${encodeURIComponent(d.name)}&disc_type=" target="_blank" rel="noopener">Buy <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></a>
+                  </div>
                 </div>
                 <div class="flight-row">
                   <div class="fnum spd"><span class="v">${d.speed}</span><span class="l">Speed</span></div>
@@ -777,6 +912,32 @@ document.getElementById("back-slider").addEventListener("input", e => {
   render();
 });
 
+function refreshDisc(button) {
+  const type = button.dataset.type;
+  const stability = button.dataset.stability;
+  const currentKey = button.dataset.key;
+  const currentKeys = new Set(currentBag.map(discKey));
+  currentKeys.delete(currentKey);
+  const pool = applyBrandFilter(DISCS).filter(d =>
+    d.type === type &&
+    d.stability === stability &&
+    !currentKeys.has(discKey(d)) &&
+    discKey(d) !== currentKey
+  );
+  if (!pool.length) return;
+  const replacement = pool[Math.floor(Math.random() * pool.length)];
+  const index = currentBag.findIndex(d => discKey(d) === currentKey);
+  if (index === -1) return;
+  currentBag[index] = replacement;
+  saveCurrentBag();
+  render();
+}
+
+document.getElementById('bag-output').addEventListener('click', event => {
+  const button = event.target.closest('.refresh-btn');
+  if (button) refreshDisc(button);
+});
+
 document.getElementById('filter-innova').addEventListener('click', () => setBrandFilter('innova'));
 document.getElementById('filter-discraft').addEventListener('click', () => setBrandFilter('discraft'));
 document.getElementById('filter-dynamic').addEventListener('click', () => setBrandFilter('dynamic'));
@@ -796,6 +957,7 @@ document.getElementById('total-count').addEventListener('input', e => {
   render();
 });
 
+loadBag();
 render();
 </script>
 </body>
