@@ -416,55 +416,12 @@
     }
     .tip-bar strong { color: var(--accent); }
  
-    /* ADVANCED OPTIONS */
-    .advanced-toggle {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: none;
-      border: 1px solid var(--border2);
-      border-radius: 6px;
-      padding: 6px 14px;
-      color: var(--muted);
-      font-family: 'Barlow', sans-serif;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: color 0.15s, border-color 0.15s;
-      margin-bottom: 1.25rem;
-    }
-    .advanced-toggle:hover, .advanced-toggle.open {
-      color: var(--text);
-      border-color: rgba(255,255,255,0.25);
-    }
-    .advanced-toggle .chevron { transition: transform 0.2s; }
-    .advanced-toggle.open .chevron { transform: rotate(180deg); }
-
-    .advanced-panel {
-      display: none;
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1.1rem 1.25rem;
-      margin-bottom: 1.25rem;
-    }
-    .advanced-panel.open { display: block; }
-    .advanced-panel-label {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 1rem;
-    }
-
     .disc-count-row {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 1rem;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
     }
-    @media (max-width: 700px) { .disc-count-row { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 400px) { .disc-count-row { grid-template-columns: 1fr; } }
 
     .disc-count-item > label {
       font-size: 11px;
@@ -561,7 +518,7 @@
 <div class="controls">
   <div class="control-row">
     <div class="control-card">
-      <label>Backhand distance</label>
+      <label>Distance</label>
       <div class="dist-display">
         <span class="num" id="back-out">300</span>
         <span class="unit">feet</span>
@@ -570,68 +527,51 @@
       <div class="range-labels"><span>100 ft</span><span>300 ft</span><span>500 ft</span></div>
     </div>
     <div class="control-card">
-      <label>Forehand distance</label>
-      <div class="dist-display">
-        <span class="num" id="fore-out">300</span>
-        <span class="unit">feet</span>
+      <label>Change Bag Size</label>
+      <div class="total-input-row">
+        <span>Total discs in bag &nbsp;<span style="color:var(--muted);font-weight:400">(excluding putting putters)</span></span>
+        <input type="number" class="total-input" id="total-count" min="0" max="36" value="18" />
       </div>
-      <input type="range" id="fore-slider" min="100" max="500" step="25" value="300" />
-      <div class="range-labels"><span>100 ft</span><span>300 ft</span><span>500 ft</span></div>
+      <div class="disc-count-row">
+        <div class="disc-count-item">
+          <label style="color:var(--putter)">Putters</label>
+          <div class="stepper">
+            <button class="stepper-btn" id="put-dec" onclick="adjustCount('putter',-1)">−</button>
+            <span class="stepper-val" id="count-putter">3</span>
+            <button class="stepper-btn" id="put-inc" onclick="adjustCount('putter',1)">+</button>
+          </div>
+        </div>
+        <div class="disc-count-item">
+          <label style="color:var(--midrange)">Midranges</label>
+          <div class="stepper">
+            <button class="stepper-btn" id="mid-dec" onclick="adjustCount('midrange',-1)">−</button>
+            <span class="stepper-val" id="count-midrange">5</span>
+            <button class="stepper-btn" id="mid-inc" onclick="adjustCount('midrange',1)">+</button>
+          </div>
+        </div>
+        <div class="disc-count-item">
+          <label style="color:var(--fairway)">Fairways</label>
+          <div class="stepper">
+            <button class="stepper-btn" id="fw-dec" onclick="adjustCount('fairway',-1)">−</button>
+            <span class="stepper-val" id="count-fairway">5</span>
+            <button class="stepper-btn" id="fw-inc" onclick="adjustCount('fairway',1)">+</button>
+          </div>
+        </div>
+        <div class="disc-count-item">
+          <label style="color:var(--distance)">Distances</label>
+          <div class="stepper">
+            <button class="stepper-btn" id="dist-dec" onclick="adjustCount('distance',-1)">−</button>
+            <span class="stepper-val" id="count-distance">5</span>
+            <button class="stepper-btn" id="dist-inc" onclick="adjustCount('distance',1)">+</button>
+          </div>
+        </div>
+      </div>
     </div>
 </div>
 <div class="brand-filter-row">
   <button class="filter-btn brand-both active" id="filter-both">Both</button>
   <button class="filter-btn brand-innova" id="filter-innova">Innova</button>
   <button class="filter-btn brand-discraft" id="filter-discraft">Discraft</button>
-</div>
- 
-<div class="controls" style="padding-top:0">
-  <button class="advanced-toggle" id="advanced-toggle">
-    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="8" cy="6" r="2.5" fill="currentColor" stroke="none"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="16" cy="12" r="2.5" fill="currentColor" stroke="none"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="10" cy="18" r="2.5" fill="currentColor" stroke="none"/></svg>
-    Change Bag Size
-    <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-  </button>
-  <div class="advanced-panel" id="advanced-panel">
-    <div class="advanced-panel-label">Discs per category</div>
-    <div class="total-input-row">
-      <span>Total discs in bag</span>
-      <input type="number" class="total-input" id="total-count" min="0" max="36" value="18" />
-    </div>
-    <div class="disc-count-row">
-      <div class="disc-count-item">
-        <label style="color:var(--putter)">Putters</label>
-        <div class="stepper">
-          <button class="stepper-btn" id="put-dec" onclick="adjustCount('putter',-1)">−</button>
-          <span class="stepper-val" id="count-putter">3</span>
-          <button class="stepper-btn" id="put-inc" onclick="adjustCount('putter',1)">+</button>
-        </div>
-      </div>
-      <div class="disc-count-item">
-        <label style="color:var(--midrange)">Midranges</label>
-        <div class="stepper">
-          <button class="stepper-btn" id="mid-dec" onclick="adjustCount('midrange',-1)">−</button>
-          <span class="stepper-val" id="count-midrange">5</span>
-          <button class="stepper-btn" id="mid-inc" onclick="adjustCount('midrange',1)">+</button>
-        </div>
-      </div>
-      <div class="disc-count-item">
-        <label style="color:var(--fairway)">Fairway Drivers</label>
-        <div class="stepper">
-          <button class="stepper-btn" id="fw-dec" onclick="adjustCount('fairway',-1)">−</button>
-          <span class="stepper-val" id="count-fairway">5</span>
-          <button class="stepper-btn" id="fw-inc" onclick="adjustCount('fairway',1)">+</button>
-        </div>
-      </div>
-      <div class="disc-count-item">
-        <label style="color:var(--distance)">Distance Drivers</label>
-        <div class="stepper">
-          <button class="stepper-btn" id="dist-dec" onclick="adjustCount('distance',-1)">−</button>
-          <span class="stepper-val" id="count-distance">5</span>
-          <button class="stepper-btn" id="dist-inc" onclick="adjustCount('distance',1)">+</button>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
 
 <div class="stats-row" id="stats-row"></div>
@@ -651,12 +591,10 @@ const TYPE_COLOR = { putter:"var(--putter)", midrange:"var(--midrange)", fairway
  
 const STAB_SCORE = { overstable: 2, neutral: 1, understable: 0 };
  
-let backDist = 300, foreDist = 300;
+let dist = 300;
 
 function getStabilityPreference() {
-  // Map distance to stability: higher distance = more overstable preference
-  // 100-500 range
-  return (Math.max(backDist, foreDist) - 100) / (500 - 100);
+  return (dist - 100) / (500 - 100);
 }
 
 // Pick n random discs from pool; returns all if pool is smaller
@@ -797,16 +735,9 @@ function render() {
   }).join('');
 }
 
-// Distance sliders
 document.getElementById("back-slider").addEventListener("input", e => {
-  backDist = parseInt(e.target.value);
-  document.getElementById("back-out").textContent = backDist;
-  render();
-});
-
-document.getElementById("fore-slider").addEventListener("input", e => {
-  foreDist = parseInt(e.target.value);
-  document.getElementById("fore-out").textContent = foreDist;
+  dist = parseInt(e.target.value);
+  document.getElementById("back-out").textContent = dist;
   render();
 });
 
@@ -814,10 +745,6 @@ document.getElementById('filter-innova').addEventListener('click', () => setBran
 document.getElementById('filter-discraft').addEventListener('click', () => setBrandFilter('discraft'));
 document.getElementById('filter-both').addEventListener('click', () => setBrandFilter('both'));
 
-document.getElementById('advanced-toggle').addEventListener('click', () => {
-  document.getElementById('advanced-toggle').classList.toggle('open');
-  document.getElementById('advanced-panel').classList.toggle('open');
-});
 
 document.getElementById('total-count').addEventListener('input', e => {
   const total = Math.max(0, Math.min(36, parseInt(e.target.value) || 0));
