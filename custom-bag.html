@@ -242,6 +242,29 @@
     }
 
     footer { text-align: center; padding: 2rem; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); }
+
+    /* HELP TUTORIAL */
+    .help-overlay { position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center;padding:1rem; }
+    .help-dialog { background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:100%;max-width:420px;display:flex;flex-direction:column;overflow:hidden; }
+    .help-header { display:flex;align-items:center;gap:8px;padding:1rem 1.25rem;border-bottom:1px solid var(--border);flex-shrink:0; }
+    .help-hdr-title { font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;letter-spacing:.06em;text-transform:uppercase; }
+    .help-counter { font-size:12px;color:var(--muted);margin-left:auto; }
+    .help-close { background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:2px 5px;border-radius:4px;line-height:1; }
+    .help-close:hover { color:var(--text);background:rgba(255,255,255,0.07); }
+    .help-body { padding:2rem 1.5rem;text-align:center;flex:1; }
+    .help-icon { font-size:2.5rem;margin-bottom:1rem;line-height:1; }
+    .help-step-title { font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.75rem; }
+    .help-step-text { font-size:14px;color:var(--muted);line-height:1.65; }
+    .help-footer { display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.9rem 1.25rem;border-top:1px solid var(--border);flex-shrink:0; }
+    .help-nav-btn { padding:7px 15px;font-family:'Barlow',sans-serif;font-size:13px;font-weight:600;border-radius:7px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap; }
+    .help-nav-btn:hover { color:var(--text);border-color:rgba(255,255,255,.25); }
+    .help-nav-btn:disabled { opacity:.3;cursor:default; }
+    .help-nav-primary { background:rgba(57,211,83,.12);border-color:rgba(57,211,83,.4);color:var(--accent); }
+    .help-nav-primary:hover { background:rgba(57,211,83,.22); }
+    .help-dots { display:flex;gap:5px;align-items:center; }
+    .help-dot { width:7px;height:7px;border-radius:50%;background:var(--border2);border:none;cursor:pointer;padding:0;transition:background .15s; }
+    .help-dot.active { background:var(--accent); }
+    .nav-help-btn { display:inline-flex;align-items:center;gap:5px;background:none;cursor:pointer; }
   </style>
 </head>
 <body>
@@ -254,6 +277,7 @@
     <a class="nav-link" href="archive.html">Disc Archive</a>
   </nav>
   <div class="nav-right">
+    <button class="nav-link nav-help-btn" id="help-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Help</button>
     <a class="nav-link" href="profile.html" id="nav-profile" style="display:none">Profile</a>
     <a class="nav-link" href="login.html" id="nav-auth">Sign In</a>
   </div>
@@ -641,6 +665,64 @@ document.getElementById('clear-btn').addEventListener('click', () => {
 });
 
 render();
+</script>
+
+<div class="help-overlay" id="help-overlay" style="display:none">
+  <div class="help-dialog">
+    <div class="help-header">
+      <span class="help-hdr-title">Help</span>
+      <span class="help-counter" id="help-counter"></span>
+      <button class="help-close" id="help-close">×</button>
+    </div>
+    <div class="help-body">
+      <div class="help-icon" id="help-icon"></div>
+      <div class="help-step-title" id="help-step-title"></div>
+      <div class="help-step-text" id="help-step-text"></div>
+    </div>
+    <div class="help-footer">
+      <button class="help-nav-btn" id="help-prev" disabled>← Back</button>
+      <div class="help-dots" id="help-dots"></div>
+      <button class="help-nav-btn help-nav-primary" id="help-next">Next →</button>
+    </div>
+  </div>
+</div>
+<script>
+(function() {
+  const STEPS = [
+    { icon: '🎒', title: 'My Bag', text: 'Build your own custom disc golf bag by hand-picking every disc. Browse discs on the left and your bag appears on the right, grouped by type.' },
+    { icon: '🔍', title: 'Browsing Discs', text: 'Use the search bar to find a disc by name. Filter by disc type (Putter, Midrange, Fairway, Distance) or by brand using the tabs. Click any disc in the list to add it to your bag.' },
+    { icon: '📋', title: 'Managing Your Bag', text: 'Your bag is shown on the right, grouped by disc type. Click the × button on any disc to remove it. The total disc count is shown at the top of the bag panel.' },
+    { icon: '🔗', title: 'Share Your Bag', text: 'Click "Share Bag" to copy a link to your exact disc setup. Anyone with the link can view your bag layout, even without an account.' },
+    { icon: '💾', title: 'Saving Your Bag', text: 'Sign in to have your bag automatically saved to your account. Changes are saved a second after you add or remove a disc. Your bag will be waiting for you on any device when you log in.' },
+  ];
+  let cur = 0;
+  function render() {
+    const s = STEPS[cur];
+    document.getElementById('help-icon').textContent = s.icon;
+    document.getElementById('help-step-title').textContent = s.title;
+    document.getElementById('help-step-text').textContent = s.text;
+    document.getElementById('help-counter').textContent = (cur + 1) + ' / ' + STEPS.length;
+    document.getElementById('help-prev').disabled = cur === 0;
+    document.getElementById('help-next').textContent = cur === STEPS.length - 1 ? 'Done' : 'Next →';
+    document.getElementById('help-dots').innerHTML = STEPS.map(function(_, i) {
+      return '<button class="help-dot' + (i === cur ? ' active' : '') + '" data-i="' + i + '"></button>';
+    }).join('');
+  }
+  function open() { cur = 0; render(); document.getElementById('help-overlay').style.display = 'flex'; }
+  function close() { document.getElementById('help-overlay').style.display = 'none'; }
+  document.getElementById('help-btn').addEventListener('click', open);
+  document.getElementById('help-close').addEventListener('click', close);
+  document.getElementById('help-overlay').addEventListener('click', function(e) { if (e.target === document.getElementById('help-overlay')) close(); });
+  document.getElementById('help-prev').addEventListener('click', function() { if (cur > 0) { cur--; render(); } });
+  document.getElementById('help-next').addEventListener('click', function() { if (cur < STEPS.length - 1) { cur++; render(); } else close(); });
+  document.getElementById('help-dots').addEventListener('click', function(e) { var d = e.target.closest('[data-i]'); if (d) { cur = parseInt(d.dataset.i); render(); } });
+  document.addEventListener('keydown', function(e) {
+    if (document.getElementById('help-overlay').style.display === 'none') return;
+    if (e.key === 'Escape') close();
+    if (e.key === 'ArrowRight' && cur < STEPS.length - 1) { cur++; render(); }
+    if (e.key === 'ArrowLeft' && cur > 0) { cur--; render(); }
+  });
+})();
 </script>
 </body>
 </html>

@@ -718,6 +718,29 @@
     }
     .modal-confirm-btn:hover { background: rgba(57,211,83,0.22); }
     .modal-confirm-btn:disabled { opacity: 0.4; cursor: default; }
+
+    /* HELP TUTORIAL */
+    .help-overlay { position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center;padding:1rem; }
+    .help-dialog { background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:100%;max-width:420px;display:flex;flex-direction:column;overflow:hidden; }
+    .help-header { display:flex;align-items:center;gap:8px;padding:1rem 1.25rem;border-bottom:1px solid var(--border);flex-shrink:0; }
+    .help-hdr-title { font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;letter-spacing:.06em;text-transform:uppercase; }
+    .help-counter { font-size:12px;color:var(--muted);margin-left:auto; }
+    .help-close { background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:2px 5px;border-radius:4px;line-height:1; }
+    .help-close:hover { color:var(--text);background:rgba(255,255,255,0.07); }
+    .help-body { padding:2rem 1.5rem;text-align:center;flex:1; }
+    .help-icon { font-size:2.5rem;margin-bottom:1rem;line-height:1; }
+    .help-step-title { font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.75rem; }
+    .help-step-text { font-size:14px;color:var(--muted);line-height:1.65; }
+    .help-footer { display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.9rem 1.25rem;border-top:1px solid var(--border);flex-shrink:0; }
+    .help-nav-btn { padding:7px 15px;font-family:'Barlow',sans-serif;font-size:13px;font-weight:600;border-radius:7px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap; }
+    .help-nav-btn:hover { color:var(--text);border-color:rgba(255,255,255,.25); }
+    .help-nav-btn:disabled { opacity:.3;cursor:default; }
+    .help-nav-primary { background:rgba(57,211,83,.12);border-color:rgba(57,211,83,.4);color:var(--accent); }
+    .help-nav-primary:hover { background:rgba(57,211,83,.22); }
+    .help-dots { display:flex;gap:5px;align-items:center; }
+    .help-dot { width:7px;height:7px;border-radius:50%;background:var(--border2);border:none;cursor:pointer;padding:0;transition:background .15s; }
+    .help-dot.active { background:var(--accent); }
+    .nav-help-btn { display:inline-flex;align-items:center;gap:5px;background:none;cursor:pointer; }
   </style>
 </head>
 <body>
@@ -730,6 +753,7 @@
     <a class="nav-link" href="archive.html">Disc Archive</a>
   </nav>
   <div class="nav-right">
+    <button class="nav-link nav-help-btn" id="help-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Help</button>
     <a class="nav-link" href="profile.html" id="nav-profile" style="display:none">Profile</a>
     <a class="nav-link" href="login.html" id="nav-auth">Sign In</a>
   </div>
@@ -1059,6 +1083,7 @@ function setTotalCount(total) {
   setCount('fairway',  each + (rem >= 2 ? 1 : 0));
   setCount('distance', each + (rem >= 1 ? 1 : 0));
   render();
+  persistSettings();
   if (window._saveSettings) window._saveSettings();
 }
 
@@ -1073,7 +1098,14 @@ function adjustCount(type, delta) {
   document.getElementById('total-count').value =
     discCounts.putter + discCounts.midrange + discCounts.fairway + discCounts.distance;
   render();
+  persistSettings();
   if (window._saveSettings) window._saveSettings();
+}
+
+function persistSettings() {
+  try {
+    localStorage.setItem('bagCreatorSettings', JSON.stringify({ dist, discCounts: { ...discCounts } }));
+  } catch(e) {}
 }
 
 const ALL_BRANDS = ['innova', 'discraft', 'trilogy', 'mvp'];
@@ -1209,6 +1241,7 @@ document.getElementById("back-slider").addEventListener("input", e => {
   dist = parseInt(e.target.value);
   document.getElementById("back-out").textContent = dist;
   render();
+  persistSettings();
   if (window._saveSettings) window._saveSettings();
 });
 
@@ -1369,7 +1402,7 @@ render();
       document.getElementById('total-count').value =
         discCounts.putter + discCounts.midrange + discCounts.fairway + discCounts.distance;
     }
-    localStorage.setItem('bagCreatorSettings', JSON.stringify({ dist, discCounts: { ...discCounts } }));
+    persistSettings();
     if (!settingsMatch(before, currentSettings())) {
       currentBag = [];
       lastBagSettings = null;
@@ -1385,14 +1418,12 @@ render();
   }
 
   window._saveSettings = function() {
-    const snap = { dist, discCounts: { ...discCounts } };
-    localStorage.setItem('bagCreatorSettings', JSON.stringify(snap));
     if (!currentUser) return;
     clearTimeout(saveTimer);
     saveTimer = setTimeout(async () => {
       try {
         await db.collection('bags').doc(currentUser.uid).set(
-          { settings: snap }, { merge: true }
+          { settings: { dist, discCounts: { ...discCounts } } }, { merge: true }
         );
       } catch (e) { console.error('Settings save error:', e); }
     }, 1000);
@@ -1419,6 +1450,66 @@ render();
       window.location.href = 'login.html';
     }
   }, true);
+})();
+</script>
+
+<div class="help-overlay" id="help-overlay" style="display:none">
+  <div class="help-dialog">
+    <div class="help-header">
+      <span class="help-hdr-title">Help</span>
+      <span class="help-counter" id="help-counter"></span>
+      <button class="help-close" id="help-close">×</button>
+    </div>
+    <div class="help-body">
+      <div class="help-icon" id="help-icon"></div>
+      <div class="help-step-title" id="help-step-title"></div>
+      <div class="help-step-text" id="help-step-text"></div>
+    </div>
+    <div class="help-footer">
+      <button class="help-nav-btn" id="help-prev" disabled>← Back</button>
+      <div class="help-dots" id="help-dots"></div>
+      <button class="help-nav-btn help-nav-primary" id="help-next">Next →</button>
+    </div>
+  </div>
+</div>
+<script>
+(function() {
+  const STEPS = [
+    { icon: '🥏', title: 'Welcome to Bag Builder', text: 'This tool recommends the right discs for your skill level based on how far you throw. Use the pages at the top to navigate between the Bag Builder, My Bag, and the Disc Archive.' },
+    { icon: '📏', title: 'Distance Slider', text: 'Drag the slider to your max throwing distance. Shorter throwers get more understable, forgiving discs. Longer throwers get faster, more overstable discs that handle power.' },
+    { icon: '🏷️', title: 'Brand Filters', text: 'Click a brand button (Innova, Discraft, Trilogy, MVP) to show only discs from that brand. Click it again to add other brands back. All brands are active by default.' },
+    { icon: '🔢', title: 'Bag Size & Disc Counts', text: 'Set the total number of discs in your bag, or use the +/− buttons to adjust each category individually: Throwing Putters, Midranges, Fairway Drivers, and Distance Drivers.' },
+    { icon: '🃏', title: 'Reading a Disc Card', text: 'Each card shows the brand, stability rating, and four flight numbers — Speed · Glide · Turn · Fade. Higher speed discs need more power. Negative turn means the disc curves right early (for RHBH). Higher fade means a stronger finish left.' },
+    { icon: '🔄', title: 'Swapping Discs', text: 'Click the circular arrow icon on any disc card to swap it for a different disc of the same stability. Click "Buy" to search for that disc at an online retailer.' },
+    { icon: '➕', title: 'Add to My Bag', text: 'Click "Add Discs to My Bag" to choose which recommended discs to save to your personal bag. You can select all or just a few. Sign in first so your bag is saved to your account.' },
+  ];
+  let cur = 0;
+  function render() {
+    const s = STEPS[cur];
+    document.getElementById('help-icon').textContent = s.icon;
+    document.getElementById('help-step-title').textContent = s.title;
+    document.getElementById('help-step-text').textContent = s.text;
+    document.getElementById('help-counter').textContent = (cur + 1) + ' / ' + STEPS.length;
+    document.getElementById('help-prev').disabled = cur === 0;
+    document.getElementById('help-next').textContent = cur === STEPS.length - 1 ? 'Done' : 'Next →';
+    document.getElementById('help-dots').innerHTML = STEPS.map(function(_, i) {
+      return '<button class="help-dot' + (i === cur ? ' active' : '') + '" data-i="' + i + '"></button>';
+    }).join('');
+  }
+  function open() { cur = 0; render(); document.getElementById('help-overlay').style.display = 'flex'; }
+  function close() { document.getElementById('help-overlay').style.display = 'none'; }
+  document.getElementById('help-btn').addEventListener('click', open);
+  document.getElementById('help-close').addEventListener('click', close);
+  document.getElementById('help-overlay').addEventListener('click', function(e) { if (e.target === document.getElementById('help-overlay')) close(); });
+  document.getElementById('help-prev').addEventListener('click', function() { if (cur > 0) { cur--; render(); } });
+  document.getElementById('help-next').addEventListener('click', function() { if (cur < STEPS.length - 1) { cur++; render(); } else close(); });
+  document.getElementById('help-dots').addEventListener('click', function(e) { var d = e.target.closest('[data-i]'); if (d) { cur = parseInt(d.dataset.i); render(); } });
+  document.addEventListener('keydown', function(e) {
+    if (document.getElementById('help-overlay').style.display === 'none') return;
+    if (e.key === 'Escape') close();
+    if (e.key === 'ArrowRight' && cur < STEPS.length - 1) { cur++; render(); }
+    if (e.key === 'ArrowLeft' && cur > 0) { cur--; render(); }
+  });
 })();
 </script>
 </body>
