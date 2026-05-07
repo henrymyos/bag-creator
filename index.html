@@ -265,6 +265,35 @@
     }
     @media (max-width: 900px) { #bag-output { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 500px) { #bag-output { grid-template-columns: 1fr; } }
+
+    .mobile-category-tabs { display: none; }
+
+    @media (max-width: 500px) {
+      .mobile-category-tabs {
+        display: flex;
+        gap: 6px;
+        padding: 0 1.25rem 1rem;
+      }
+      .mobile-tab-btn {
+        flex: 1;
+        padding: 8px 4px;
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        border-radius: 6px;
+        border: 1px solid var(--border2);
+        background: var(--bg3);
+        color: var(--muted);
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .type-group { display: none; }
+      .type-group.mobile-active { display: block; }
+      .type-group .type-header { display: none; }
+    }
+
     .type-group {
       display: block;
     }
@@ -630,6 +659,8 @@
 
 <div class="stats-row" id="stats-row"></div>
  
+<div class="mobile-category-tabs" id="mobile-tabs"></div>
+
 <div class="bag-section">
   <div id="bag-output"></div>
 </div>
@@ -851,6 +882,7 @@ function adjustCount(type, delta) {
 }
 
 const ALL_BRANDS = ['innova', 'discraft', 'dynamic', 'mvp'];
+let activeMobileTab = 'putter';
 let selectedBrands = new Set(ALL_BRANDS);
 
 function applyBrandFilter(discs) {
@@ -908,11 +940,15 @@ function render() {
     return;
   }
  
+  // Ensure activeMobileTab is a type that actually has discs
+  const typesWithDiscs = TYPE_ORDER.filter(t => bag.some(d => d.type === t));
+  if (!typesWithDiscs.includes(activeMobileTab)) activeMobileTab = typesWithDiscs[0] || 'putter';
+
   output.innerHTML = TYPE_ORDER.map(type => {
     const discs = bag.filter(d => d.type === type).sort((a, b) => STAB_SCORE[b.stability] - STAB_SCORE[a.stability]);
     if (!discs.length) return '';
     return `
-      <div class="type-group">
+      <div class="type-group${type === activeMobileTab ? ' mobile-active' : ''}" data-type="${type}">
         <div class="type-header">
           <div class="type-dot" style="background:${TYPE_COLOR[type]}"></div>
           <span class="type-title">${TYPE_LABEL[type]}</span>
@@ -955,7 +991,24 @@ function render() {
       </div>
     `;
   }).join('');
+
+  // Mobile tabs
+  const tabsEl = document.getElementById('mobile-tabs');
+  const SHORT_LABEL = { putter: 'Putters', midrange: 'Midranges', fairway: 'Fairways', distance: 'Distance' };
+  tabsEl.innerHTML = typesWithDiscs.map(type => {
+    const count = bag.filter(d => d.type === type).length;
+    const active = type === activeMobileTab;
+    const color = TYPE_COLOR[type];
+    return `<button class="mobile-tab-btn" data-type="${type}" style="${active ? `border-color:${color};color:${color};background:var(--bg2)` : ''}">${SHORT_LABEL[type]} <span style="opacity:0.55;font-size:11px">${count}</span></button>`;
+  }).join('');
 }
+
+document.getElementById('mobile-tabs').addEventListener('click', e => {
+  const btn = e.target.closest('.mobile-tab-btn');
+  if (!btn) return;
+  activeMobileTab = btn.dataset.type;
+  render();
+});
 
 document.getElementById("back-slider").addEventListener("input", e => {
   dist = parseInt(e.target.value);
