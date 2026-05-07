@@ -39,9 +39,10 @@
       background: var(--bg2);
       border-bottom: 1px solid var(--border);
       padding: 0 2rem;
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      column-gap: 1.5rem;
       align-items: center;
-      justify-content: flex-start;
       height: 64px;
       position: sticky;
       top: 0;
@@ -53,19 +54,19 @@
       font-weight: 700;
       letter-spacing: 0.02em;
       color: var(--text);
+      text-decoration: none;
     }
     .logo span { color: var(--accent); }
-    .nav-right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
-    .nav-tabs { display: flex; gap: 6px; position: absolute; left: 50%; transform: translateX(-50%); }
+    .nav-right { display: flex; align-items: center; gap: 6px; justify-self: end; }
+    .nav-tabs { display: flex; gap: 6px; }
     @media (max-width: 500px) {
-      header { justify-content: space-between; padding: 0 1.25rem; }
-      .nav-tabs { position: static; transform: none; }
     }
     .nav-link {
       font-size: 13px; font-weight: 600; color: var(--muted);
       text-decoration: none; letter-spacing: 0.05em;
       padding: 6px 16px; border: 1px solid var(--border2);
       border-radius: 6px; transition: color 0.15s, border-color 0.15s, background 0.15s;
+      white-space: nowrap;
     }
     .nav-link:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
     .nav-link.active {
@@ -378,12 +379,45 @@
     .help-dot { width:7px;height:7px;border-radius:50%;background:var(--border2);border:none;cursor:pointer;padding:0;transition:background .15s; }
     .help-dot.active { background:var(--accent); }
     .nav-help-btn { display:inline-flex;align-items:center;gap:5px;background:none;cursor:pointer; }
+
+    /* MOBILE HAMBURGER MENU */
+    .hamburger-btn {
+      display: none; grid-column: 3; grid-row: 1; justify-self: end;
+      background: none; border: 1px solid var(--border2); border-radius: 6px;
+      color: var(--muted); cursor: pointer; padding: 6px 12px;
+      align-items: center; justify-content: center; gap: 6px;
+      font-family: 'Barlow', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.04em;
+    }
+    .hamburger-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
+    .mobile-menu {
+      display: none; flex-direction: column;
+      position: absolute; top: 64px; left: 0; right: 0; z-index: 99;
+      background: var(--bg2); border-bottom: 1px solid var(--border2);
+      padding: 0.4rem 0.75rem 0.75rem;
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu-link {
+      display: block; width: 100%; text-align: left;
+      padding: 10px 12px; font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 600;
+      color: var(--muted); text-decoration: none; border-radius: 6px;
+      letter-spacing: 0.04em; background: none; border: none; cursor: pointer;
+      transition: background 0.12s, color 0.12s;
+    }
+    .mobile-menu-link:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+    .mobile-menu-link.active { color: var(--accent); }
+    .mobile-menu-divider { height: 1px; background: var(--border); margin: 0.4rem 0; }
+    @media (max-width: 768px) {
+      header { padding: 0 1.25rem; }
+      .nav-tabs { display: none; }
+      .nav-right { display: none; }
+      .hamburger-btn { display: flex; }
+    }
   </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">Bag<span>Creator</span></div>
+  <a class="logo" href="index.html">Bag<span>Creator</span></a>
   <nav class="nav-tabs">
     <a class="nav-link" href="index.html">Bag Builder</a>
     <a class="nav-link" href="custom-bag.html">My Bag</a>
@@ -394,7 +428,18 @@
     <a class="nav-link" href="profile.html" id="nav-profile" style="display:none">Profile</a>
     <a class="nav-link" href="login.html" id="nav-auth">Sign In</a>
   </div>
+  <button class="hamburger-btn" id="hamburger-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg> Menu</button>
 </header>
+
+<div class="mobile-menu" id="mobile-menu">
+  <a class="mobile-menu-link" href="index.html">Bag Builder</a>
+  <a class="mobile-menu-link" href="custom-bag.html">My Bag</a>
+  <a class="mobile-menu-link active" href="archive.html">Disc Archive</a>
+  <div class="mobile-menu-divider"></div>
+  <button class="mobile-menu-link" id="help-btn-mobile">? Help</button>
+  <a class="mobile-menu-link" href="profile.html" id="nav-profile-mobile" style="display:none">Profile</a>
+  <a class="mobile-menu-link" href="login.html" id="nav-auth-mobile">Sign In</a>
+</div>
 
 <div class="hero">
   <h1>Disc <em>Archive</em></h1>
@@ -610,12 +655,18 @@ render();
   auth.onAuthStateChanged(user => {
     const navAuth    = document.getElementById('nav-auth');
     const navProfile = document.getElementById('nav-profile');
+    const navAuthM    = document.getElementById('nav-auth-mobile');
+    const navProfileM = document.getElementById('nav-profile-mobile');
     if (user) {
       if (navProfile) navProfile.style.display = '';
+      if (navProfileM) navProfileM.style.display = '';
       if (navAuth) { navAuth.textContent = 'Sign Out'; navAuth.href = '#'; navAuth.onclick = e => { e.preventDefault(); auth.signOut(); }; }
+      if (navAuthM) { navAuthM.textContent = 'Sign Out'; navAuthM.href = '#'; navAuthM.onclick = e => { e.preventDefault(); auth.signOut(); }; }
     } else {
       if (navProfile) navProfile.style.display = 'none';
+      if (navProfileM) navProfileM.style.display = 'none';
       if (navAuth) { navAuth.textContent = 'Sign In'; navAuth.href = 'login.html'; navAuth.onclick = null; }
+      if (navAuthM) { navAuthM.textContent = 'Sign In'; navAuthM.href = 'login.html'; navAuthM.onclick = null; }
     }
   });
 })();
@@ -676,6 +727,19 @@ render();
     if (e.key === 'ArrowRight' && cur < STEPS.length - 1) { cur++; render(); }
     if (e.key === 'ArrowLeft' && cur > 0) { cur--; render(); }
   });
+})();
+</script>
+<script>
+(function() {
+  var ham = document.getElementById('hamburger-btn');
+  var menu = document.getElementById('mobile-menu');
+  ham.addEventListener('click', function(e) { e.stopPropagation(); menu.classList.toggle('open'); });
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('#mobile-menu')) menu.classList.remove('open');
+  });
+  var helpM = document.getElementById('help-btn-mobile');
+  if (helpM) helpM.addEventListener('click', function() { menu.classList.remove('open'); document.getElementById('help-btn').click(); });
+  menu.querySelectorAll('a').forEach(function(a) { a.addEventListener('click', function() { menu.classList.remove('open'); }); });
 })();
 </script>
 </body>

@@ -35,18 +35,19 @@
       background: var(--bg2);
       border-bottom: 1px solid var(--border);
       padding: 0 2rem;
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      column-gap: 1.5rem;
       align-items: center;
-      justify-content: flex-start;
       height: 64px;
       position: sticky;
       top: 0;
       z-index: 100;
     }
-    .logo { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: 0.02em; color: var(--text); }
+    .logo { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: 0.02em; color: var(--text); text-decoration: none; }
     .logo span { color: var(--accent); }
-    .nav-tabs { display: flex; gap: 6px; position: absolute; left: 50%; transform: translateX(-50%); }
-    .nav-right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+    .nav-tabs { display: flex; gap: 6px; }
+    .nav-right { display: flex; align-items: center; gap: 6px; justify-self: end; }
     .nav-link { font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none; letter-spacing: 0.05em; padding: 6px 16px; border: 1px solid var(--border2); border-radius: 6px; transition: all 0.15s; white-space: nowrap; }
     .nav-link:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
     .nav-link.active { background: rgba(57,211,83,0.12); border-color: rgba(57,211,83,0.4); color: var(--accent); }
@@ -122,7 +123,11 @@
       padding: 4px 10px; font-size: 11px; font-weight: 600; border: 1px solid var(--border2);
       border-radius: 5px; background: var(--bg3); color: var(--muted); cursor: pointer; transition: all 0.15s;
     }
-    .brand-tab.active { color: var(--text); border-color: rgba(255,255,255,0.3); background: var(--bg2); }
+    .brand-tab.active           { color: var(--text);      border-color: rgba(255,255,255,0.3);    background: var(--bg2); }
+    .brand-tab.active-innova    { color: var(--innova);    border-color: rgba(224,92,42,0.5);      background: rgba(224,92,42,0.1); }
+    .brand-tab.active-discraft  { color: var(--discraft);  border-color: rgba(88,166,255,0.5);     background: rgba(88,166,255,0.1); }
+    .brand-tab.active-trilogy   { color: #a371f7;           border-color: rgba(163,113,247,0.5);    background: rgba(163,113,247,0.1); }
+    .brand-tab.active-mvp       { color: var(--mvp);       border-color: rgba(34,197,94,0.5);      background: rgba(34,197,94,0.1); }
 
     .disc-list { overflow-y: auto; flex: 1; }
     .disc-item {
@@ -231,8 +236,6 @@
 
     /* MOBILE */
     @media (max-width: 500px) {
-      header { justify-content: space-between; padding: 0 1.25rem; }
-      .nav-tabs { position: static; transform: none; }
     }
     @media (max-width: 800px) {
       .main-layout { grid-template-columns: 1fr; }
@@ -242,6 +245,39 @@
     }
 
     footer { text-align: center; padding: 2rem; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); }
+
+    /* MOBILE HAMBURGER MENU */
+    .hamburger-btn {
+      display: none; grid-column: 3; grid-row: 1; justify-self: end;
+      background: none; border: 1px solid var(--border2); border-radius: 6px;
+      color: var(--muted); cursor: pointer; padding: 6px 12px;
+      align-items: center; justify-content: center; gap: 6px;
+      font-family: 'Barlow', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.04em;
+    }
+    .hamburger-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
+    .mobile-menu {
+      display: none; flex-direction: column;
+      position: absolute; top: 64px; left: 0; right: 0; z-index: 99;
+      background: var(--bg2); border-bottom: 1px solid var(--border2);
+      padding: 0.4rem 0.75rem 0.75rem;
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu-link {
+      display: block; width: 100%; text-align: left;
+      padding: 10px 12px; font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 600;
+      color: var(--muted); text-decoration: none; border-radius: 6px;
+      letter-spacing: 0.04em; background: none; border: none; cursor: pointer;
+      transition: background 0.12s, color 0.12s;
+    }
+    .mobile-menu-link:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+    .mobile-menu-link.active { color: var(--accent); }
+    .mobile-menu-divider { height: 1px; background: var(--border); margin: 0.4rem 0; }
+    @media (max-width: 768px) {
+      header { padding: 0 1.25rem; }
+      .nav-tabs { display: none; }
+      .nav-right { display: none; }
+      .hamburger-btn { display: flex; }
+    }
 
     /* HELP TUTORIAL */
     .help-overlay { position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center;padding:1rem; }
@@ -270,7 +306,7 @@
 <body>
 
 <header>
-  <div class="logo">Bag<span>Creator</span></div>
+  <a class="logo" href="index.html">Bag<span>Creator</span></a>
   <nav class="nav-tabs">
     <a class="nav-link" href="index.html">Bag Builder</a>
     <a class="nav-link active" href="custom-bag.html">My Bag</a>
@@ -281,7 +317,18 @@
     <a class="nav-link" href="profile.html" id="nav-profile" style="display:none">Profile</a>
     <a class="nav-link" href="login.html" id="nav-auth">Sign In</a>
   </div>
+  <button class="hamburger-btn" id="hamburger-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg> Menu</button>
 </header>
+
+<div class="mobile-menu" id="mobile-menu">
+  <a class="mobile-menu-link" href="index.html">Bag Builder</a>
+  <a class="mobile-menu-link active" href="custom-bag.html">My Bag</a>
+  <a class="mobile-menu-link" href="archive.html">Disc Archive</a>
+  <div class="mobile-menu-divider"></div>
+  <button class="mobile-menu-link" id="help-btn-mobile">? Help</button>
+  <a class="mobile-menu-link" href="profile.html" id="nav-profile-mobile" style="display:none">Profile</a>
+  <a class="mobile-menu-link" href="login.html" id="nav-auth-mobile">Sign In</a>
+</div>
 
 <div class="hero">
   <h1>BUILD YOUR <em>CUSTOM</em> BAG</h1>
@@ -420,19 +467,25 @@ function updateAuthUI() {
   const badge      = document.getElementById('user-badge');
   const navAuth    = document.getElementById('nav-auth');
   const navProfile = document.getElementById('nav-profile');
+  const navAuthM   = document.getElementById('nav-auth-mobile');
+  const navProfileM = document.getElementById('nav-profile-mobile');
   if (currentUser) {
     banner.style.display     = 'none';
     badge.style.display      = 'flex';
     if (navProfile) navProfile.style.display = '';
+    if (navProfileM) navProfileM.style.display = '';
     const label = currentUser.displayName || currentUser.email || '';
     document.getElementById('user-avatar').textContent = label[0]?.toUpperCase() || '?';
     document.getElementById('user-email').textContent  = label;
     if (navAuth) { navAuth.textContent = 'Sign Out'; navAuth.href = '#'; navAuth.onclick = e => { e.preventDefault(); auth.signOut(); }; }
+    if (navAuthM) { navAuthM.textContent = 'Sign Out'; navAuthM.href = '#'; navAuthM.onclick = e => { e.preventDefault(); auth.signOut(); }; }
   } else {
     banner.style.display     = FB_READY ? 'flex' : 'none';
     badge.style.display      = 'none';
     if (navProfile) navProfile.style.display = 'none';
+    if (navProfileM) navProfileM.style.display = 'none';
     if (navAuth) { navAuth.textContent = 'Sign In'; navAuth.href = 'login.html'; navAuth.onclick = null; }
+    if (navAuthM) { navAuthM.textContent = 'Sign In'; navAuthM.href = 'login.html'; navAuthM.onclick = null; }
   }
 }
 
@@ -626,7 +679,10 @@ document.getElementById('brand-tabs').addEventListener('click', e => {
   const btn = e.target.closest('.brand-tab');
   if (!btn) return;
   selectedBrand = btn.dataset.brand;
-  document.querySelectorAll('.brand-tab').forEach(b => b.classList.toggle('active', b === btn));
+  document.querySelectorAll('.brand-tab').forEach(b => {
+    b.className = 'brand-tab';
+    if (b === btn) b.classList.add(selectedBrand === 'all' ? 'active' : `active-${selectedBrand}`);
+  });
   renderBrowser();
 });
 
@@ -722,6 +778,19 @@ render();
     if (e.key === 'ArrowRight' && cur < STEPS.length - 1) { cur++; render(); }
     if (e.key === 'ArrowLeft' && cur > 0) { cur--; render(); }
   });
+})();
+</script>
+<script>
+(function() {
+  var ham = document.getElementById('hamburger-btn');
+  var menu = document.getElementById('mobile-menu');
+  ham.addEventListener('click', function(e) { e.stopPropagation(); menu.classList.toggle('open'); });
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('#mobile-menu')) menu.classList.remove('open');
+  });
+  var helpM = document.getElementById('help-btn-mobile');
+  if (helpM) helpM.addEventListener('click', function() { menu.classList.remove('open'); document.getElementById('help-btn').click(); });
+  menu.querySelectorAll('a').forEach(function(a) { a.addEventListener('click', function() { menu.classList.remove('open'); }); });
 })();
 </script>
 </body>
