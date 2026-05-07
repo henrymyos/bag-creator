@@ -267,12 +267,14 @@
     @media (max-width: 500px) { #bag-output { grid-template-columns: 1fr; } }
 
     .mobile-category-tabs { display: none; }
+    .type-group { display: block; }
 
     @media (max-width: 500px) {
       .mobile-category-tabs {
         display: flex;
         gap: 6px;
         padding: 0 1.25rem 1rem;
+        justify-content: center;
       }
       .mobile-tab-btn {
         flex: 1;
@@ -282,6 +284,7 @@
         font-weight: 700;
         letter-spacing: 0.05em;
         text-transform: uppercase;
+        text-align: center;
         border-radius: 6px;
         border: 1px solid var(--border2);
         background: var(--bg3);
@@ -289,13 +292,9 @@
         cursor: pointer;
         transition: all 0.15s;
       }
-      .type-group { display: none; }
-      .type-group.mobile-active { display: block; }
-      .type-group .type-header { display: none; }
-    }
-
-    .type-group {
-      display: block;
+      #bag-output .type-group { display: none; }
+      #bag-output .type-group.mobile-active { display: block; }
+      #bag-output .type-group .type-header { display: none; }
     }
     .type-header {
       display: flex;
