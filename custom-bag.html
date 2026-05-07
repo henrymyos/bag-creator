@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Bag — Bag Creator</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d1117;
+      --bg2: #161b22;
+      --bg3: #21262d;
+      --border: rgba(255,255,255,0.08);
+      --border2: rgba(255,255,255,0.14);
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #39d353;
+      --accent2: #58a6ff;
+      --innova: #e05c2a;
+      --discraft: #58a6ff;
+      --mvp: #22c55e;
+      --putter: #3fb950;
+      --midrange: #d29922;
+      --fairway: #a371f7;
+      --distance: #f78166;
+    }
+
+    body { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; min-height: 100vh; }
+
+    /* HEADER */
+    header {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      height: 64px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: 0.02em; color: var(--text); }
+    .logo span { color: var(--accent); }
+    .nav-tabs { display: flex; gap: 6px; position: absolute; left: 50%; transform: translateX(-50%); }
+    .nav-link { font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none; letter-spacing: 0.05em; padding: 6px 16px; border: 1px solid var(--border2); border-radius: 6px; transition: all 0.15s; white-space: nowrap; }
+    .nav-link:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
+    .nav-link.active { background: rgba(57,211,83,0.12); border-color: rgba(57,211,83,0.4); color: var(--accent); }
+
+    /* HERO */
+    .hero {
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+      padding: 2.5rem 2rem 2rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero h1 { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(2rem, 6vw, 3.2rem); font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.1; margin-bottom: 0.6rem; }
+    .hero h1 em { color: var(--accent); font-style: normal; }
+    .hero p { font-size: 15px; color: var(--muted); max-width: 480px; margin: 0 auto; }
+
+    /* MAIN LAYOUT */
+    .main-layout {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      min-height: calc(100vh - 64px - 130px);
+    }
+
+    /* ── BROWSER PANEL ── */
+    .browser-panel {
+      border-right: 1px solid var(--border);
+      position: sticky;
+      top: 64px;
+      height: calc(100vh - 64px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .browser-header {
+      padding: 1rem 1rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      flex-shrink: 0;
+    }
+    .search-wrap { position: relative; }
+    .search-icon {
+      position: absolute; left: 9px; top: 50%; transform: translateY(-50%);
+      color: var(--muted); pointer-events: none; display: flex; align-items: center;
+    }
+    .search-input {
+      width: 100%; background: var(--bg3); border: 1px solid var(--border2); border-radius: 6px;
+      color: var(--text); font-family: 'Barlow', sans-serif; font-size: 13px;
+      padding: 7px 28px 7px 30px; outline: none; transition: border-color 0.15s;
+    }
+    .search-input::placeholder { color: var(--muted); }
+    .search-input:focus { border-color: rgba(255,255,255,0.25); }
+    .search-clear {
+      position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: var(--muted); cursor: pointer; font-size: 14px; padding: 0; display: none;
+    }
+    .search-clear:hover { color: var(--text); }
+
+    .type-tabs { display: flex; gap: 4px; }
+    .type-tab {
+      flex: 1; padding: 5px 2px; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.05em; text-transform: uppercase; border: 1px solid var(--border2); border-radius: 5px;
+      background: var(--bg3); color: var(--muted); cursor: pointer; transition: all 0.15s; text-align: center;
+    }
+    .type-tab[data-type="all"].active    { color: var(--accent);   border-color: rgba(57,211,83,0.4);   background: rgba(57,211,83,0.08); }
+    .type-tab[data-type="putter"].active { color: var(--putter);   border-color: rgba(63,185,80,0.4);   background: rgba(63,185,80,0.08); }
+    .type-tab[data-type="midrange"].active { color: var(--midrange); border-color: rgba(210,153,34,0.4); background: rgba(210,153,34,0.08); }
+    .type-tab[data-type="fairway"].active  { color: var(--fairway);  border-color: rgba(163,113,247,0.4); background: rgba(163,113,247,0.08); }
+    .type-tab[data-type="distance"].active { color: var(--distance); border-color: rgba(247,129,102,0.4); background: rgba(247,129,102,0.08); }
+
+    .brand-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+    .brand-tab {
+      padding: 4px 10px; font-size: 11px; font-weight: 600; border: 1px solid var(--border2);
+      border-radius: 5px; background: var(--bg3); color: var(--muted); cursor: pointer; transition: all 0.15s;
+    }
+    .brand-tab.active { color: var(--text); border-color: rgba(255,255,255,0.3); background: var(--bg2); }
+
+    .disc-list { overflow-y: auto; flex: 1; }
+    .disc-item {
+      display: flex; align-items: center; gap: 10px; padding: 8px 1rem;
+      border-bottom: 1px solid var(--border); transition: background 0.1s; cursor: default;
+    }
+    .disc-item:hover { background: rgba(255,255,255,0.03); }
+    .disc-type-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .disc-item-info { flex: 1; min-width: 0; }
+    .disc-item-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .disc-item-meta { display: flex; gap: 6px; align-items: center; margin-top: 2px; flex-wrap: wrap; }
+    .disc-item-brand { font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+    .disc-item-flights { display: flex; gap: 3px; }
+    .fn { font-size: 10px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; padding: 1px 5px; border-radius: 3px; background: var(--bg3); color: var(--muted); }
+    .add-btn {
+      width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border2);
+      background: var(--bg3); color: var(--muted); font-size: 18px; line-height: 1;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s; flex-shrink: 0;
+    }
+    .add-btn:hover:not(:disabled) { background: rgba(57,211,83,0.15); border-color: rgba(57,211,83,0.4); color: var(--accent); }
+    .add-btn:disabled { background: rgba(57,211,83,0.1); border-color: rgba(57,211,83,0.35); color: var(--accent); cursor: default; font-size: 14px; }
+    .no-results { padding: 2rem; text-align: center; color: var(--muted); font-size: 13px; }
+
+    /* ── BAG PANEL ── */
+    .bag-panel { padding: 1.5rem 2rem 3rem; }
+    .bag-actions {
+      display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.5rem;
+      padding-bottom: 1.25rem; border-bottom: 1px solid var(--border);
+    }
+    .bag-count { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 600; color: var(--muted); flex: 1; }
+    .bag-count strong { color: var(--text); font-size: 20px; font-weight: 700; margin-right: 2px; }
+    .action-btn {
+      padding: 7px 14px; font-family: 'Barlow', sans-serif; font-size: 12px; font-weight: 600;
+      border-radius: 6px; border: 1px solid var(--border2); background: var(--bg2);
+      color: var(--muted); cursor: pointer; transition: all 0.15s;
+    }
+    .action-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
+    .share-btn { border-color: rgba(57,211,83,0.4); color: var(--accent); background: rgba(57,211,83,0.08); display: flex; align-items: center; gap: 6px; }
+    .share-btn:hover { background: rgba(57,211,83,0.15); color: var(--accent); }
+    .share-btn.copied { border-color: rgba(57,211,83,0.6); background: rgba(57,211,83,0.2); }
+
+    .bag-empty { text-align: center; padding: 4rem 2rem; color: var(--muted); }
+    .bag-empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+    .bag-empty h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 1.3rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text); margin-bottom: 0.4rem; }
+    .bag-empty p { font-size: 14px; }
+
+    .bag-groups { display: flex; flex-direction: column; gap: 2rem; }
+    .group-header { display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem; }
+    .group-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .group-title { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+    .group-count { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; color: var(--muted); }
+
+    .bag-disc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.75rem; }
+    .bag-disc { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem 0.9rem; }
+    .bag-disc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; margin-bottom: 0.5rem; }
+    .bag-disc-badges { display: flex; gap: 4px; flex-wrap: wrap; }
+    .brand-badge { font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; }
+    .brand-badge.innova  { background: rgba(224,92,42,0.15);   color: var(--innova); }
+    .brand-badge.discraft { background: rgba(88,166,255,0.15);  color: var(--discraft); }
+    .brand-badge.trilogy  { background: rgba(163,113,247,0.15); color: #a371f7; }
+    .brand-badge.mvp      { background: rgba(34,197,94,0.15);   color: var(--mvp); }
+    .stab-tag { font-size: 9px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; }
+    .stab-tag.very-overstable { background: rgba(200,30,30,0.18);   color: #e03535; }
+    .stab-tag.overstable      { background: rgba(247,129,102,0.15); color: #f78166; }
+    .stab-tag.neutral         { background: rgba(57,211,83,0.12);   color: var(--accent); }
+    .stab-tag.understable     { background: rgba(88,166,255,0.15);  color: var(--accent2); }
+    .stab-tag.very-understable { background: rgba(163,113,247,0.18); color: #a371f7; }
+    .remove-btn {
+      width: 20px; height: 20px; border-radius: 4px; border: 1px solid var(--border2);
+      background: none; color: var(--muted); font-size: 12px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0;
+    }
+    .remove-btn:hover { background: rgba(247,129,102,0.15); border-color: rgba(247,129,102,0.4); color: #f78166; }
+    .bag-disc-name { font-size: 14px; font-weight: 700; margin-bottom: 0.5rem; }
+    .bag-disc-flights { display: flex; gap: 4px; }
+    .fp { display: flex; flex-direction: column; align-items: center; background: var(--bg3); border-radius: 5px; padding: 3px 6px; min-width: 28px; }
+    .fp-val { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; line-height: 1; }
+    .fp-lbl { font-size: 8px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); margin-top: 1px; }
+
+    /* MOBILE */
+    @media (max-width: 500px) {
+      header { justify-content: space-between; padding: 0 1.25rem; }
+      .nav-tabs { position: static; transform: none; }
+    }
+    @media (max-width: 800px) {
+      .main-layout { grid-template-columns: 1fr; }
+      .browser-panel { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+      .disc-list { max-height: 320px; }
+      .bag-panel { padding: 1.25rem 1rem 3rem; }
+    }
+
+    footer { text-align: center; padding: 2rem; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Bag<span>Creator</span></div>
+  <nav class="nav-tabs">
+    <a class="nav-link" href="index.html">Bag Builder</a>
+    <a class="nav-link active" href="custom-bag.html">My Bag</a>
+    <a class="nav-link" href="archive.html">Disc Archive</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <h1>BUILD YOUR <em>CUSTOM</em> BAG</h1>
+  <p>Hand-pick every disc and share your exact setup with a link.</p>
+</div>
+
+<div class="main-layout">
+
+  <!-- BROWSER -->
+  <div class="browser-panel">
+    <div class="browser-header">
+      <div class="search-wrap">
+        <span class="search-icon">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="6.5" cy="6.5" r="5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/>
+          </svg>
+        </span>
+        <input class="search-input" id="search-input" type="text" placeholder="Search discs…" autocomplete="off" />
+        <button class="search-clear" id="search-clear">✕</button>
+      </div>
+      <div class="type-tabs" id="type-tabs">
+        <button class="type-tab active" data-type="all">All</button>
+        <button class="type-tab" data-type="putter">Putters</button>
+        <button class="type-tab" data-type="midrange">Mid</button>
+        <button class="type-tab" data-type="fairway">Fairway</button>
+        <button class="type-tab" data-type="distance">Distance</button>
+      </div>
+      <div class="brand-tabs" id="brand-tabs">
+        <button class="brand-tab active" data-brand="all">All Brands</button>
+        <button class="brand-tab" data-brand="innova">Innova</button>
+        <button class="brand-tab" data-brand="discraft">Discraft</button>
+        <button class="brand-tab" data-brand="trilogy">Trilogy</button>
+        <button class="brand-tab" data-brand="mvp">MVP</button>
+      </div>
+    </div>
+    <div class="disc-list" id="disc-list"></div>
+  </div>
+
+  <!-- BAG -->
+  <div class="bag-panel">
+    <div class="bag-actions">
+      <div class="bag-count" id="bag-count"><strong>0</strong> discs in bag</div>
+      <button class="action-btn share-btn" id="share-btn">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="13" cy="2.5" r="1.5"/><circle cx="13" cy="13.5" r="1.5"/><circle cx="3" cy="8" r="1.5"/>
+          <line x1="4.5" y1="7" x2="11.5" y2="3.5"/><line x1="4.5" y1="9" x2="11.5" y2="12.5"/>
+        </svg>
+        Share Bag
+      </button>
+      <button class="action-btn" id="clear-btn">Clear</button>
+    </div>
+    <div id="bag-display"></div>
+  </div>
+
+</div>
+
+<footer>Flight numbers: Speed · Glide · Turn · Fade &nbsp;|&nbsp; Data based on manufacturer specs</footer>
+
+<script src="discs.js"></script>
+<script>
+const TYPE_ORDER = ['putter','midrange','fairway','distance'];
+const TYPE_LABEL = { putter:'Throwing Putters', midrange:'Midranges', fairway:'Fairway Drivers', distance:'Distance Drivers' };
+const TYPE_COLOR = { putter:'var(--putter)', midrange:'var(--midrange)', fairway:'var(--fairway)', distance:'var(--distance)' };
+const BRAND_LABEL = { innova:'Innova', discraft:'Discraft', trilogy:'Trilogy', mvp:'MVP' };
+const STAB_CLASS  = { 'very overstable':'very-overstable', 'overstable':'overstable', 'neutral':'neutral', 'understable':'understable', 'very understable':'very-understable' };
+const STAB_SHORT  = { 'very overstable':'Very OS', 'overstable':'Overstable', 'neutral':'Neutral', 'understable':'Understable', 'very understable':'Very US' };
+
+function discKey(d) { return `${d.brand}|${d.type}|${d.name}`; }
+
+function encodeBag(bag) {
+  return btoa(JSON.stringify(bag.map(discKey)));
+}
+function decodeBag(str) {
+  try {
+    const keys = JSON.parse(atob(str));
+    return keys.flatMap(key => {
+      const [brand, type, ...rest] = key.split('|');
+      const name = rest.join('|');
+      const d = DISCS.find(d => d.brand === brand && d.type === type && d.name === name);
+      return d ? [d] : [];
+    });
+  } catch { return []; }
+}
+
+let myBag = [];
+const urlParam = new URLSearchParams(location.search).get('bag');
+if (urlParam) myBag = decodeBag(urlParam);
+
+let searchQuery = '';
+let selectedType = 'all';
+let selectedBrand = 'all';
+
+function inBag(d) { return myBag.some(b => discKey(b) === discKey(d)); }
+
+function updateURL() {
+  const encoded = myBag.length ? `?bag=${encodeBag(myBag)}` : '';
+  history.replaceState(null, '', location.pathname + encoded);
+}
+
+function addDisc(disc) {
+  if (inBag(disc)) return;
+  myBag.push(disc);
+  updateURL();
+  render();
+}
+
+function removeDisc(key) {
+  myBag = myBag.filter(d => discKey(d) !== key);
+  updateURL();
+  render();
+}
+
+function renderBrowser() {
+  const q = searchQuery.toLowerCase();
+  const filtered = DISCS.filter(d => {
+    if (selectedType !== 'all' && d.type !== selectedType) return false;
+    if (selectedBrand !== 'all' && d.brand !== selectedBrand) return false;
+    if (q && !d.name.toLowerCase().includes(q)) return false;
+    return true;
+  }).sort((a, b) => {
+    const ti = TYPE_ORDER.indexOf(a.type) - TYPE_ORDER.indexOf(b.type);
+    return ti !== 0 ? ti : a.name.localeCompare(b.name);
+  });
+
+  const typeColor = { putter:'var(--putter)', midrange:'var(--midrange)', fairway:'var(--fairway)', distance:'var(--distance)' };
+  const list = document.getElementById('disc-list');
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="no-results">No discs found</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(d => {
+    const already = inBag(d);
+    const key = discKey(d);
+    return `<div class="disc-item${already ? ' in-bag' : ''}" data-key="${key}">
+      <div class="disc-type-dot" style="background:${typeColor[d.type]}"></div>
+      <div class="disc-item-info">
+        <div class="disc-item-name">${d.name}</div>
+        <div class="disc-item-meta">
+          <span class="disc-item-brand">${BRAND_LABEL[d.brand] || d.brand}</span>
+          <div class="disc-item-flights">
+            <span class="fn">${d.speed}</span><span class="fn">${d.glide}</span><span class="fn">${d.turn}</span><span class="fn">${d.fade}</span>
+          </div>
+        </div>
+      </div>
+      <button class="add-btn" data-key="${key}" ${already ? 'disabled' : ''} title="${already ? 'Already in bag' : 'Add to bag'}">
+        ${already ? '✓' : '+'}
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function renderBag() {
+  document.getElementById('bag-count').innerHTML =
+    `<strong>${myBag.length}</strong> disc${myBag.length !== 1 ? 's' : ''} in bag`;
+
+  const display = document.getElementById('bag-display');
+  if (!myBag.length) {
+    display.innerHTML = `<div class="bag-empty">
+      <div class="bag-empty-icon">🥏</div>
+      <h3>Your bag is empty</h3>
+      <p>Search and add discs from the browser on the left.</p>
+    </div>`;
+    return;
+  }
+
+  const groups = TYPE_ORDER.map(type => {
+    const discs = myBag.filter(d => d.type === type);
+    if (!discs.length) return '';
+    return `<div>
+      <div class="group-header">
+        <div class="group-dot" style="background:${TYPE_COLOR[type]}"></div>
+        <span class="group-title" style="color:${TYPE_COLOR[type]}">${TYPE_LABEL[type]}</span>
+        <span class="group-count">${discs.length}</span>
+      </div>
+      <div class="bag-disc-grid">
+        ${discs.map(d => `
+          <div class="bag-disc">
+            <div class="bag-disc-top">
+              <div class="bag-disc-badges">
+                <span class="brand-badge ${d.brand}">${BRAND_LABEL[d.brand] || d.brand}</span>
+                <span class="stab-tag ${STAB_CLASS[d.stability]}">${STAB_SHORT[d.stability]}</span>
+              </div>
+              <button class="remove-btn" data-key="${discKey(d)}" title="Remove">✕</button>
+            </div>
+            <div class="bag-disc-name">${d.name}</div>
+            <div class="bag-disc-flights">
+              <div class="fp"><span class="fp-val">${d.speed}</span><span class="fp-lbl">Spd</span></div>
+              <div class="fp"><span class="fp-val">${d.glide}</span><span class="fp-lbl">Gli</span></div>
+              <div class="fp"><span class="fp-val">${d.turn}</span><span class="fp-lbl">Trn</span></div>
+              <div class="fp"><span class="fp-val">${d.fade}</span><span class="fp-lbl">Fde</span></div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  display.innerHTML = `<div class="bag-groups">${groups}</div>`;
+}
+
+function render() {
+  renderBrowser();
+  renderBag();
+}
+
+// EVENTS
+document.getElementById('disc-list').addEventListener('click', e => {
+  const btn = e.target.closest('.add-btn');
+  if (!btn || btn.disabled) return;
+  const disc = DISCS.find(d => discKey(d) === btn.dataset.key);
+  if (disc) addDisc(disc);
+});
+
+document.getElementById('bag-display').addEventListener('click', e => {
+  const btn = e.target.closest('.remove-btn');
+  if (btn) removeDisc(btn.dataset.key);
+});
+
+document.getElementById('type-tabs').addEventListener('click', e => {
+  const btn = e.target.closest('.type-tab');
+  if (!btn) return;
+  selectedType = btn.dataset.type;
+  document.querySelectorAll('.type-tab').forEach(b => b.classList.toggle('active', b === btn));
+  renderBrowser();
+});
+
+document.getElementById('brand-tabs').addEventListener('click', e => {
+  const btn = e.target.closest('.brand-tab');
+  if (!btn) return;
+  selectedBrand = btn.dataset.brand;
+  document.querySelectorAll('.brand-tab').forEach(b => b.classList.toggle('active', b === btn));
+  renderBrowser();
+});
+
+document.getElementById('search-input').addEventListener('input', e => {
+  searchQuery = e.target.value;
+  document.getElementById('search-clear').style.display = searchQuery ? 'block' : 'none';
+  renderBrowser();
+});
+
+document.getElementById('search-clear').addEventListener('click', () => {
+  document.getElementById('search-input').value = '';
+  searchQuery = '';
+  document.getElementById('search-clear').style.display = 'none';
+  renderBrowser();
+});
+
+const shareBtn = document.getElementById('share-btn');
+shareBtn.addEventListener('click', () => {
+  if (!myBag.length) return;
+  const url = `${location.origin}${location.pathname}?bag=${encodeBag(myBag)}`;
+  navigator.clipboard.writeText(url).then(() => {
+    shareBtn.classList.add('copied');
+    shareBtn.innerHTML = '✓ Copied!';
+    setTimeout(() => {
+      shareBtn.classList.remove('copied');
+      shareBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="2.5" r="1.5"/><circle cx="13" cy="13.5" r="1.5"/><circle cx="3" cy="8" r="1.5"/><line x1="4.5" y1="7" x2="11.5" y2="3.5"/><line x1="4.5" y1="9" x2="11.5" y2="12.5"/></svg>Share Bag`;
+    }, 2000);
+  });
+});
+
+document.getElementById('clear-btn').addEventListener('click', () => {
+  if (!myBag.length) return;
+  myBag = [];
+  updateURL();
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
