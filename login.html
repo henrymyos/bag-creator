@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In — Bag Creator</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d1117; --bg2: #161b22; --bg3: #21262d;
+      --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
+      --text: #e6edf3; --muted: #8b949e; --accent: #39d353;
+    }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Barlow', sans-serif;
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem;
+    }
+    .card {
+      width: 100%; max-width: 380px;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 14px; padding: 2.5rem 2rem;
+    }
+    .logo {
+      font-family: 'Barlow Condensed', sans-serif; font-size: 22px;
+      font-weight: 700; letter-spacing: 0.02em; text-align: center;
+      margin-bottom: 1.75rem;
+    }
+    .logo span { color: var(--accent); }
+    .card-title {
+      font-family: 'Barlow Condensed', sans-serif; font-size: 1.5rem;
+      font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+      text-align: center; margin-bottom: 0.35rem;
+    }
+    .card-sub { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 1.75rem; }
+
+    /* Google button */
+    .google-btn {
+      width: 100%; display: flex; align-items: center; justify-content: center;
+      gap: 10px; padding: 10px 16px;
+      background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px;
+      color: var(--text); font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: all 0.15s; margin-bottom: 1.25rem;
+    }
+    .google-btn:hover { border-color: rgba(255,255,255,0.25); background: #2d333b; }
+    .google-btn:disabled { opacity: 0.6; cursor: default; }
+
+    /* Divider */
+    .divider {
+      display: flex; align-items: center; gap: 0.75rem;
+      margin-bottom: 1.25rem; color: var(--muted); font-size: 12px;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border2);
+    }
+
+    /* Form */
+    .field { margin-bottom: 0.75rem; }
+    .field input {
+      width: 100%; padding: 9px 12px;
+      background: var(--bg3); border: 1px solid var(--border2); border-radius: 7px;
+      color: var(--text); font-family: 'Barlow', sans-serif; font-size: 14px; outline: none;
+      transition: border-color 0.15s;
+    }
+    .field input::placeholder { color: var(--muted); }
+    .field input:focus { border-color: rgba(255,255,255,0.3); }
+    .field input.error-field { border-color: rgba(248,81,73,0.6); }
+
+    .error-msg {
+      font-size: 12px; color: #f85149;
+      min-height: 1.2em; margin-bottom: 0.75rem; text-align: center;
+    }
+
+    .submit-btn {
+      width: 100%; padding: 10px;
+      background: rgba(57,211,83,0.15); border: 1px solid rgba(57,211,83,0.4);
+      border-radius: 8px; color: var(--accent);
+      font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .submit-btn:hover { background: rgba(57,211,83,0.25); }
+    .submit-btn:disabled { opacity: 0.6; cursor: default; }
+
+    .toggle-row { text-align: center; margin-top: 1.25rem; font-size: 13px; color: var(--muted); }
+    .toggle-btn { background: none; border: none; color: var(--accent); font-size: 13px; cursor: pointer; font-family: 'Barlow', sans-serif; }
+    .toggle-btn:hover { text-decoration: underline; }
+
+    .back-link {
+      display: block; text-align: center; margin-top: 1.5rem;
+      font-size: 12px; color: var(--muted); text-decoration: none;
+    }
+    .back-link:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">Bag<span>Creator</span></div>
+  <h1 class="card-title" id="card-title">Sign In</h1>
+  <p class="card-sub">Save your bag and access it from any device.</p>
+
+  <button class="google-btn" id="google-btn">
+    <svg width="18" height="18" viewBox="0 0 48 48">
+      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+    </svg>
+    Continue with Google
+  </button>
+
+  <div class="divider">or</div>
+
+  <form id="auth-form" novalidate>
+    <div class="field"><input type="email" id="email" placeholder="Email" autocomplete="email" /></div>
+    <div class="field"><input type="password" id="password" placeholder="Password" autocomplete="current-password" /></div>
+    <div class="field" id="confirm-field" style="display:none">
+      <input type="password" id="confirm-password" placeholder="Confirm password" autocomplete="new-password" />
+    </div>
+    <div class="error-msg" id="error-msg"></div>
+    <button class="submit-btn" type="submit" id="submit-btn">Sign In</button>
+  </form>
+
+  <div class="toggle-row">
+    <span id="toggle-label">Don't have an account?</span>
+    <button class="toggle-btn" id="mode-toggle">Create one</button>
+  </div>
+
+  <a class="back-link" href="custom-bag.html">← Back to My Bag</a>
+</div>
+
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script>
+  if (typeof FIREBASE_CONFIG === 'undefined' || FIREBASE_CONFIG.projectId === 'YOUR_PROJECT_ID') {
+    document.querySelector('.card-sub').textContent = 'Firebase is not configured yet. Fill in firebase-config.js to enable login.';
+    document.getElementById('google-btn').disabled = true;
+    document.getElementById('submit-btn').disabled = true;
+  } else {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    const auth = firebase.auth();
+
+    // Already logged in → go straight to My Bag
+    auth.onAuthStateChanged(user => {
+      if (user) window.location.href = 'custom-bag.html';
+    });
+
+    let mode = 'signin';
+
+    function setError(msg) {
+      document.getElementById('error-msg').textContent = msg;
+    }
+    function clearError() {
+      document.getElementById('error-msg').textContent = '';
+    }
+    function setLoading(yes) {
+      document.getElementById('google-btn').disabled = yes;
+      document.getElementById('submit-btn').disabled = yes;
+    }
+    function friendlyError(code) {
+      return {
+        'auth/user-not-found':     'No account found with that email.',
+        'auth/wrong-password':     'Incorrect password.',
+        'auth/invalid-credential': 'Incorrect email or password.',
+        'auth/email-already-in-use': 'That email is already registered.',
+        'auth/weak-password':      'Password must be at least 6 characters.',
+        'auth/invalid-email':      'Please enter a valid email address.',
+        'auth/popup-closed-by-user': 'Sign-in window was closed.',
+        'auth/too-many-requests':  'Too many attempts. Please wait a moment.',
+      }[code] || 'Something went wrong. Please try again.';
+    }
+
+    document.getElementById('google-btn').addEventListener('click', async () => {
+      clearError();
+      setLoading(true);
+      try {
+        await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+      } catch (e) {
+        setError(friendlyError(e.code));
+        setLoading(false);
+      }
+    });
+
+    document.getElementById('auth-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      clearError();
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      if (!email || !password) { setError('Please fill in all fields.'); return; }
+      setLoading(true);
+      try {
+        if (mode === 'signin') {
+          await auth.signInWithEmailAndPassword(email, password);
+        } else {
+          const confirm = document.getElementById('confirm-password').value;
+          if (password !== confirm) { setError('Passwords do not match.'); setLoading(false); return; }
+          await auth.createUserWithEmailAndPassword(email, password);
+        }
+      } catch (e) {
+        setError(friendlyError(e.code));
+        setLoading(false);
+      }
+    });
+
+    document.getElementById('mode-toggle').addEventListener('click', () => {
+      mode = mode === 'signin' ? 'register' : 'signin';
+      const isReg = mode === 'register';
+      document.getElementById('card-title').textContent    = isReg ? 'Create Account' : 'Sign In';
+      document.getElementById('submit-btn').textContent    = isReg ? 'Create Account' : 'Sign In';
+      document.getElementById('toggle-label').textContent  = isReg ? 'Already have an account?' : "Don't have an account?";
+      document.getElementById('mode-toggle').textContent   = isReg ? 'Sign in' : 'Create one';
+      document.getElementById('confirm-field').style.display = isReg ? 'block' : 'none';
+      document.getElementById('password').autocomplete = isReg ? 'new-password' : 'current-password';
+      clearError();
+    });
+  }
+</script>
+</body>
+</html>

@@ -202,6 +202,32 @@
     .fp-val { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; line-height: 1; }
     .fp-lbl { font-size: 8px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); margin-top: 1px; }
 
+    /* AUTH BANNER */
+    .auth-banner {
+      background: rgba(57,211,83,0.05); border-bottom: 1px solid rgba(57,211,83,0.15);
+      padding: 0.6rem 2rem; display: none; align-items: center; gap: 0.75rem;
+      font-size: 13px; color: var(--muted);
+    }
+    .auth-banner a {
+      padding: 4px 12px; border-radius: 5px; font-size: 12px; font-weight: 600;
+      border: 1px solid rgba(57,211,83,0.4); color: var(--accent);
+      background: rgba(57,211,83,0.08); text-decoration: none; white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .auth-banner a:hover { background: rgba(57,211,83,0.16); }
+    .save-status { font-size: 11px; color: var(--muted); transition: color 0.2s; }
+    .save-status.saved { color: var(--accent); }
+    .user-badge {
+      display: none; align-items: center; gap: 7px;
+      font-size: 12px; color: var(--muted);
+    }
+    .user-avatar {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: rgba(57,211,83,0.2); color: var(--accent);
+      font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+
     /* MOBILE */
     @media (max-width: 500px) {
       header { justify-content: space-between; padding: 0 1.25rem; }
@@ -231,6 +257,11 @@
 <div class="hero">
   <h1>BUILD YOUR <em>CUSTOM</em> BAG</h1>
   <p>Hand-pick every disc and share your exact setup with a link.</p>
+</div>
+
+<div class="auth-banner" id="auth-banner">
+  <span>Sign in to save your bag and access it from any device.</span>
+  <a href="login.html">Sign In</a>
 </div>
 
 <div class="main-layout">
@@ -269,6 +300,12 @@
   <div class="bag-panel">
     <div class="bag-actions">
       <div class="bag-count" id="bag-count"><strong>0</strong> discs in bag</div>
+      <span class="save-status" id="save-status"></span>
+      <div class="user-badge" id="user-badge">
+        <div class="user-avatar" id="user-avatar"></div>
+        <span id="user-email"></span>
+        <button class="action-btn" id="logout-btn" style="padding:4px 10px;font-size:11px">Sign Out</button>
+      </div>
       <button class="action-btn share-btn" id="share-btn">
         <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="13" cy="2.5" r="1.5"/><circle cx="13" cy="13.5" r="1.5"/><circle cx="3" cy="8" r="1.5"/>
@@ -285,6 +322,10 @@
 
 <footer>Flight numbers: Speed · Glide · Turn · Fade &nbsp;|&nbsp; Data based on manufacturer specs</footer>
 
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="discs.js"></script>
 <script>
 const TYPE_ORDER = ['putter','midrange','fairway','distance'];
@@ -326,16 +367,94 @@ function updateURL() {
   history.replaceState(null, '', location.pathname + encoded);
 }
 
+// ── Firebase auth + Firestore ──────────────────────────────
+let currentUser = null;
+let auth, db;
+const FB_READY = typeof FIREBASE_CONFIG !== 'undefined' &&
+  FIREBASE_CONFIG.projectId !== 'YOUR_PROJECT_ID';
+
+if (FB_READY) {
+  firebase.initializeApp(FIREBASE_CONFIG);
+  auth = firebase.auth();
+  db   = firebase.firestore();
+
+  auth.onAuthStateChanged(async user => {
+    currentUser = user;
+    updateAuthUI();
+    if (user) await loadFromFirestore();
+  });
+}
+
+function updateAuthUI() {
+  const banner = document.getElementById('auth-banner');
+  const badge  = document.getElementById('user-badge');
+  if (currentUser) {
+    banner.style.display = 'none';
+    badge.style.display  = 'flex';
+    const label = currentUser.displayName || currentUser.email || '';
+    document.getElementById('user-avatar').textContent = label[0]?.toUpperCase() || '?';
+    document.getElementById('user-email').textContent  = label;
+  } else {
+    banner.style.display = FB_READY ? 'flex' : 'none';
+    badge.style.display  = 'none';
+  }
+}
+
+async function loadFromFirestore() {
+  try {
+    const doc = await db.collection('bags').doc(currentUser.uid).get();
+    if (doc.exists && doc.data().bag?.length) {
+      myBag = doc.data().bag.flatMap(key => {
+        const [brand, type, ...rest] = key.split('|');
+        const d = DISCS.find(d => d.brand === brand && d.type === type && d.name === rest.join('|'));
+        return d ? [d] : [];
+      });
+    } else if (myBag.length) {
+      // First login — persist the current URL bag
+      await saveToFirestore();
+    }
+    updateURL();
+    render();
+  } catch (e) { console.error('Firestore load error:', e); }
+}
+
+let saveTimeout;
+function scheduleSave() {
+  if (!currentUser || !FB_READY) return;
+  clearTimeout(saveTimeout);
+  const s = document.getElementById('save-status');
+  if (s) { s.textContent = 'Saving…'; s.className = 'save-status'; }
+  saveTimeout = setTimeout(async () => {
+    await saveToFirestore();
+    if (s) { s.textContent = 'Saved'; s.className = 'save-status saved'; setTimeout(() => { s.textContent = ''; }, 2000); }
+  }, 1200);
+}
+
+async function saveToFirestore() {
+  if (!currentUser || !db) return;
+  try {
+    await db.collection('bags').doc(currentUser.uid).set({
+      bag: myBag.map(discKey),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch (e) { console.error('Firestore save error:', e); }
+}
+
+document.getElementById('logout-btn')?.addEventListener('click', () => auth?.signOut());
+// ──────────────────────────────────────────────────────────
+
 function addDisc(disc) {
   if (inBag(disc)) return;
   myBag.push(disc);
   updateURL();
+  scheduleSave();
   render();
 }
 
 function removeDisc(key) {
   myBag = myBag.filter(d => discKey(d) !== key);
   updateURL();
+  scheduleSave();
   render();
 }
 
