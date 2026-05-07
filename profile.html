@@ -123,9 +123,12 @@
 <script src="firebase-config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script>
 const FB_READY = typeof FIREBASE_CONFIG !== 'undefined' &&
   FIREBASE_CONFIG.projectId !== 'YOUR_PROJECT_ID';
+
+let db;
 
 if (!FB_READY) {
   document.getElementById('page-content').innerHTML =
@@ -133,6 +136,7 @@ if (!FB_READY) {
 } else {
   firebase.initializeApp(FIREBASE_CONFIG);
   const auth = firebase.auth();
+  db = firebase.firestore();
 
   auth.onAuthStateChanged(user => {
     const navAuth    = document.getElementById('nav-auth');
@@ -187,6 +191,22 @@ function renderProfile(user) {
       <div class="status-msg" id="profile-status"></div>
       <div class="btn-row">
         <button class="btn btn-primary" id="save-profile-btn">Save Changes</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Bag Info</div>
+      <div class="field">
+        <label>Max Throw Distance (ft)</label>
+        <input type="number" id="prof-dist" min="100" max="600" step="25" placeholder="e.g. 300" />
+      </div>
+      <div class="field">
+        <label>Bag Size (total discs)</label>
+        <input type="number" id="prof-bagsize" min="0" max="36" placeholder="e.g. 18" />
+      </div>
+      <div class="status-msg" id="bag-settings-status"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="save-bag-settings-btn">Save</button>
       </div>
     </div>
 
@@ -268,6 +288,38 @@ function renderProfile(user) {
   document.getElementById('signout-btn').addEventListener('click', () => {
     firebase.auth().signOut().then(() => { window.location.href = 'login.html'; });
   });
+
+  // Bag info — stored in prefs (separate from bag builder settings)
+  (async () => {
+    const distInput   = document.getElementById('prof-dist');
+    const bagSizeInput = document.getElementById('prof-bagsize');
+    const status      = document.getElementById('bag-settings-status');
+
+    try {
+      const doc = await db.collection('bags').doc(user.uid).get();
+      const p   = doc.exists ? doc.data().prefs : null;
+      if (p?.dist)    distInput.value    = p.dist;
+      if (p?.bagSize) bagSizeInput.value = p.bagSize;
+    } catch (e) { console.error(e); }
+
+    document.getElementById('save-bag-settings-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('save-bag-settings-btn');
+      btn.disabled = true;
+      const newDist    = Math.max(100, Math.min(600, parseInt(distInput.value)    || 300));
+      const newBagSize = Math.max(0,   Math.min(36,  parseInt(bagSizeInput.value) || 0));
+      try {
+        await db.collection('bags').doc(user.uid).set(
+          { prefs: { dist: newDist, bagSize: newBagSize } },
+          { merge: true }
+        );
+        status.textContent = 'Saved.'; status.className = 'status-msg success';
+      } catch (e) {
+        status.textContent = e.message; status.className = 'status-msg error';
+      }
+      btn.disabled = false;
+      setTimeout(() => { status.textContent = ''; }, 3000);
+    });
+  })();
 }
 </script>
 </body>

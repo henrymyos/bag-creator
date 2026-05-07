@@ -1017,6 +1017,26 @@ function getBag() {
  
 const discCounts = { putter: 3, midrange: 5, fairway: 5, distance: 5 };
 const COUNT_MIN = 0, COUNT_MAX = 9;
+
+// Restore settings from localStorage immediately so the UI never flashes defaults
+(function restoreLocalSettings() {
+  try {
+    const s = JSON.parse(localStorage.getItem('bagCreatorSettings'));
+    if (!s) return;
+    if (s.dist != null) {
+      dist = s.dist;
+      document.getElementById('back-slider').value = dist;
+      document.getElementById('back-out').textContent = dist;
+    }
+    if (s.discCounts) {
+      ['putter','midrange','fairway','distance'].forEach(t => {
+        if (s.discCounts[t] != null) setCount(t, s.discCounts[t]);
+      });
+      document.getElementById('total-count').value =
+        discCounts.putter + discCounts.midrange + discCounts.fairway + discCounts.distance;
+    }
+  } catch(e) {}
+})();
 const STEPPER_IDS = { putter: ['put-dec','put-inc'], midrange: ['mid-dec','mid-inc'], fairway: ['fw-dec','fw-inc'], distance: ['dist-dec','dist-inc'] };
 
 function setCount(type, val) {
@@ -1039,6 +1059,7 @@ function setTotalCount(total) {
   setCount('fairway',  each + (rem >= 2 ? 1 : 0));
   setCount('distance', each + (rem >= 1 ? 1 : 0));
   render();
+  if (window._saveSettings) window._saveSettings();
 }
 
 function adjustTotal(delta) {
@@ -1052,6 +1073,7 @@ function adjustCount(type, delta) {
   document.getElementById('total-count').value =
     discCounts.putter + discCounts.midrange + discCounts.fairway + discCounts.distance;
   render();
+  if (window._saveSettings) window._saveSettings();
 }
 
 const ALL_BRANDS = ['innova', 'discraft', 'trilogy', 'mvp'];
@@ -1187,6 +1209,7 @@ document.getElementById("back-slider").addEventListener("input", e => {
   dist = parseInt(e.target.value);
   document.getElementById("back-out").textContent = dist;
   render();
+  if (window._saveSettings) window._saveSettings();
 });
 
 function refreshDisc(button) {
@@ -1318,6 +1341,7 @@ render();
 <script src="firebase-config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script>
 (function() {
   const FB_READY = typeof FIREBASE_CONFIG !== 'undefined' &&
@@ -1326,15 +1350,62 @@ render();
 
   firebase.initializeApp(FIREBASE_CONFIG);
   const auth = firebase.auth();
+  const db   = firebase.firestore();
   let currentUser = null;
+  let saveTimer = null;
 
-  auth.onAuthStateChanged(user => {
+  function applySettings(s) {
+    if (!s) return;
+    const before = currentSettings();
+    if (s.dist != null) {
+      dist = s.dist;
+      document.getElementById('back-slider').value = dist;
+      document.getElementById('back-out').textContent = dist;
+    }
+    if (s.discCounts) {
+      ['putter','midrange','fairway','distance'].forEach(t => {
+        if (s.discCounts[t] != null) setCount(t, s.discCounts[t]);
+      });
+      document.getElementById('total-count').value =
+        discCounts.putter + discCounts.midrange + discCounts.fairway + discCounts.distance;
+    }
+    localStorage.setItem('bagCreatorSettings', JSON.stringify({ dist, discCounts: { ...discCounts } }));
+    if (!settingsMatch(before, currentSettings())) {
+      currentBag = [];
+      lastBagSettings = null;
+      render();
+    }
+  }
+
+  async function loadSettings(user) {
+    try {
+      const doc = await db.collection('bags').doc(user.uid).get();
+      if (doc.exists && doc.data().settings) applySettings(doc.data().settings);
+    } catch (e) { console.error('Settings load error:', e); }
+  }
+
+  window._saveSettings = function() {
+    const snap = { dist, discCounts: { ...discCounts } };
+    localStorage.setItem('bagCreatorSettings', JSON.stringify(snap));
+    if (!currentUser) return;
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(async () => {
+      try {
+        await db.collection('bags').doc(currentUser.uid).set(
+          { settings: snap }, { merge: true }
+        );
+      } catch (e) { console.error('Settings save error:', e); }
+    }, 1000);
+  };
+
+  auth.onAuthStateChanged(async user => {
     currentUser = user;
     const navAuth    = document.getElementById('nav-auth');
     const navProfile = document.getElementById('nav-profile');
     if (user) {
       if (navProfile) navProfile.style.display = '';
       if (navAuth) { navAuth.textContent = 'Sign Out'; navAuth.href = '#'; navAuth.onclick = e => { e.preventDefault(); auth.signOut(); }; }
+      await loadSettings(user);
     } else {
       if (navProfile) navProfile.style.display = 'none';
       if (navAuth) { navAuth.textContent = 'Sign In'; navAuth.href = 'login.html'; navAuth.onclick = null; }
