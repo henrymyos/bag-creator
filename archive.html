@@ -102,9 +102,14 @@
       margin: 0 auto;
       padding: 1.5rem 2rem 0;
       display: flex;
-      flex-wrap: wrap;
+      flex-direction: column;
       gap: 0.6rem;
+    }
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
       align-items: center;
+      gap: 0.6rem;
     }
     .filter-label {
       font-size: 11px;
@@ -140,7 +145,6 @@
 
     .search-wrap {
       position: relative;
-      margin-left: auto;
     }
     .search-input {
       background: var(--bg3);
@@ -354,19 +358,24 @@
 </div>
 
 <div class="filters">
-  <span class="filter-label">Brand</span>
-  <button class="filter-btn brand-innova active" id="f-innova">Innova</button>
-  <button class="filter-btn brand-discraft active" id="f-discraft">Discraft</button>
-  <button class="filter-btn brand-dynamic active" id="f-dynamic">Dynamic</button>
-  <button class="filter-btn brand-mvp active" id="f-mvp">MVP</button>
-  <div class="filter-sep"></div>
-  <span class="filter-label">Stability</span>
-  <button class="filter-btn stab-overstable active" id="f-stab-overstable">Overstable</button>
-  <button class="filter-btn stab-neutral active" id="f-stab-neutral">Neutral</button>
-  <button class="filter-btn stab-understable active" id="f-stab-understable">Understable</button>
-  <div class="search-wrap">
-    <input class="search-input" id="search-input" type="text" placeholder="Search discs…" autocomplete="off" />
-    <button class="search-clear" id="search-clear" aria-label="Clear search">✕</button>
+  <div class="filter-row">
+    <span class="filter-label">Brand</span>
+    <button class="filter-btn brand-innova active" id="f-innova">Innova</button>
+    <button class="filter-btn brand-discraft active" id="f-discraft">Discraft</button>
+    <button class="filter-btn brand-dynamic active" id="f-dynamic">Dynamic</button>
+    <button class="filter-btn brand-mvp active" id="f-mvp">MVP</button>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Stability</span>
+    <button class="filter-btn stab-overstable active" id="f-stab-overstable">Overstable</button>
+    <button class="filter-btn stab-neutral active" id="f-stab-neutral">Neutral</button>
+    <button class="filter-btn stab-understable active" id="f-stab-understable">Understable</button>
+  </div>
+  <div class="filter-row">
+    <div class="search-wrap">
+      <input class="search-input" id="search-input" type="text" placeholder="Search discs…" autocomplete="off" />
+      <button class="search-clear" id="search-clear" aria-label="Clear search">✕</button>
+    </div>
   </div>
 </div>
 
