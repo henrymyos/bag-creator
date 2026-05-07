@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile — Bag Creator</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d1117; --bg2: #161b22; --bg3: #21262d;
+      --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
+      --text: #e6edf3; --muted: #8b949e; --accent: #39d353; --accent2: #58a6ff;
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; min-height: 100vh; }
+
+    header {
+      background: var(--bg2); border-bottom: 1px solid var(--border);
+      padding: 0 2rem; display: flex; align-items: center; justify-content: flex-start;
+      height: 64px; position: sticky; top: 0; z-index: 100;
+    }
+    .logo { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: 0.02em; }
+    .logo span { color: var(--accent); }
+    .nav-right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+    .nav-tabs { display: flex; gap: 6px; position: absolute; left: 50%; transform: translateX(-50%); }
+    .nav-link { font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none; letter-spacing: 0.05em; padding: 6px 16px; border: 1px solid var(--border2); border-radius: 6px; transition: all 0.15s; white-space: nowrap; }
+    .nav-link:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
+    .nav-link.active { background: rgba(57,211,83,0.12); border-color: rgba(57,211,83,0.4); color: var(--accent); }
+
+    @media (max-width: 500px) {
+      header { justify-content: space-between; padding: 0 1.25rem; }
+      .nav-tabs { position: static; transform: none; }
+    }
+
+    /* PAGE */
+    .page { max-width: 520px; margin: 3rem auto; padding: 0 1.5rem 4rem; }
+
+    .avatar-row {
+      display: flex; align-items: center; gap: 1.25rem; margin-bottom: 2rem;
+    }
+    .avatar-circle {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: rgba(57,211,83,0.15); border: 2px solid rgba(57,211,83,0.3);
+      color: var(--accent); font-family: 'Barlow Condensed', sans-serif;
+      font-size: 28px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .avatar-info h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 1.4rem; font-weight: 700; }
+    .avatar-info p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+    .section {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem;
+    }
+    .section-title {
+      font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem;
+    }
+    .field { margin-bottom: 0.75rem; }
+    .field label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 5px; letter-spacing: 0.04em; text-transform: uppercase; }
+    .field input {
+      width: 100%; padding: 9px 12px; background: var(--bg3);
+      border: 1px solid var(--border2); border-radius: 7px;
+      color: var(--text); font-family: 'Barlow', sans-serif; font-size: 14px; outline: none;
+      transition: border-color 0.15s;
+    }
+    .field input:focus { border-color: rgba(255,255,255,0.3); }
+    .field input::placeholder { color: var(--muted); }
+    .field input[readonly] { opacity: 0.55; cursor: default; }
+
+    .status-msg { font-size: 12px; min-height: 1.2em; margin-top: 0.5rem; }
+    .status-msg.success { color: var(--accent); }
+    .status-msg.error   { color: #f85149; }
+
+    .btn-row { display: flex; gap: 0.6rem; margin-top: 1rem; flex-wrap: wrap; }
+    .btn {
+      padding: 8px 18px; font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 600;
+      border-radius: 7px; border: 1px solid var(--border2); background: var(--bg3);
+      color: var(--muted); cursor: pointer; transition: all 0.15s;
+    }
+    .btn:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
+    .btn:disabled { opacity: 0.5; cursor: default; }
+    .btn-primary { background: rgba(57,211,83,0.12); border-color: rgba(57,211,83,0.4); color: var(--accent); }
+    .btn-primary:hover { background: rgba(57,211,83,0.2); color: var(--accent); }
+    .btn-danger { background: rgba(248,81,73,0.08); border-color: rgba(248,81,73,0.3); color: #f85149; }
+    .btn-danger:hover { background: rgba(248,81,73,0.15); }
+
+    .provider-badge {
+      display: inline-flex; align-items: center; gap: 6px; font-size: 12px;
+      padding: 4px 10px; border-radius: 5px; border: 1px solid var(--border2);
+      background: var(--bg3); color: var(--muted);
+    }
+
+    .not-logged-in { text-align: center; padding: 4rem 2rem; color: var(--muted); }
+    .not-logged-in h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 1.5rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text); margin-bottom: 0.5rem; }
+    .not-logged-in a { color: var(--accent); text-decoration: none; }
+    .not-logged-in a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Bag<span>Creator</span></div>
+  <nav class="nav-tabs">
+    <a class="nav-link" href="index.html">Bag Builder</a>
+    <a class="nav-link" href="custom-bag.html">My Bag</a>
+    <a class="nav-link" href="archive.html">Disc Archive</a>
+  </nav>
+  <div class="nav-right">
+    <a class="nav-link active" href="profile.html" id="nav-profile" style="display:none">Profile</a>
+    <a class="nav-link" href="login.html" id="nav-auth">Sign In</a>
+  </div>
+</header>
+
+<div class="page" id="page-content">
+  <div class="not-logged-in">
+    <h2>Not signed in</h2>
+    <p>Please <a href="login.html">sign in</a> to view your profile.</p>
+  </div>
+</div>
+
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script>
+const FB_READY = typeof FIREBASE_CONFIG !== 'undefined' &&
+  FIREBASE_CONFIG.projectId !== 'YOUR_PROJECT_ID';
+
+if (!FB_READY) {
+  document.getElementById('page-content').innerHTML =
+    '<div class="not-logged-in"><h2>Firebase not configured</h2><p>Fill in firebase-config.js to enable accounts.</p></div>';
+} else {
+  firebase.initializeApp(FIREBASE_CONFIG);
+  const auth = firebase.auth();
+
+  auth.onAuthStateChanged(user => {
+    const navAuth    = document.getElementById('nav-auth');
+    const navProfile = document.getElementById('nav-profile');
+    if (user) {
+      if (navProfile) navProfile.style.display = '';
+      if (navAuth) { navAuth.textContent = 'Sign Out'; navAuth.href = '#'; navAuth.onclick = e => { e.preventDefault(); auth.signOut(); }; }
+      renderProfile(user);
+    } else {
+      if (navProfile) navProfile.style.display = 'none';
+      if (navAuth) { navAuth.textContent = 'Sign In'; navAuth.href = 'login.html'; navAuth.onclick = null; }
+    }
+  });
+}
+
+function isGoogleUser(user) {
+  return user.providerData.some(p => p.providerId === 'google.com');
+}
+
+function renderProfile(user) {
+  const isGoogle = isGoogleUser(user);
+  document.getElementById('page-content').innerHTML = `
+    <div class="avatar-row">
+      <div class="avatar-circle" id="avatar-circle">${(user.displayName || user.email || '?')[0].toUpperCase()}</div>
+      <div class="avatar-info">
+        <h2 id="display-name-heading">${user.displayName || 'No name set'}</h2>
+        <p>${user.email}</p>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Account Info</div>
+      <div class="field">
+        <label>Email</label>
+        <input type="text" value="${user.email}" readonly />
+      </div>
+      <div class="field">
+        <label>Display Name</label>
+        <input type="text" id="display-name-input" value="${user.displayName || ''}" placeholder="Your name" />
+      </div>
+      <div class="field">
+        <label>Sign-in method</label>
+        <div style="margin-top:4px">
+          <span class="provider-badge">
+            ${isGoogle
+              ? `<svg width="13" height="13" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Google`
+              : `<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="12" height="8" rx="1.5"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg> Email &amp; Password`}
+          </span>
+        </div>
+      </div>
+      <div class="status-msg" id="profile-status"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="save-profile-btn">Save Changes</button>
+      </div>
+    </div>
+
+    ${!isGoogle ? `
+    <div class="section">
+      <div class="section-title">Change Password</div>
+      <div class="field">
+        <label>New Password</label>
+        <input type="password" id="new-password" placeholder="At least 6 characters" autocomplete="new-password" />
+      </div>
+      <div class="field">
+        <label>Confirm New Password</label>
+        <input type="password" id="confirm-password" placeholder="Repeat new password" autocomplete="new-password" />
+      </div>
+      <div class="status-msg" id="password-status"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="change-password-btn">Update Password</button>
+      </div>
+    </div>` : ''}
+
+    <div class="section">
+      <div class="section-title">Session</div>
+      <div class="btn-row">
+        <button class="btn btn-danger" id="signout-btn">Sign Out</button>
+      </div>
+    </div>
+  `;
+
+  // Save display name
+  document.getElementById('save-profile-btn').addEventListener('click', async () => {
+    const name   = document.getElementById('display-name-input').value.trim();
+    const status = document.getElementById('profile-status');
+    const btn    = document.getElementById('save-profile-btn');
+    btn.disabled = true;
+    try {
+      await firebase.auth().currentUser.updateProfile({ displayName: name });
+      document.getElementById('display-name-heading').textContent = name || 'No name set';
+      document.getElementById('avatar-circle').textContent = (name || user.email || '?')[0].toUpperCase();
+      status.textContent = 'Saved.'; status.className = 'status-msg success';
+    } catch (e) {
+      status.textContent = e.message; status.className = 'status-msg error';
+    }
+    btn.disabled = false;
+    setTimeout(() => { status.textContent = ''; }, 3000);
+  });
+
+  // Change password (email users only)
+  if (!isGoogle) {
+    document.getElementById('change-password-btn').addEventListener('click', async () => {
+      const np     = document.getElementById('new-password').value;
+      const cp     = document.getElementById('confirm-password').value;
+      const status = document.getElementById('password-status');
+      const btn    = document.getElementById('change-password-btn');
+      if (!np) { status.textContent = 'Enter a new password.'; status.className = 'status-msg error'; return; }
+      if (np !== cp) { status.textContent = 'Passwords do not match.'; status.className = 'status-msg error'; return; }
+      btn.disabled = true;
+      try {
+        await firebase.auth().currentUser.updatePassword(np);
+        document.getElementById('new-password').value = '';
+        document.getElementById('confirm-password').value = '';
+        status.textContent = 'Password updated.'; status.className = 'status-msg success';
+      } catch (e) {
+        const msg = e.code === 'auth/requires-recent-login'
+          ? 'Please sign out and sign back in before changing your password.'
+          : e.message;
+        status.textContent = msg; status.className = 'status-msg error';
+      }
+      btn.disabled = false;
+      setTimeout(() => { status.textContent = ''; }, 4000);
+    });
+  }
+
+  // Sign out
+  document.getElementById('signout-btn').addEventListener('click', () => {
+    firebase.auth().signOut().then(() => { window.location.href = 'login.html'; });
+  });
+}
+</script>
+</body>
+</html>

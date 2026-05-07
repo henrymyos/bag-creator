@@ -46,6 +46,7 @@
     .logo { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: 0.02em; color: var(--text); }
     .logo span { color: var(--accent); }
     .nav-tabs { display: flex; gap: 6px; position: absolute; left: 50%; transform: translateX(-50%); }
+    .nav-right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
     .nav-link { font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none; letter-spacing: 0.05em; padding: 6px 16px; border: 1px solid var(--border2); border-radius: 6px; transition: all 0.15s; white-space: nowrap; }
     .nav-link:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
     .nav-link.active { background: rgba(57,211,83,0.12); border-color: rgba(57,211,83,0.4); color: var(--accent); }
@@ -252,6 +253,10 @@
     <a class="nav-link active" href="custom-bag.html">My Bag</a>
     <a class="nav-link" href="archive.html">Disc Archive</a>
   </nav>
+  <div class="nav-right">
+    <a class="nav-link" href="profile.html" id="nav-profile" style="display:none">Profile</a>
+    <a class="nav-link" href="login.html" id="nav-auth">Sign In</a>
+  </div>
 </header>
 
 <div class="hero">
@@ -386,17 +391,23 @@ if (FB_READY) {
 }
 
 function updateAuthUI() {
-  const banner = document.getElementById('auth-banner');
-  const badge  = document.getElementById('user-badge');
+  const banner     = document.getElementById('auth-banner');
+  const badge      = document.getElementById('user-badge');
+  const navAuth    = document.getElementById('nav-auth');
+  const navProfile = document.getElementById('nav-profile');
   if (currentUser) {
-    banner.style.display = 'none';
-    badge.style.display  = 'flex';
+    banner.style.display     = 'none';
+    badge.style.display      = 'flex';
+    if (navProfile) navProfile.style.display = '';
     const label = currentUser.displayName || currentUser.email || '';
     document.getElementById('user-avatar').textContent = label[0]?.toUpperCase() || '?';
     document.getElementById('user-email').textContent  = label;
+    if (navAuth) { navAuth.textContent = 'Sign Out'; navAuth.href = '#'; navAuth.onclick = e => { e.preventDefault(); auth.signOut(); }; }
   } else {
-    banner.style.display = FB_READY ? 'flex' : 'none';
-    badge.style.display  = 'none';
+    banner.style.display     = FB_READY ? 'flex' : 'none';
+    badge.style.display      = 'none';
+    if (navProfile) navProfile.style.display = 'none';
+    if (navAuth) { navAuth.textContent = 'Sign In'; navAuth.href = 'login.html'; navAuth.onclick = null; }
   }
 }
 
