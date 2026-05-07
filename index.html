@@ -209,7 +209,7 @@
       color: var(--discraft);
     }
     .filter-btn.active.brand-mvp { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.4); color: var(--mvp); }
-    .filter-btn.active.brand-dynamic {
+    .filter-btn.active.brand-trilogy {
       background: rgba(163,113,247,0.12);
       border-color: rgba(163,113,247,0.4);
       color: #a371f7;
@@ -352,7 +352,7 @@
     }
     .brand-badge.innova { background: rgba(224,92,42,0.15); color: var(--innova); }
     .brand-badge.discraft { background: rgba(88,166,255,0.15); color: var(--discraft); }
-    .brand-badge.dynamic { background: rgba(163,113,247,0.15); color: #a371f7; }
+    .brand-badge.trilogy { background: rgba(163,113,247,0.15); color: #a371f7; }
     .brand-badge.mvp { background: rgba(34,197,94,0.15); color: var(--mvp); }
  
     .disc-title-row {
@@ -666,7 +666,7 @@
 <div class="brand-filter-row">
   <button class="filter-btn brand-innova active" id="filter-innova">Innova</button>
   <button class="filter-btn brand-discraft active" id="filter-discraft">Discraft</button>
-  <button class="filter-btn brand-dynamic active" id="filter-dynamic">Dynamic</button>
+  <button class="filter-btn brand-trilogy active" id="filter-trilogy">Trilogy</button>
   <button class="filter-btn brand-mvp active" id="filter-mvp">MVP</button>
 </div>
 
@@ -894,7 +894,7 @@ function adjustCount(type, delta) {
   render();
 }
 
-const ALL_BRANDS = ['innova', 'discraft', 'dynamic', 'mvp'];
+const ALL_BRANDS = ['innova', 'discraft', 'trilogy', 'mvp'];
 let activeMobileTab = 'putter';
 let selectedBrands = new Set(ALL_BRANDS);
 
@@ -974,7 +974,7 @@ function render() {
             return `
               <div class="disc-card">
                 <div class="card-top">
-                  <span class="brand-badge ${d.brand}">${d.brand === 'innova' ? 'Innova' : d.brand === 'discraft' ? 'Discraft' : d.brand === 'dynamic' ? 'Dynamic' : d.brand === 'mvp' ? 'MVP' : d.brand}</span>
+                  <span class="brand-badge ${d.brand}">${d.brand === 'innova' ? 'Innova' : d.brand === 'discraft' ? 'Discraft' : d.brand === 'trilogy' ? 'Trilogy' : d.brand === 'mvp' ? 'MVP' : d.brand}</span>
                   <span class="stability-tag ${stab.class}">${stab.label}</span>
                 </div>
                 <div class="disc-title-row">
@@ -1061,7 +1061,7 @@ document.getElementById('bag-output').addEventListener('click', event => {
 
 document.getElementById('filter-innova').addEventListener('click', () => setBrandFilter('innova'));
 document.getElementById('filter-discraft').addEventListener('click', () => setBrandFilter('discraft'));
-document.getElementById('filter-dynamic').addEventListener('click', () => setBrandFilter('dynamic'));
+document.getElementById('filter-trilogy').addEventListener('click', () => setBrandFilter('trilogy'));
 document.getElementById('filter-mvp').addEventListener('click', () => setBrandFilter('mvp'));
 
 

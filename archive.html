@@ -138,7 +138,7 @@
     .filter-btn:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
     .filter-btn.active.brand-innova { background: rgba(224,92,42,0.12); border-color: rgba(224,92,42,0.4); color: var(--innova); }
     .filter-btn.active.brand-discraft { background: rgba(88,166,255,0.12); border-color: rgba(88,166,255,0.4); color: var(--discraft); }
-    .filter-btn.active.brand-dynamic { background: rgba(163,113,247,0.12); border-color: rgba(163,113,247,0.4); color: #a371f7; }
+    .filter-btn.active.brand-trilogy { background: rgba(163,113,247,0.12); border-color: rgba(163,113,247,0.4); color: #a371f7; }
     .filter-btn.active.brand-both { background: rgba(163,113,247,0.12); border-color: rgba(163,113,247,0.4); color: #a371f7; }
     .filter-btn.active.brand-mvp { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.4); color: var(--mvp); }
     .filter-btn.active.stab-all { background: rgba(57,211,83,0.12); border-color: rgba(57,211,83,0.4); color: var(--accent); }
@@ -251,7 +251,7 @@
     }
     .brand-badge.innova { background: rgba(224,92,42,0.15); color: var(--innova); }
     .brand-badge.discraft { background: rgba(88,166,255,0.15); color: var(--discraft); }
-    .brand-badge.dynamic { background: rgba(163,113,247,0.15); color: #a371f7; }
+    .brand-badge.trilogy { background: rgba(163,113,247,0.15); color: #a371f7; }
     .brand-badge.mvp { background: rgba(34,197,94,0.15); color: var(--mvp); }
 
     .stability-tag {
@@ -366,7 +366,7 @@
     <span class="filter-label">Brand</span>
     <button class="filter-btn brand-innova active" id="f-innova">Innova</button>
     <button class="filter-btn brand-discraft active" id="f-discraft">Discraft</button>
-    <button class="filter-btn brand-dynamic active" id="f-dynamic">Dynamic</button>
+    <button class="filter-btn brand-trilogy active" id="f-trilogy">Trilogy</button>
     <button class="filter-btn brand-mvp active" id="f-mvp">MVP</button>
   </div>
   <div class="filter-row">
@@ -394,7 +394,7 @@ const TYPE_LABEL = { putter:"Throwing Putters", midrange:"Midranges", fairway:"F
 const TYPE_COLOR = { putter:"var(--putter)", midrange:"var(--midrange)", fairway:"var(--fairway)", distance:"var(--distance)" };
 const STAB_ORDER = ["overstable","neutral","understable"];
 
-const ALL_BRANDS = ["innova","discraft","dynamic","mvp"];
+const ALL_BRANDS = ["innova","discraft","trilogy","mvp"];
 let selectedBrands = new Set(ALL_BRANDS);
 const ALL_STABILITIES = ["overstable","neutral","understable"];
 let selectedStabilities = new Set(ALL_STABILITIES);
@@ -454,7 +454,7 @@ function toggleStabilityFilter(stab) {
 
 document.getElementById("f-innova").addEventListener("click",   () => setBrandFilter("innova"));
 document.getElementById("f-discraft").addEventListener("click", () => setBrandFilter("discraft"));
-document.getElementById("f-dynamic").addEventListener("click",  () => setBrandFilter("dynamic"));
+document.getElementById("f-trilogy").addEventListener("click",  () => setBrandFilter("trilogy"));
 document.getElementById("f-mvp").addEventListener("click",      () => setBrandFilter("mvp"));
 document.getElementById("f-stab-overstable").addEventListener("click",  () => toggleStabilityFilter("overstable"));
 document.getElementById("f-stab-neutral").addEventListener("click",     () => toggleStabilityFilter("neutral"));
@@ -479,7 +479,7 @@ function discCard(d) {
   return `
     <div class="disc-card">
       <div class="card-top">
-        <span class="brand-badge ${d.brand}">${d.brand === "innova" ? "Innova" : d.brand === "discraft" ? "Discraft" : d.brand === "dynamic" ? "Dynamic" : d.brand === "mvp" ? "MVP" : d.brand}</span>
+        <span class="brand-badge ${d.brand}">${d.brand === "innova" ? "Innova" : d.brand === "discraft" ? "Discraft" : d.brand === "trilogy" ? "Trilogy" : d.brand === "mvp" ? "MVP" : d.brand}</span>
         <span class="stability-tag ${d.stability}">${d.stability}</span>
       </div>
       <div class="disc-title-row">
