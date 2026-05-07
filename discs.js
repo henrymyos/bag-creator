@@ -314,4 +314,29 @@ const DISCS = [
   { brand:"mvp", type:"distance", name:"Tenacity", speed:13, glide:5, turn:-2.5, fade:2, desc:"An understable high-speed distance driver with an evenly domed top for distance-covering glide. A sneaky-long disc functioning as straight-with-fade for developing throwers.", stability:"understable" },
   { brand:"mvp", type:"distance", name:"Excite", speed:14, glide:5.5, turn:-2, fade:2, desc:"An understable high-speed distance driver delivering long accurate distance from its high glide. Well-suited for hyzer-flips, turnover lines, and roller shots.", stability:"understable" },
   { brand:"mvp", type:"distance", name:"Virus", speed:9, glide:5, turn:-3.5, fade:1, desc:"Axiom's easiest-to-throw distance driver with responsive understability for huge turnover shots. Extends line-shaping options for average throwers and power players alike.", stability:"very understable" },
+
+  // ── STREAMLINE (filed under MVP) ──
+  // Putters
+  { brand:"mvp", type:"putter", name:"Stabilizer", speed:3, glide:3.5, turn:0, fade:3, desc:"An overstable putter with a raised shoulder and pointed nose. Delivers straight flights with minimal turn and a strong finishing fade, ideal for accurate approach shots in any wind.", stability:"overstable" },
+  { brand:"mvp", type:"putter", name:"Pilot", speed:2, glide:5, turn:0, fade:1, desc:"A versatile putter with neutral flight characteristics, medium-depth grip, and small-bead wing design. Delivers straight, dependable performance to the basket for all skill levels.", stability:"neutral" },
+  { brand:"mvp", type:"putter", name:"Range", speed:2, glide:1, turn:-0.5, fade:0.5, desc:"A straight-flying approach disc with dramatically reduced glide and torque resistance. Designed for reliable, predictable performance when approach distance is limited.", stability:"neutral" },
+  { brand:"mvp", type:"putter", name:"Parachute", speed:1, glide:7, turn:0, fade:0.5, desc:"A hybrid catch disc offering extreme glide for floaty approaches, learning, and warm-up play. Forgiving in wind with slight stability to keep flights on track.", stability:"understable" },
+
+  // Midranges
+  { brand:"mvp", type:"midrange", name:"Runway", speed:5, glide:4, turn:0, fade:3.5, desc:"An overstable midrange driver that holds straight lines in high winds and handles powerful throws with pinpoint accuracy. More glide than comparable overstable competitors.", stability:"overstable" },
+  { brand:"mvp", type:"midrange", name:"Echo", speed:5, glide:5, turn:-1.5, fade:1, desc:"A neutral midrange with a slightly deeper hand feel and buttery lines. Flies straight with enough turn for anhyzer shots and enough fade for reliable control at all power levels.", stability:"neutral" },
+
+  // Fairway Drivers
+  { brand:"mvp", type:"fairway", name:"Turbulence", speed:7, glide:2, turn:0, fade:3.5, desc:"An overstable fairway driver with a concave flight plate for clean, torque-resistant throws. Reduced glide and increased forgiveness make it a standout for spike hyzer shots.", stability:"overstable" },
+  { brand:"mvp", type:"fairway", name:"Drift", speed:7, glide:5, turn:-2, fade:1, desc:"A stable-understable fairway driver designed for laser straight lines ending in a gentle fade. Modest rim size and easily activated turn for hyzer-flips or controlled turnover shots.", stability:"understable" },
+  { brand:"mvp", type:"fairway", name:"Ascend", speed:6, glide:5, turn:-3, fade:0.5, desc:"An understable fairway driver delivering easily attainable straight flights and surprising distance for all skill levels. Experienced players can carve consistent turnovers and hyzer-flip lines.", stability:"understable" },
+
+  // Distance Drivers
+  { brand:"mvp", type:"distance", name:"Flare", speed:9, glide:4, turn:0, fade:3.5, desc:"An overstable distance driver engineered for minimal turn with a powerfully overstable finish. Ideal for high-power throws, strong headwinds, and versatile utility shots.", stability:"overstable" },
+  { brand:"mvp", type:"distance", name:"Boost", speed:10, glide:4, turn:0, fade:2.5, desc:"An overstable workhorse distance driver with a slight fade reduction for extended flight time. Dependable off the tee and designed to be worn in over time to fill multiple roles in the bag.", stability:"overstable" },
+  { brand:"mvp", type:"distance", name:"Trace", speed:11, glide:5, turn:-1, fade:2, desc:"A straight-stable distance driver with a manageable 21mm rim width. Most players can execute hyzerflips while its excellent glide maintains a straight flight path with a reliable finish.", stability:"neutral" },
+  { brand:"mvp", type:"distance", name:"Engine", speed:13, glide:5, turn:-0.5, fade:2, desc:"A reliable workhorse high-speed distance driver. Higher-power players cruise it straight while average throwers get dependable shorter flights with a consistent finish.", stability:"neutral" },
+  { brand:"mvp", type:"distance", name:"Lift", speed:9, glide:5, turn:-2, fade:1.5, desc:"An understable distance driver with a slight dome built to produce straight flights. A comfortable 19mm rim size makes it accessible for players developing arm speed.", stability:"understable" },
+  { brand:"mvp", type:"distance", name:"Jet", speed:11, glide:5, turn:-3, fade:2, desc:"An understable distance driver providing accessible distance for all arm speeds. High-power players get massive turnovers; lower arm speeds get a straight-to-fade flight with easy distance.", stability:"understable" },
+  { brand:"mvp", type:"distance", name:"Shift", speed:9, glide:5, turn:-3, fade:1, desc:"An understable distance driver with forgiving flight characteristics. Enables awe-inspiring hyzer-flips and straight flights across all skill levels for accessible distance.", stability:"very understable" },
 ];
