@@ -230,8 +230,8 @@ if (!FB_READY) {
     } else {
       if (navProfile) navProfile.style.display = 'none';
       if (navProfileM) navProfileM.style.display = 'none';
-      if (navAuth) { navAuth.textContent = 'Sign In'; navAuth.href = 'login.html'; navAuth.onclick = null; }
-      if (navAuthM) { navAuthM.textContent = 'Sign In'; navAuthM.href = 'login.html'; navAuthM.onclick = null; }
+      if (navAuth) { navAuth.textContent = 'Sign In'; navAuth.href = 'login.html?from=profile.html'; navAuth.onclick = null; }
+      if (navAuthM) { navAuthM.textContent = 'Sign In'; navAuthM.href = 'login.html?from=profile.html'; navAuthM.onclick = null; }
     }
   });
 }
@@ -417,7 +417,7 @@ function renderProfile(user) {
 
   // Sign out
   document.getElementById('signout-btn').addEventListener('click', () => {
-    firebase.auth().signOut().then(() => { window.location.href = 'login.html'; });
+    firebase.auth().signOut().then(() => { window.location.href = 'login.html?from=profile.html'; });
   });
 
   // Load all prefs: bag info + appearance

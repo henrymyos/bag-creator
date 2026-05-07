@@ -665,8 +665,8 @@ render();
     } else {
       if (navProfile) navProfile.style.display = 'none';
       if (navProfileM) navProfileM.style.display = 'none';
-      if (navAuth) { navAuth.textContent = 'Sign In'; navAuth.href = 'login.html'; navAuth.onclick = null; }
-      if (navAuthM) { navAuthM.textContent = 'Sign In'; navAuthM.href = 'login.html'; navAuthM.onclick = null; }
+      if (navAuth) { navAuth.textContent = 'Sign In'; navAuth.href = 'login.html?from=archive.html'; navAuth.onclick = null; }
+      if (navAuthM) { navAuthM.textContent = 'Sign In'; navAuthM.href = 'login.html?from=archive.html'; navAuthM.onclick = null; }
     }
   });
 })();
