@@ -274,7 +274,6 @@
       header { justify-content: space-between; padding: 0 1.25rem; }
       .nav-tabs { position: static; transform: none; }
       .controls { max-width: 100%; padding: 1.25rem 1rem 0; }
-      .disc-count-row { grid-template-columns: repeat(2, 1fr); }
       .bag-section { padding: 1.5rem 2rem 4rem; }
       .mobile-category-tabs {
         display: flex;
@@ -586,6 +585,9 @@
       font-size: 12px;
       color: var(--muted);
       border-top: 1px solid var(--border);
+    }
+    @media (max-width: 650px) {
+      .disc-count-row { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 </head>
