@@ -56,6 +56,10 @@
     }
     .logo span { color: var(--accent); }
     .nav-tabs { display: flex; gap: 6px; position: absolute; left: 50%; transform: translateX(-50%); }
+    @media (max-width: 500px) {
+      header { justify-content: space-between; padding: 0 1.25rem; }
+      .nav-tabs { position: static; transform: none; }
+    }
     .nav-link {
       font-size: 13px; font-weight: 600; color: var(--muted);
       text-decoration: none; letter-spacing: 0.05em;
