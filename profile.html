@@ -150,6 +150,18 @@
     .help-dot { width:7px;height:7px;border-radius:50%;background:var(--border2);border:none;cursor:pointer;padding:0;transition:background .15s; }
     .help-dot.active { background:var(--accent); }
     .nav-help-btn { display:inline-flex;align-items:center;gap:5px;background:none;cursor:pointer; }
+
+    /* APPEARANCE */
+    .color-swatches { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+    .color-swatch {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 3px solid transparent; cursor: pointer; outline: none;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .color-swatch:hover { transform: scale(1.18); }
+    .color-swatch.active { box-shadow: 0 0 0 2px var(--bg2), 0 0 0 4px rgba(255,255,255,0.55); }
+    .photo-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 4px; }
+    .avatar-img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
   </style>
 </head>
 <body>
@@ -224,6 +236,35 @@ if (!FB_READY) {
   });
 }
 
+const AVATAR_COLORS = [
+  { bg:'rgba(57,211,83,0.15)',   border:'rgba(57,211,83,0.3)',   text:'#39d353', val:'#39d353' },
+  { bg:'rgba(88,166,255,0.15)',  border:'rgba(88,166,255,0.3)',  text:'#58a6ff', val:'#58a6ff' },
+  { bg:'rgba(163,113,247,0.15)', border:'rgba(163,113,247,0.3)', text:'#a371f7', val:'#a371f7' },
+  { bg:'rgba(255,121,198,0.15)', border:'rgba(255,121,198,0.3)', text:'#ff79c6', val:'#ff79c6' },
+  { bg:'rgba(255,184,0,0.15)',   border:'rgba(255,184,0,0.3)',   text:'#ffb800', val:'#ffb800' },
+  { bg:'rgba(224,92,42,0.15)',   border:'rgba(224,92,42,0.3)',   text:'#e05c2a', val:'#e05c2a' },
+  { bg:'rgba(248,81,73,0.15)',   border:'rgba(248,81,73,0.3)',   text:'#f85149', val:'#f85149' },
+  { bg:'rgba(0,210,211,0.15)',   border:'rgba(0,210,211,0.3)',   text:'#00d2d3', val:'#00d2d3' },
+];
+
+function applyAvatar(colorVal, photoData, initial) {
+  const circle = document.getElementById('avatar-circle');
+  if (!circle) return;
+  const c = AVATAR_COLORS.find(x => x.val === colorVal) || AVATAR_COLORS[0];
+  circle.style.border = `2px solid ${c.border}`;
+  if (photoData) {
+    circle.innerHTML = `<img class="avatar-img" src="${photoData}" alt="">`;
+    circle.style.background = 'none';
+    circle.style.color = '';
+    circle.style.fontSize = '';
+  } else {
+    circle.textContent = initial;
+    circle.style.background = c.bg;
+    circle.style.color = c.text;
+    circle.style.fontSize = '28px';
+  }
+}
+
 function isGoogleUser(user) {
   return user.providerData.some(p => p.providerId === 'google.com');
 }
@@ -263,6 +304,23 @@ function renderProfile(user) {
       <div class="status-msg" id="profile-status"></div>
       <div class="btn-row">
         <button class="btn btn-primary" id="save-profile-btn">Save Changes</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Appearance</div>
+      <div class="field">
+        <label>Avatar Color</label>
+        <div class="color-swatches" id="color-swatches"></div>
+      </div>
+      <div class="field">
+        <label>Profile Photo</label>
+        <div class="photo-row">
+          <input type="file" id="photo-input" accept="image/*" style="display:none">
+          <button class="btn" id="upload-photo-btn">Upload Photo</button>
+          ${user.photoURL ? `<button class="btn" id="use-google-photo-btn">Use Google Photo</button>` : ''}
+          <button class="btn btn-danger" id="remove-photo-btn" style="display:none">Remove Photo</button>
+        </div>
       </div>
     </div>
 
@@ -321,7 +379,8 @@ function renderProfile(user) {
     try {
       await firebase.auth().currentUser.updateProfile({ displayName: name });
       document.getElementById('display-name-heading').textContent = name || 'No name set';
-      document.getElementById('avatar-circle').textContent = (name || user.email || '?')[0].toUpperCase();
+      const circle = document.getElementById('avatar-circle');
+      if (!circle.querySelector('img')) circle.textContent = (name || user.email || '?')[0].toUpperCase();
       status.textContent = 'Saved.'; status.className = 'status-msg success';
     } catch (e) {
       status.textContent = e.message; status.className = 'status-msg error';
@@ -361,19 +420,96 @@ function renderProfile(user) {
     firebase.auth().signOut().then(() => { window.location.href = 'login.html'; });
   });
 
-  // Bag info — stored in prefs (separate from bag builder settings)
+  // Load all prefs: bag info + appearance
   (async () => {
-    const distInput   = document.getElementById('prof-dist');
+    const distInput    = document.getElementById('prof-dist');
     const bagSizeInput = document.getElementById('prof-bagsize');
-    const status      = document.getElementById('bag-settings-status');
+    const bagStatus    = document.getElementById('bag-settings-status');
+    const initial      = (user.displayName || user.email || '?')[0].toUpperCase();
+
+    let currentColor = '#39d353';
+    let currentPhoto = null;
 
     try {
       const doc = await db.collection('bags').doc(user.uid).get();
       const p   = doc.exists ? doc.data().prefs : null;
-      if (p?.dist)    distInput.value    = p.dist;
-      if (p?.bagSize) bagSizeInput.value = p.bagSize;
+      if (p?.dist)         distInput.value    = p.dist;
+      if (p?.bagSize)      bagSizeInput.value = p.bagSize;
+      if (p?.avatarColor)  currentColor       = p.avatarColor;
+      if (p?.avatarPhoto)  currentPhoto       = p.avatarPhoto;
     } catch (e) { console.error(e); }
 
+    applyAvatar(currentColor, currentPhoto, initial);
+
+    // Render color swatches
+    const swatchWrap = document.getElementById('color-swatches');
+    swatchWrap.innerHTML = AVATAR_COLORS.map(c =>
+      `<button class="color-swatch${c.val === currentColor ? ' active' : ''}" style="background:${c.val}" data-val="${c.val}"></button>`
+    ).join('');
+    swatchWrap.addEventListener('click', async e => {
+      const btn = e.target.closest('.color-swatch');
+      if (!btn) return;
+      currentColor = btn.dataset.val;
+      applyAvatar(currentColor, currentPhoto, initial);
+      swatchWrap.querySelectorAll('.color-swatch').forEach(s =>
+        s.classList.toggle('active', s.dataset.val === currentColor)
+      );
+      try {
+        await db.collection('bags').doc(user.uid).set({ prefs: { avatarColor: currentColor } }, { merge: true });
+      } catch (e) { console.error(e); }
+    });
+
+    // Photo upload
+    const removeBtn = document.getElementById('remove-photo-btn');
+    if (currentPhoto) removeBtn.style.display = '';
+
+    document.getElementById('upload-photo-btn').addEventListener('click', () => {
+      document.getElementById('photo-input').click();
+    });
+
+    document.getElementById('photo-input').addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = async () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 80; canvas.height = 80;
+        const size = Math.min(img.width, img.height);
+        canvas.getContext('2d').drawImage(img, (img.width - size) / 2, (img.height - size) / 2, size, size, 0, 0, 80, 80);
+        currentPhoto = canvas.toDataURL('image/jpeg', 0.75);
+        URL.revokeObjectURL(url);
+        applyAvatar(currentColor, currentPhoto, initial);
+        removeBtn.style.display = '';
+        try {
+          await db.collection('bags').doc(user.uid).set({ prefs: { avatarPhoto: currentPhoto } }, { merge: true });
+        } catch (e) { console.error(e); }
+      };
+      img.src = url;
+    });
+
+    const googlePhotoBtn = document.getElementById('use-google-photo-btn');
+    if (googlePhotoBtn) {
+      googlePhotoBtn.addEventListener('click', async () => {
+        currentPhoto = user.photoURL;
+        applyAvatar(currentColor, currentPhoto, initial);
+        removeBtn.style.display = '';
+        try {
+          await db.collection('bags').doc(user.uid).set({ prefs: { avatarPhoto: currentPhoto } }, { merge: true });
+        } catch (e) { console.error(e); }
+      });
+    }
+
+    removeBtn.addEventListener('click', async () => {
+      currentPhoto = null;
+      applyAvatar(currentColor, null, initial);
+      removeBtn.style.display = 'none';
+      try {
+        await db.collection('bags').doc(user.uid).set({ prefs: { avatarPhoto: null } }, { merge: true });
+      } catch (e) { console.error(e); }
+    });
+
+    // Bag info save
     document.getElementById('save-bag-settings-btn').addEventListener('click', async () => {
       const btn = document.getElementById('save-bag-settings-btn');
       btn.disabled = true;
@@ -384,12 +520,12 @@ function renderProfile(user) {
           { prefs: { dist: newDist, bagSize: newBagSize } },
           { merge: true }
         );
-        status.textContent = 'Saved.'; status.className = 'status-msg success';
+        bagStatus.textContent = 'Saved.'; bagStatus.className = 'status-msg success';
       } catch (e) {
-        status.textContent = e.message; status.className = 'status-msg error';
+        bagStatus.textContent = e.message; bagStatus.className = 'status-msg error';
       }
       btn.disabled = false;
-      setTimeout(() => { status.textContent = ''; }, 3000);
+      setTimeout(() => { bagStatus.textContent = ''; }, 3000);
     });
   })();
 }
