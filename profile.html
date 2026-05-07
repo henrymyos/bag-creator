@@ -171,7 +171,8 @@ function renderProfile(user) {
       </div>
       <div class="field">
         <label>Display Name</label>
-        <input type="text" id="display-name-input" value="${user.displayName || ''}" placeholder="Your name" />
+        <input type="text" id="display-name-input" value="${user.displayName || ''}" placeholder="Your name" maxlength="30" />
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;text-align:right" id="name-char-count">${(user.displayName || '').length}/30</div>
       </div>
       <div class="field">
         <label>Sign-in method</label>
@@ -213,6 +214,11 @@ function renderProfile(user) {
       </div>
     </div>
   `;
+
+  // Live char counter
+  document.getElementById('display-name-input').addEventListener('input', function() {
+    document.getElementById('name-char-count').textContent = this.value.length + '/30';
+  });
 
   // Save display name
   document.getElementById('save-profile-btn').addEventListener('click', async () => {

@@ -359,6 +359,7 @@ function decodeBag(str) {
 
 let myBag = [];
 const urlParam = new URLSearchParams(location.search).get('bag');
+const urlAdd   = new URLSearchParams(location.search).get('add');
 if (urlParam) myBag = decodeBag(urlParam);
 
 let searchQuery = '';
@@ -424,6 +425,19 @@ async function loadFromFirestore() {
       // First login — persist the current URL bag
       await saveToFirestore();
     }
+
+    // Merge discs passed via ?add= (from bag builder), skipping duplicates
+    if (urlAdd) {
+      const toAdd = decodeBag(urlAdd);
+      const existingKeys = new Set(myBag.map(discKey));
+      const merged = toAdd.filter(d => !existingKeys.has(discKey(d)));
+      myBag.push(...merged);
+      if (merged.length) await saveToFirestore();
+      // Remove ?add= from the URL so refresh doesn't re-add
+      const cleanUrl = location.pathname + (myBag.length ? `?bag=${encodeBag(myBag)}` : '');
+      history.replaceState(null, '', cleanUrl);
+    }
+
     updateURL();
     render();
   } catch (e) { console.error('Firestore load error:', e); }

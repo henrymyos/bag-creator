@@ -367,7 +367,8 @@
     <a class="nav-link active" href="archive.html">Disc Archive</a>
   </nav>
   <div class="nav-right">
-    <a class="nav-link" href="login.html">Sign In</a>
+    <a class="nav-link" href="profile.html" id="nav-profile" style="display:none">Profile</a>
+    <a class="nav-link" href="login.html" id="nav-auth">Sign In</a>
   </div>
 </header>
 
@@ -569,6 +570,31 @@ function render() {
 
 updateBrandFilterButtons();
 render();
+</script>
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script>
+(function() {
+  const FB_READY = typeof FIREBASE_CONFIG !== 'undefined' &&
+    FIREBASE_CONFIG.projectId !== 'YOUR_PROJECT_ID';
+  if (!FB_READY) return;
+
+  firebase.initializeApp(FIREBASE_CONFIG);
+  const auth = firebase.auth();
+
+  auth.onAuthStateChanged(user => {
+    const navAuth    = document.getElementById('nav-auth');
+    const navProfile = document.getElementById('nav-profile');
+    if (user) {
+      if (navProfile) navProfile.style.display = '';
+      if (navAuth) { navAuth.textContent = 'Sign Out'; navAuth.href = '#'; navAuth.onclick = e => { e.preventDefault(); auth.signOut(); }; }
+    } else {
+      if (navProfile) navProfile.style.display = 'none';
+      if (navAuth) { navAuth.textContent = 'Sign In'; navAuth.href = 'login.html'; navAuth.onclick = null; }
+    }
+  });
+})();
 </script>
 </body>
 </html>
