@@ -150,6 +150,16 @@
     .search-wrap {
       position: relative;
     }
+    .search-icon {
+      position: absolute;
+      left: 9px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+    }
     .search-input {
       background: var(--bg3);
       border: 1px solid var(--border2);
@@ -157,7 +167,7 @@
       color: var(--text);
       font-family: 'Barlow', sans-serif;
       font-size: 13px;
-      padding: 6px 28px 6px 10px;
+      padding: 6px 28px 6px 30px;
       width: 200px;
       outline: none;
       transition: border-color 0.15s;
@@ -377,6 +387,12 @@
   </div>
   <div class="filter-row">
     <div class="search-wrap">
+      <span class="search-icon">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="6.5" cy="6.5" r="5"/>
+          <line x1="10.5" y1="10.5" x2="14" y2="14"/>
+        </svg>
+      </span>
       <input class="search-input" id="search-input" type="text" placeholder="Search discs…" autocomplete="off" />
       <button class="search-clear" id="search-clear" aria-label="Clear search">✕</button>
     </div>
