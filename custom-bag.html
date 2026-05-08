@@ -203,6 +203,15 @@
     }
     .remove-btn:hover { background: rgba(247,129,102,0.15); border-color: rgba(247,129,102,0.4); color: #f78166; }
     .bag-disc-name { font-size: 14px; font-weight: 700; margin-bottom: 0.5rem; }
+    .disc-qty { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+    .qty-btn {
+      width: 22px; height: 22px; border-radius: 4px; border: 1px solid var(--border2);
+      background: var(--bg3); color: var(--muted); font-size: 14px; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.12s; padding: 0; line-height: 1; flex-shrink: 0;
+    }
+    .qty-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
+    .qty-count { font-size: 13px; font-weight: 700; color: var(--text); min-width: 18px; text-align: center; }
     .bag-disc-flights { display: flex; gap: 4px; }
     .fp { display: flex; flex-direction: column; align-items: center; background: var(--bg3); border-radius: 5px; padding: 3px 6px; min-width: 28px; }
     .fp-val { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; line-height: 1; }
@@ -570,7 +579,6 @@ document.getElementById('logout-btn')?.addEventListener('click', () => auth?.sig
 // ──────────────────────────────────────────────────────────
 
 function addDisc(disc) {
-  if (inBag(disc)) return;
   myBag.push(disc);
   updateURL();
   scheduleSave();
@@ -579,6 +587,24 @@ function addDisc(disc) {
 
 function removeDisc(key) {
   myBag = myBag.filter(d => discKey(d) !== key);
+  updateURL();
+  scheduleSave();
+  render();
+}
+
+function incrementDisc(key) {
+  const disc = DISCS.find(d => discKey(d) === key);
+  if (!disc) return;
+  myBag.push(disc);
+  updateURL();
+  scheduleSave();
+  render();
+}
+
+function decrementDisc(key) {
+  const idx = myBag.findLastIndex(d => discKey(d) === key);
+  if (idx === -1) return;
+  myBag.splice(idx, 1);
   updateURL();
   scheduleSave();
   render();
@@ -605,9 +631,9 @@ function renderBrowser() {
   }
 
   list.innerHTML = filtered.map(d => {
-    const already = inBag(d);
     const key = discKey(d);
-    return `<div class="disc-item${already ? ' in-bag' : ''}" data-key="${key}">
+    const qty = myBag.filter(b => discKey(b) === key).length;
+    return `<div class="disc-item" data-key="${key}">
       <div class="disc-type-dot" style="background:${typeColor[d.type]}"></div>
       <div class="disc-item-info">
         <div class="disc-item-name">${d.name}</div>
@@ -618,9 +644,13 @@ function renderBrowser() {
           </div>
         </div>
       </div>
-      <button class="add-btn" data-key="${key}" ${already ? 'disabled' : ''} title="${already ? 'Already in bag' : 'Add to bag'}">
-        ${already ? '✓' : '+'}
-      </button>
+      ${qty > 0
+        ? `<div class="disc-qty">
+            <button class="qty-btn qty-dec" data-key="${key}">−</button>
+            <span class="qty-count">${qty}</span>
+            <button class="qty-btn qty-inc" data-key="${key}">+</button>
+          </div>`
+        : `<button class="add-btn" data-key="${key}" title="Add to bag">+</button>`}
     </div>`;
   }).join('');
 }
@@ -680,15 +710,17 @@ function render() {
 
 // EVENTS
 document.getElementById('disc-list').addEventListener('click', e => {
-  const btn = e.target.closest('.add-btn');
-  if (!btn || btn.disabled) return;
-  const disc = DISCS.find(d => discKey(d) === btn.dataset.key);
-  if (disc) addDisc(disc);
+  const addBtn = e.target.closest('.add-btn');
+  if (addBtn) { const disc = DISCS.find(d => discKey(d) === addBtn.dataset.key); if (disc) addDisc(disc); return; }
+  const incBtn = e.target.closest('.qty-inc');
+  if (incBtn) { incrementDisc(incBtn.dataset.key); return; }
+  const decBtn = e.target.closest('.qty-dec');
+  if (decBtn) { decrementDisc(decBtn.dataset.key); return; }
 });
 
 document.getElementById('bag-display').addEventListener('click', e => {
-  const btn = e.target.closest('.remove-btn');
-  if (btn) removeDisc(btn.dataset.key);
+  const removeBtn = e.target.closest('.remove-btn');
+  if (removeBtn) { decrementDisc(removeBtn.dataset.key); return; }
 });
 
 document.getElementById('type-tabs').addEventListener('click', e => {
