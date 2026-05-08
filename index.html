@@ -1502,13 +1502,6 @@ render();
     }
   });
 
-  // Gate "Add to My Bag" behind login
-  document.getElementById('add-to-bag-btn').addEventListener('click', e => {
-    if (!currentUser) {
-      e.stopImmediatePropagation();
-      window.location.href = 'login.html?from=index.html';
-    }
-  }, true);
 })();
 </script>
 

@@ -529,6 +529,12 @@ if (FB_READY) {
     } else {
       myBag = [];
       profileDist = null;
+      if (urlAdd) {
+        const toAdd = decodeBag(urlAdd);
+        myBag.push(...toAdd);
+        const cleanUrl = location.pathname + (myBag.length ? `?bag=${encodeBag(myBag)}` : '');
+        history.replaceState(null, '', cleanUrl);
+      }
       updateURL();
       render();
     }
