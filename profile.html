@@ -151,6 +151,24 @@
     .help-dot.active { background:var(--accent); }
     .nav-help-btn { display:inline-flex;align-items:center;gap:5px;background:none;cursor:pointer; }
 
+    /* TOGGLE SWITCH */
+    .toggle-row { display: flex; align-items: center; gap: 0.75rem; margin-top: 4px; }
+    .toggle-switch { position: relative; display: inline-block; width: 42px; height: 22px; flex-shrink: 0; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .toggle-track {
+      position: absolute; cursor: pointer; inset: 0;
+      background: var(--bg3); border: 1px solid var(--border2);
+      border-radius: 22px; transition: 0.2s;
+    }
+    .toggle-track::before {
+      content: ''; position: absolute;
+      width: 16px; height: 16px; left: 2px; bottom: 2px;
+      background: var(--muted); border-radius: 50%; transition: 0.2s;
+    }
+    .toggle-switch input:checked + .toggle-track { background: rgba(57,211,83,0.18); border-color: rgba(57,211,83,0.5); }
+    .toggle-switch input:checked + .toggle-track::before { transform: translateX(20px); background: var(--accent); }
+    .toggle-label { font-size: 13px; color: var(--muted); }
+
     /* APPEARANCE */
     .color-swatches { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
     .color-swatch {
@@ -172,6 +190,7 @@
     <a class="nav-link" href="index.html">Bag Builder</a>
     <a class="nav-link" href="custom-bag.html">My Bag</a>
     <a class="nav-link" href="archive.html">Disc Archive</a>
+    <a class="nav-link" href="social.html">Community</a>
   </nav>
   <div class="nav-right">
     <button class="nav-link nav-help-btn" id="help-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Help</button>
@@ -185,6 +204,7 @@
   <a class="mobile-menu-link" href="index.html">Bag Builder</a>
   <a class="mobile-menu-link" href="custom-bag.html">My Bag</a>
   <a class="mobile-menu-link" href="archive.html">Disc Archive</a>
+  <a class="mobile-menu-link" href="social.html">Community</a>
   <div class="mobile-menu-divider"></div>
   <button class="mobile-menu-link" id="help-btn-mobile">? Help</button>
   <a class="mobile-menu-link active" href="profile.html" id="nav-profile-mobile">Profile</a>
@@ -358,12 +378,29 @@ function renderProfile(user) {
     </div>` : ''}
 
     <div class="section">
+      <div class="section-title">Privacy</div>
+      <div class="field">
+        <label>Community Page</label>
+        <div class="toggle-row">
+          <label class="toggle-switch">
+            <input type="checkbox" id="public-toggle" />
+            <span class="toggle-track"></span>
+          </label>
+          <span class="toggle-label">Show my bag publicly on the Community page</span>
+        </div>
+        <div class="status-msg" id="privacy-status"></div>
+      </div>
+    </div>
+
+    <div class="section">
       <div class="section-title">Session</div>
       <div class="btn-row">
         <button class="btn btn-danger" id="signout-btn">Sign Out</button>
       </div>
     </div>
   `;
+
+  let isPublic = false;
 
   // Live char counter
   document.getElementById('display-name-input').addEventListener('input', function() {
@@ -378,6 +415,9 @@ function renderProfile(user) {
     btn.disabled = true;
     try {
       await firebase.auth().currentUser.updateProfile({ displayName: name });
+      if (isPublic) {
+        try { await db.collection('bags').doc(user.uid).update({ displayName: name || user.email || '' }); } catch {}
+      }
       document.getElementById('display-name-heading').textContent = name || 'No name set';
       const circle = document.getElementById('avatar-circle');
       if (!circle.querySelector('img')) circle.textContent = (name || user.email || '?')[0].toUpperCase();
@@ -437,7 +477,10 @@ function renderProfile(user) {
       if (p?.bagSize)      bagSizeInput.value = p.bagSize;
       if (p?.avatarColor)  currentColor       = p.avatarColor;
       if (p?.avatarPhoto)  currentPhoto       = p.avatarPhoto;
+      if (p?.public)       isPublic           = true;
     } catch (e) { console.error(e); }
+
+    document.getElementById('public-toggle').checked = isPublic;
 
     applyAvatar(currentColor, currentPhoto, initial);
 
@@ -507,6 +550,27 @@ function renderProfile(user) {
       try {
         await db.collection('bags').doc(user.uid).update({ 'prefs.avatarPhoto': null });
       } catch (e) { console.error(e); }
+    });
+
+    // Public toggle
+    document.getElementById('public-toggle').addEventListener('change', async function() {
+      isPublic = this.checked;
+      const privStatus = document.getElementById('privacy-status');
+      try {
+        const ref = db.collection('bags').doc(user.uid);
+        await ref.set({
+          'prefs': { public: isPublic },
+          'displayName': user.displayName || user.email || '',
+        }, { merge: true });
+        privStatus.textContent = isPublic ? 'Your bag is now visible on the Community page.' : 'Your bag is now hidden.';
+        privStatus.className = 'status-msg success';
+      } catch (e) {
+        this.checked = !isPublic;
+        isPublic = !isPublic;
+        privStatus.textContent = e.message;
+        privStatus.className = 'status-msg error';
+      }
+      setTimeout(() => { privStatus.textContent = ''; }, 4000);
     });
 
     // Bag info save
