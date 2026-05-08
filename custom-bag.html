@@ -175,6 +175,31 @@
     .share-btn { border-color: rgba(57,211,83,0.4); color: var(--accent); background: rgba(57,211,83,0.08); display: flex; align-items: center; gap: 6px; }
     .share-btn:hover { background: rgba(57,211,83,0.15); color: var(--accent); }
     .share-btn.copied { border-color: rgba(57,211,83,0.6); background: rgba(57,211,83,0.2); }
+    .eval-btn { border-color: rgba(88,166,255,0.4); color: var(--accent2); background: rgba(88,166,255,0.08); }
+    .eval-btn:hover { background: rgba(88,166,255,0.15); border-color: rgba(88,166,255,0.5); color: var(--accent2); }
+    .eval-overlay { position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center;padding:1rem; }
+    .eval-dialog { background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:100%;max-width:400px;overflow:hidden; }
+    .eval-body { padding:1.5rem; }
+    .eval-dist-label { display:block;font-size:12px;color:var(--muted);margin-bottom:0.6rem; }
+    .eval-dist-ctrl { display:flex;align-items:center;gap:8px; }
+    .eval-step-btn { width:28px;height:28px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:17px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.12s;flex-shrink:0; }
+    .eval-step-btn:hover { border-color:rgba(255,255,255,0.25); }
+    .eval-slider { flex:1;accent-color:var(--accent2);cursor:pointer; }
+    .eval-dist-val { font-size:12px;color:var(--muted);margin-top:0.35rem;text-align:center; }
+    .eval-score-wrap { text-align:center;padding:1.4rem 0 1rem; }
+    .eval-score { font-family:'Barlow Condensed',sans-serif;font-size:3.75rem;font-weight:700;line-height:1; }
+    .eval-score.s-great { color:#39d353; }
+    .eval-score.s-good  { color:#58a6ff; }
+    .eval-score.s-ok    { color:#d29922; }
+    .eval-score.s-low   { color:#f78166; }
+    .eval-score-label { font-size:13px;color:var(--muted);margin-top:0.3rem; }
+    .eval-breakdown { display:flex;flex-direction:column;gap:7px;border-top:1px solid var(--border);padding-top:1rem; }
+    .eval-row { display:flex;align-items:center;gap:8px; }
+    .eval-row-label { font-size:11px;color:var(--muted);width:68px;flex-shrink:0; }
+    .eval-bar-wrap { flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden; }
+    .eval-bar { height:100%;border-radius:3px;transition:width 0.3s ease; }
+    .eval-row-pct { font-size:11px;font-weight:600;width:32px;text-align:right;flex-shrink:0; }
+    .eval-empty { text-align:center;color:var(--muted);font-size:13px;padding:1.5rem 0; }
 
     .bag-empty { text-align: center; padding: 4rem 2rem; color: var(--muted); }
     .bag-empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
@@ -413,6 +438,7 @@
         </svg>
         Share Bag
       </button>
+      <button class="action-btn eval-btn" id="eval-btn">Evaluate</button>
       <button class="action-btn" id="clear-btn">Clear</button>
       <button class="action-btn undo-btn" id="undo-btn" style="display:none">Undo</button>
     </div>
@@ -468,6 +494,7 @@ function decodeBag(str) {
 }
 
 let myBag = [];
+let profileDist = null;
 const urlParam = new URLSearchParams(location.search).get('bag');
 const urlAdd   = new URLSearchParams(location.search).get('add');
 if (urlParam) { myBag = decodeBag(urlParam); sortBagByStability(); }
@@ -497,7 +524,14 @@ if (FB_READY) {
   auth.onAuthStateChanged(async user => {
     currentUser = user;
     updateAuthUI();
-    if (user) await loadFromFirestore();
+    if (user) {
+      await loadFromFirestore();
+    } else {
+      myBag = [];
+      profileDist = null;
+      updateURL();
+      render();
+    }
   });
 }
 
@@ -553,6 +587,7 @@ async function loadFromFirestore() {
     if (doc.exists) {
       const p = doc.data().prefs;
       if (p?.avatarColor || p?.avatarPhoto) applyAvatarBadge(p.avatarColor, p.avatarPhoto);
+      if (p?.dist) profileDist = parseInt(p.dist);
     }
     if (doc.exists && doc.data().bag?.length) {
       myBag = doc.data().bag.flatMap(key => {
@@ -926,6 +961,162 @@ render();
     if (e.key === 'Escape') close();
     if (e.key === 'ArrowRight' && cur < STEPS.length - 1) { cur++; render(); }
     if (e.key === 'ArrowLeft' && cur > 0) { cur--; render(); }
+  });
+})();
+</script>
+
+<div class="eval-overlay" id="eval-overlay" style="display:none">
+  <div class="eval-dialog">
+    <div class="help-header">
+      <span class="help-hdr-title">Bag Evaluation</span>
+      <button class="help-close" id="eval-close">×</button>
+    </div>
+    <div class="eval-body">
+      <div id="eval-slider-row">
+        <span class="eval-dist-label">Your max throw distance</span>
+        <div class="eval-dist-ctrl">
+          <button class="eval-step-btn" id="eval-dec">−</button>
+          <input class="eval-slider" type="range" id="eval-slider" min="100" max="500" step="25" value="300">
+          <button class="eval-step-btn" id="eval-inc">+</button>
+        </div>
+        <div class="eval-dist-val"><span id="eval-dist-num">300</span> ft</div>
+      </div>
+      <div id="eval-profile-row" style="display:none">
+        <span class="eval-dist-label">Throw distance from your profile: <strong id="eval-profile-num" style="color:var(--text)"></strong> ft</span>
+      </div>
+      <div id="eval-result"></div>
+    </div>
+  </div>
+</div>
+<script>
+(function() {
+  const DIST_TABLE = [
+    [0,0,1,1,3],[0,0,1,1,3],[0,0,1,2,2],[0,0,1,2,2],[0,0,2,1,2],
+    [0,0,2,2,1],[0,1,1,1,2],[0,1,1,2,1],[0,1,2,1,1],[0,2,1,1,1],
+    [0,2,1,1,1],[1,1,1,1,1],[1,1,1,1,1],[1,1,1,2,0],[1,1,2,1,0],
+    [1,2,1,1,0],[1,2,1,1,0]
+  ];
+  const PUTTER_TABLE = [
+    { maxDist:175, counts:[0,0,1,1,1] },
+    { maxDist:250, counts:[0,1,1,0,1] },
+    { maxDist:Infinity, counts:[0,1,1,1,0] },
+  ];
+  function getPutterDist(dist, n) {
+    if (n <= 0) return {vos:0,os:0,ne:0,us:0,vus:0};
+    if (n === 1) return {vos:0,os:0,ne:1,us:0,vus:0};
+    const tier = PUTTER_TABLE.find(e => dist <= e.maxDist).counts;
+    if (n === 3) return {vos:tier[0],os:tier[1],ne:tier[2],us:tier[3],vus:tier[4]};
+    const counts = tier.map(v => Math.floor(v/3*n));
+    const rem = n - counts.reduce((a,b)=>a+b,0);
+    [2,1,3,0,4].forEach((o,i) => { if (i < rem) counts[o]++; });
+    return {vos:counts[0],os:counts[1],ne:counts[2],us:counts[3],vus:counts[4]};
+  }
+  function getDistribution(dist, n) {
+    if (n <= 0) return {vos:0,os:0,ne:0,us:0,vus:0};
+    if (n === 1) return {vos:0,os:0,ne:1,us:0,vus:0};
+    const idx = Math.min(16, Math.max(0, Math.round((dist-100)/25)));
+    const base = DIST_TABLE[idx];
+    if (n === 5) return {vos:base[0],os:base[1],ne:base[2],us:base[3],vus:base[4]};
+    const counts = base.map(v => Math.floor(v/5*n));
+    const rem = n - counts.reduce((a,b)=>a+b,0);
+    base.map((v,i)=>({i,f:v/5*n-counts[i]})).sort((a,b)=>b.f-a.f).slice(0,rem).forEach(({i})=>counts[i]++);
+    return {vos:counts[0],os:counts[1],ne:counts[2],us:counts[3],vus:counts[4]};
+  }
+  const STABS = ['very overstable','overstable','neutral','understable','very understable'];
+  const KEYS  = ['vos','os','ne','us','vus'];
+  const TYPE_NAMES = {putter:'Putters',midrange:'Midranges',fairway:'Fairways',distance:'Distance'};
+  const TYPE_ORDER_E = ['putter','midrange','fairway','distance'];
+
+  function evaluate(dist) {
+    if (!myBag.length) return null;
+    let totalIdeal = 0, totalMatched = 0;
+    const breakdown = [];
+    for (const type of TYPE_ORDER_E) {
+      const typeDiscs = myBag.filter(d => d.type === type);
+      if (!typeDiscs.length) continue;
+      const ideal = type === 'putter' ? getPutterDist(dist, typeDiscs.length) : getDistribution(dist, typeDiscs.length);
+      const uc = {};
+      for (const d of typeDiscs) uc[d.stability] = (uc[d.stability]||0) + 1;
+      let ti = 0, tm = 0;
+      for (let i = 0; i < KEYS.length; i++) {
+        const ic = ideal[KEYS[i]];
+        ti += ic; tm += Math.min(uc[STABS[i]]||0, ic);
+      }
+      totalIdeal += ti; totalMatched += tm;
+      breakdown.push({type, pct: ti > 0 ? Math.round(tm/ti*100) : 100});
+    }
+    return totalIdeal > 0 ? {overall: Math.round(totalMatched/totalIdeal*100), breakdown} : null;
+  }
+
+  function scoreClass(p) { return p >= 80 ? 's-great' : p >= 60 ? 's-good' : p >= 40 ? 's-ok' : 's-low'; }
+  function scoreLabel(p) {
+    return p >= 90 ? 'Excellent bag' : p >= 75 ? 'Great bag' : p >= 60 ? 'Good bag' : p >= 40 ? 'Some gaps' : 'Significant gaps';
+  }
+  function barColor(p) { return p >= 80 ? '#39d353' : p >= 60 ? '#58a6ff' : p >= 40 ? '#d29922' : '#f78166'; }
+
+  let evalDist = 300;
+
+  function openEval() {
+    if (profileDist) {
+      evalDist = profileDist;
+      document.getElementById('eval-slider-row').style.display = 'none';
+      document.getElementById('eval-profile-row').style.display = '';
+      document.getElementById('eval-profile-num').textContent = profileDist;
+    } else {
+      document.getElementById('eval-slider-row').style.display = '';
+      document.getElementById('eval-profile-row').style.display = 'none';
+    }
+    renderEval();
+    document.getElementById('eval-overlay').style.display = 'flex';
+  }
+
+  function renderEval() {
+    const result = evaluate(evalDist);
+    if (!result) {
+      document.getElementById('eval-result').innerHTML = '<div class="eval-empty">Add discs to your bag to evaluate.</div>';
+      return;
+    }
+    const {overall, breakdown} = result;
+    document.getElementById('eval-result').innerHTML = `
+      <div class="eval-score-wrap">
+        <div class="eval-score ${scoreClass(overall)}">${overall}%</div>
+        <div class="eval-score-label">${scoreLabel(overall)}</div>
+      </div>
+      <div class="eval-breakdown">
+        ${breakdown.map(({type,pct}) => `
+          <div class="eval-row">
+            <span class="eval-row-label">${TYPE_NAMES[type]}</span>
+            <div class="eval-bar-wrap"><div class="eval-bar" style="width:${pct}%;background:${barColor(pct)}"></div></div>
+            <span class="eval-row-pct" style="color:${barColor(pct)}">${pct}%</span>
+          </div>`).join('')}
+      </div>`;
+  }
+
+  document.getElementById('eval-slider').addEventListener('input', function() {
+    evalDist = parseInt(this.value);
+    document.getElementById('eval-dist-num').textContent = evalDist;
+    renderEval();
+  });
+  document.getElementById('eval-dec').addEventListener('click', () => {
+    const s = document.getElementById('eval-slider');
+    s.value = Math.max(100, parseInt(s.value) - 25);
+    s.dispatchEvent(new Event('input'));
+  });
+  document.getElementById('eval-inc').addEventListener('click', () => {
+    const s = document.getElementById('eval-slider');
+    s.value = Math.min(500, parseInt(s.value) + 25);
+    s.dispatchEvent(new Event('input'));
+  });
+  document.getElementById('eval-btn').addEventListener('click', openEval);
+  document.getElementById('eval-close').addEventListener('click', () => {
+    document.getElementById('eval-overlay').style.display = 'none';
+  });
+  document.getElementById('eval-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('eval-overlay')) document.getElementById('eval-overlay').style.display = 'none';
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && document.getElementById('eval-overlay').style.display !== 'none')
+      document.getElementById('eval-overlay').style.display = 'none';
   });
 })();
 </script>
