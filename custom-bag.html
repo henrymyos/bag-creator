@@ -200,6 +200,20 @@
     .eval-bar { height:100%;border-radius:3px;transition:width 0.3s ease; }
     .eval-row-pct { font-size:11px;font-weight:600;width:32px;text-align:right;flex-shrink:0; }
     .eval-empty { text-align:center;color:var(--muted);font-size:13px;padding:1.5rem 0; }
+    .fc-btn { border-color:rgba(167,139,250,0.4);color:#a78bfa;background:rgba(167,139,250,0.08); }
+    .fc-btn:hover { background:rgba(167,139,250,0.15);border-color:rgba(167,139,250,0.5);color:#a78bfa; }
+    .fc-overlay { position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center;padding:1rem; }
+    .fc-dialog { background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:100%;max-width:720px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden; }
+    .fc-header { display:flex;align-items:center;padding:1rem 1.25rem;border-bottom:1px solid var(--border);flex-shrink:0; }
+    .fc-title { font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;flex:1; }
+    .fc-body { padding:1.25rem;overflow-y:auto;flex:1; }
+    .fc-section { margin-bottom:1.5rem; }
+    .fc-section-title { font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem; }
+    .fc-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:0.75rem; }
+    .fc-card { background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:0.6rem 0.5rem;display:flex;flex-direction:column;align-items:center;gap:0.35rem; }
+    .fc-card-name { font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.04em;text-align:center; }
+    .fc-card-nums { font-size:10px;color:var(--muted);text-align:center;letter-spacing:0.03em; }
+    .fc-empty { text-align:center;color:var(--muted);font-size:13px;padding:2rem 0; }
 
     .bag-empty { text-align: center; padding: 4rem 2rem; color: var(--muted); }
     .bag-empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
@@ -438,6 +452,7 @@
         </svg>
         Share Bag
       </button>
+      <button class="action-btn fc-btn" id="fc-btn">Flight Charts</button>
       <button class="action-btn eval-btn" id="eval-btn">Evaluate</button>
       <button class="action-btn" id="clear-btn">Clear</button>
       <button class="action-btn undo-btn" id="undo-btn" style="display:none">Undo</button>
@@ -994,6 +1009,15 @@ render();
     </div>
   </div>
 </div>
+<div class="fc-overlay" id="fc-overlay" style="display:none">
+  <div class="fc-dialog">
+    <div class="fc-header">
+      <span class="fc-title">Flight Charts</span>
+      <button class="help-close" id="fc-close">×</button>
+    </div>
+    <div class="fc-body" id="fc-body"></div>
+  </div>
+</div>
 <script>
 (function() {
   const DIST_TABLE = [
@@ -1126,6 +1150,169 @@ render();
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && document.getElementById('eval-overlay').style.display !== 'none')
       document.getElementById('eval-overlay').style.display = 'none';
+  });
+})();
+
+(function() {
+  const W = 660, H = 545, OX = 300, OY = 505;
+
+  const STAB = {
+    'very overstable':  { lat:-0.58, color:'#f78166', abbr:'VOS', lx:-1,    ly:-0.10, anchor:'end' },
+    'overstable':       { lat:-0.35, color:'#d29922', abbr:'OS',  lx:-0.85, ly:-0.53, anchor:'end' },
+    'neutral':          { lat: 0,    color:'#39d353', abbr:'NE',  lx: 0,    ly:-1,    anchor:'middle' },
+    'understable':      { lat:+0.35, color:'#58a6ff', abbr:'US',  lx: 0.85, ly:-0.53, anchor:'start' },
+    'very understable': { lat:+0.58, color:'#a371f7', abbr:'VUS', lx: 1,    ly:-0.10, anchor:'start' },
+  };
+
+  // cp1dx/cp2dx: rightward offset from OX/endX as fraction of vert
+  // cp1t: how far up cp1 sits (0=origin, 1=endpoint height) — higher = later curvature start
+  // cp2t: how far above endY cp2 sits as fraction of vert — lower = sharper finish
+  // VOS/OS: start straight up (cp1dx=0), fade hard left near the end
+  // NE-long: very subtle S-curve (barely visible)
+  // US: turn right early, finish pointing mostly straight up
+  // VUS: turn hard right early, finish still angled right (no fade)
+  const CP = {
+    'very overstable':  { cp1dx:  0,    cp1t:0.72, cp2dx:+0.20, cp2t:0.07 },
+    'overstable':       { cp1dx:  0,    cp1t:0.70, cp2dx:+0.12, cp2t:0.10 },
+    'neutral-short':    { cp1dx:  0,    cp1t:0.50, cp2dx:  0,   cp2t:0.50 },
+    'neutral-long':     { cp1dx:+0.07,  cp1t:0.42, cp2dx:+0.05, cp2t:0.35 },
+    'understable':      { cp1dx:  0,    cp1t:0.65, cp2dx:-0.06, cp2t:0.15 },
+    'very understable': { cp1dx:+0.04,  cp1t:0.58, cp2dx:-0.12, cp2t:0.15 },
+  };
+
+  // distFrac: fraction of max throw distance each category represents
+  const CATS = [
+    { abbr:'Putt', label:'Putters',          endY:303, stabs:['overstable','neutral','understable'],                                                      lblDist:26 },
+    { abbr:'Mid',  label:'Midranges',         endY:213, stabs:['very overstable','overstable','neutral','understable','very understable'], lblDist:16 },
+    { abbr:'FW',   label:'Fairway Drivers',   endY:123, stabs:['very overstable','overstable','neutral','understable','very understable'], lblDist:16 },
+    { abbr:'Dist', label:'Distance Drivers',  endY: 55, stabs:['very overstable','overstable','neutral','understable','very understable'], lblDist:16 },
+  ];
+
+  // Distance multipliers per stability: fraction of category distance each stability reaches
+  // Penalty scales by sqrt(baseVert/MAX_VERT) so shorter categories have less visible difference
+  const BASE_DMULT = {
+    'very overstable':  0.68,
+    'overstable':       0.85,
+    'neutral':          1.00,
+    'understable':      1.02,
+    'very understable': 0.97,
+  };
+
+  const LEGEND = [
+    { color:'#f78166', label:'Very Overstable', x: 90 },
+    { color:'#d29922', label:'Overstable',       x:205 },
+    { color:'#39d353', label:'Neutral',           x:315 },
+    { color:'#58a6ff', label:'Understable',       x:390 },
+    { color:'#a371f7', label:'Very Understable',  x:480 },
+  ];
+
+  function buildSVG(maxDist) {
+    const r = v => v.toFixed(1);
+    const MAX_VERT = OY - 55; // 450px, distance driver baseline
+    let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg">`;
+
+    s += `<line x1="${OX}" y1="${OY}" x2="${OX}" y2="12" stroke="rgba(255,255,255,0.18)" stroke-width="1" stroke-dasharray="3,5"/>`;
+
+    // Horizontal grid lines every 100 ft
+    for (let ft = 100; ft <= maxDist; ft += 100) {
+      const y = r(OY - (ft / maxDist) * MAX_VERT);
+      s += `<line x1="10" y1="${y}" x2="${W-10}" y2="${y}" stroke="rgba(255,255,255,0.22)" stroke-width="1" stroke-dasharray="5,4"/>`;
+      s += `<text x="${W-14}" y="${r(parseFloat(y)-4)}" fill="rgba(255,255,255,0.65)" font-size="9.5" font-family="Barlow Condensed,sans-serif" font-weight="700" text-anchor="end">${ft} ft</text>`;
+    }
+
+    // Arrows + labels — each stability ends at a scaled distance within its category
+    for (const { abbr: ca, endY: catEndY, stabs, lblDist } of CATS) {
+      const baseVert = OY - catEndY;
+      const isLong = ca === 'FW' || ca === 'Dist';
+      for (const key of stabs) {
+        const { lat, color, abbr: sa, lx, ly, anchor } = STAB[key];
+        const dmult = 1 - (1 - BASE_DMULT[key]) * Math.sqrt(baseVert / MAX_VERT);
+        const vert = baseVert * dmult;
+        const stabEndY = OY - vert;
+        const cpKey = key === 'neutral' ? (isLong ? 'neutral-long' : 'neutral-short') : key;
+        const { cp1dx, cp1t, cp2dx, cp2t } = CP[cpKey];
+        const ex = OX + lat * vert;
+        const cp1x = OX + cp1dx * vert;
+        const cp1y = OY - cp1t * vert;
+        const cp2x = ex + cp2dx * vert;
+        const cp2y = stabEndY + cp2t * vert;
+        const dx = ex - cp2x, dy = stabEndY - cp2y;
+        const len = Math.sqrt(dx*dx + dy*dy) || 1;
+        const nx = dx/len, ny = dy/len;
+        const sz = 4.5, px = -ny*sz, py = nx*sz;
+        const bx = ex - nx*sz*1.8, by = stabEndY - ny*sz*1.8;
+        s += `<path d="M ${OX} ${OY} C ${r(cp1x)} ${r(cp1y)}, ${r(cp2x)} ${r(cp2y)}, ${r(ex)} ${r(stabEndY)}" fill="none" stroke="${color}" stroke-width="1.8" stroke-linecap="round" opacity="0.85"/>`;
+        s += `<polygon points="${r(ex)},${r(stabEndY)} ${r(bx+px)},${r(by+py)} ${r(bx-px)},${r(by-py)}" fill="${color}" opacity="0.85"/>`;
+        const lbx = ex + lx * lblDist, lby = stabEndY + ly * lblDist;
+        s += `<text x="${r(lbx)}" y="${r(lby+3)}" fill="${color}" font-size="8.5" font-family="Barlow,sans-serif" font-weight="700" text-anchor="${anchor}" opacity="0.9">${ca}-${sa}</text>`;
+      }
+    }
+
+    s += `<circle cx="${OX}" cy="${OY}" r="4" fill="rgba(255,255,255,0.3)"/>`;
+    s += `<text x="${OX}" y="${OY+14}" fill="rgba(255,255,255,0.28)" font-size="8.5" font-family="Barlow Condensed,sans-serif" font-weight="700" text-anchor="middle" letter-spacing="0.06em">THROW ORIGIN</text>`;
+
+    s += `<text x="10" y="${H-12}" fill="rgba(255,255,255,0.3)" font-size="8" font-family="Barlow,sans-serif" font-weight="700">STABILITY:</text>`;
+    for (const { color, label, x } of LEGEND) {
+      s += `<circle cx="${x}" cy="${H-15}" r="4" fill="${color}" opacity="0.75"/>`;
+      s += `<text x="${x+8}" y="${H-11}" fill="${color}" font-size="8" font-family="Barlow,sans-serif" font-weight="700" opacity="0.75">${label}</text>`;
+    }
+    s += '</svg>';
+    return s;
+  }
+
+  function openFC() {
+    const body = document.getElementById('fc-body');
+    const initDist = profileDist || 300;
+
+    if (profileDist) {
+      body.innerHTML =
+        `<div style="padding-bottom:1rem">
+           <span class="eval-dist-label">Throw distance from your profile: <strong style="color:var(--text)">${profileDist} ft</strong></span>
+         </div><div id="fc-chart"></div>`;
+    } else {
+      body.innerHTML =
+        `<div style="padding-bottom:1rem">
+           <span class="eval-dist-label">Your max throw distance</span>
+           <div class="eval-dist-ctrl">
+             <button class="eval-step-btn" id="fc-dec">−</button>
+             <input class="eval-slider" type="range" id="fc-slider" min="100" max="500" step="25" value="${initDist}">
+             <button class="eval-step-btn" id="fc-inc">+</button>
+           </div>
+           <div class="eval-dist-val"><span id="fc-dist-num">${initDist}</span> ft</div>
+         </div><div id="fc-chart"></div>`;
+
+      document.getElementById('fc-slider').addEventListener('input', function() {
+        const d = parseInt(this.value);
+        document.getElementById('fc-dist-num').textContent = d;
+        document.getElementById('fc-chart').innerHTML = buildSVG(d);
+      });
+      document.getElementById('fc-dec').addEventListener('click', () => {
+        const sl = document.getElementById('fc-slider');
+        sl.value = Math.max(100, parseInt(sl.value) - 25);
+        sl.dispatchEvent(new Event('input'));
+      });
+      document.getElementById('fc-inc').addEventListener('click', () => {
+        const sl = document.getElementById('fc-slider');
+        sl.value = Math.min(500, parseInt(sl.value) + 25);
+        sl.dispatchEvent(new Event('input'));
+      });
+    }
+
+    document.getElementById('fc-chart').innerHTML = buildSVG(initDist);
+    document.getElementById('fc-overlay').style.display = 'flex';
+  }
+
+  document.getElementById('fc-btn').addEventListener('click', openFC);
+  document.getElementById('fc-close').addEventListener('click', () => {
+    document.getElementById('fc-overlay').style.display = 'none';
+  });
+  document.getElementById('fc-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('fc-overlay'))
+      document.getElementById('fc-overlay').style.display = 'none';
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && document.getElementById('fc-overlay').style.display !== 'none')
+      document.getElementById('fc-overlay').style.display = 'none';
   });
 })();
 </script>
