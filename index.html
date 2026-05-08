@@ -828,7 +828,7 @@
         <span>Total discs in bag &nbsp;<span style="color:var(--muted);font-weight:400">(excluding putting discs)</span></span>
         <div class="total-input-group">
           <button type="button" class="stepper-btn" onclick="adjustTotal(-1)">−</button>
-          <input type="number" class="total-input" id="total-count" min="0" max="36" value="18" />
+          <input type="number" class="total-input" id="total-count" min="0" max="35" value="18" />
           <button type="button" class="stepper-btn" onclick="adjustTotal(1)">+</button>
         </div>
       </div>
@@ -1100,7 +1100,7 @@ function getBag() {
 }
  
 const discCounts = { putter: 3, midrange: 5, fairway: 5, distance: 5 };
-const COUNT_MIN = 0, COUNT_MAX = 9;
+const COUNT_MIN = 0, COUNT_MAX = 12;
 
 // Restore settings from localStorage immediately so the UI never flashes defaults
 (function restoreLocalSettings() {
@@ -1132,16 +1132,16 @@ function setCount(type, val) {
 }
 
 function setTotalCount(total) {
-  const clamped = Math.max(0, Math.min(36, total));
+  const clamped = Math.max(0, Math.min(35, total));
   document.getElementById('total-count').value = clamped;
-  const putters = clamped === 0 ? 0 : clamped < 8 ? 1 : clamped < 15 ? 2 : 3;
+  const putters = Math.max(0, Math.floor(clamped / 4) - 1);
   const rest = clamped - putters;
-  const each = Math.floor(rest / 3);
-  const rem = rest % 3;
+  const each3 = Math.floor(rest / 3);
+  const rem3 = rest % 3;
   setCount('putter',   putters);
-  setCount('midrange', each);
-  setCount('fairway',  each + (rem >= 2 ? 1 : 0));
-  setCount('distance', each + (rem >= 1 ? 1 : 0));
+  setCount('midrange', each3);
+  setCount('fairway',  each3 + (rem3 >= 2 ? 1 : 0));
+  setCount('distance', each3 + (rem3 >= 1 ? 1 : 0));
   render();
   persistSettings();
   if (window._saveSettings) window._saveSettings();
@@ -1406,16 +1406,15 @@ document.getElementById('filter-prodigy').addEventListener('click', () => setBra
 
 
 document.getElementById('total-count').addEventListener('input', e => {
-  const total = Math.max(0, Math.min(36, parseInt(e.target.value) || 0));
-  // Putter count drops at fixed thresholds: 3 at 15+, 2 at 8-14, 1 at 1-7, 0 at 0
-  const putters = total === 0 ? 0 : total < 8 ? 1 : total < 15 ? 2 : 3;
+  const total = Math.max(0, Math.min(35, parseInt(e.target.value) || 0));
+  const putters = Math.max(0, Math.floor(total / 4) - 1);
   const rest = total - putters;
-  const each = Math.floor(rest / 3);
-  const rem = rest % 3;
+  const each3 = Math.floor(rest / 3);
+  const rem3 = rest % 3;
   setCount('putter',   putters);
-  setCount('midrange', each);
-  setCount('fairway',  each + (rem >= 2 ? 1 : 0));
-  setCount('distance', each + (rem >= 1 ? 1 : 0));
+  setCount('midrange', each3);
+  setCount('fairway',  each3 + (rem3 >= 2 ? 1 : 0));
+  setCount('distance', each3 + (rem3 >= 1 ? 1 : 0));
   render();
 });
 
