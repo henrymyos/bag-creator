@@ -1057,14 +1057,17 @@ render();
   let evalDist = 300;
 
   function openEval() {
-    if (profileDist) {
-      evalDist = profileDist;
-      document.getElementById('eval-slider-row').style.display = 'none';
-      document.getElementById('eval-profile-row').style.display = '';
-      document.getElementById('eval-profile-num').textContent = profileDist;
-    } else {
-      document.getElementById('eval-slider-row').style.display = '';
-      document.getElementById('eval-profile-row').style.display = 'none';
+    const isEmpty = myBag.length === 0;
+    document.getElementById('eval-slider-row').style.display = 'none';
+    document.getElementById('eval-profile-row').style.display = 'none';
+    if (!isEmpty) {
+      if (profileDist) {
+        evalDist = profileDist;
+        document.getElementById('eval-profile-row').style.display = '';
+        document.getElementById('eval-profile-num').textContent = profileDist;
+      } else {
+        document.getElementById('eval-slider-row').style.display = '';
+      }
     }
     renderEval();
     document.getElementById('eval-overlay').style.display = 'flex';
