@@ -182,7 +182,11 @@
     .group-count { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; color: var(--muted); }
 
     .bag-disc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.75rem; }
-    .bag-disc { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem 0.9rem; }
+    .bag-disc { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem 0.9rem; transition: border-color 0.12s, opacity 0.12s; }
+    .bag-disc[draggable] { cursor: grab; }
+    .bag-disc[draggable]:active { cursor: grabbing; }
+    .bag-disc.dragging { opacity: 0.3; }
+    .bag-disc.drag-over { border-color: rgba(57,211,83,0.6); box-shadow: 0 0 0 1px rgba(57,211,83,0.3); }
     .bag-disc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; margin-bottom: 0.5rem; }
     .bag-disc-badges { display: flex; gap: 4px; flex-wrap: wrap; }
     .brand-badge { font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; }
@@ -420,6 +424,15 @@ const TYPE_COLOR = { putter:'var(--putter)', midrange:'var(--midrange)', fairway
 const BRAND_LABEL = { innova:'Innova', discraft:'Discraft', trilogy:'Trilogy', mvp:'MVP' };
 const STAB_CLASS  = { 'very overstable':'very-overstable', 'overstable':'overstable', 'neutral':'neutral', 'understable':'understable', 'very understable':'very-understable' };
 const STAB_SHORT  = { 'very overstable':'Very OS', 'overstable':'Overstable', 'neutral':'Neutral', 'understable':'Understable', 'very understable':'Very US' };
+const STAB_ORDER  = { 'very overstable':0, 'overstable':1, 'stable':2, 'neutral':2, 'understable':3, 'very understable':4 };
+
+function sortBagByStability() {
+  const byType = {};
+  TYPE_ORDER.forEach(t => { byType[t] = []; });
+  myBag.forEach(d => { (byType[d.type] || (byType[d.type] = [])).push(d); });
+  TYPE_ORDER.forEach(t => byType[t].sort((a, b) => (STAB_ORDER[a.stability] ?? 2) - (STAB_ORDER[b.stability] ?? 2)));
+  myBag = TYPE_ORDER.flatMap(t => byType[t] || []);
+}
 
 function discKey(d) { return `${d.brand}|${d.type}|${d.name}`; }
 
@@ -441,7 +454,7 @@ function decodeBag(str) {
 let myBag = [];
 const urlParam = new URLSearchParams(location.search).get('bag');
 const urlAdd   = new URLSearchParams(location.search).get('add');
-if (urlParam) myBag = decodeBag(urlParam);
+if (urlParam) { myBag = decodeBag(urlParam); sortBagByStability(); }
 
 let searchQuery = '';
 let selectedType = 'all';
@@ -531,6 +544,7 @@ async function loadFromFirestore() {
         const d = DISCS.find(d => d.brand === brand && d.type === type && d.name === rest.join('|'));
         return d ? [d] : [];
       });
+      sortBagByStability();
     } else if (myBag.length) {
       // First login — persist the current URL bag
       await saveToFirestore();
@@ -670,17 +684,17 @@ function renderBag() {
   }
 
   const groups = TYPE_ORDER.map(type => {
-    const discs = myBag.filter(d => d.type === type);
-    if (!discs.length) return '';
+    const typeEntries = myBag.map((d, i) => ({ d, i })).filter(({ d }) => d.type === type);
+    if (!typeEntries.length) return '';
     return `<div>
       <div class="group-header">
         <div class="group-dot" style="background:${TYPE_COLOR[type]}"></div>
         <span class="group-title" style="color:${TYPE_COLOR[type]}">${TYPE_LABEL[type]}</span>
-        <span class="group-count">${discs.length}</span>
+        <span class="group-count">${typeEntries.length}</span>
       </div>
-      <div class="bag-disc-grid">
-        ${discs.map(d => `
-          <div class="bag-disc">
+      <div class="bag-disc-grid" data-type="${type}">
+        ${typeEntries.map(({ d, i }) => `
+          <div class="bag-disc" draggable="true" data-bag-idx="${i}" data-type="${type}">
             <div class="bag-disc-top">
               <div class="bag-disc-badges">
                 <span class="brand-badge ${d.brand}">${BRAND_LABEL[d.brand] || d.brand}</span>
@@ -721,6 +735,44 @@ document.getElementById('disc-list').addEventListener('click', e => {
 document.getElementById('bag-display').addEventListener('click', e => {
   const removeBtn = e.target.closest('.remove-btn');
   if (removeBtn) { decrementDisc(removeBtn.dataset.key); return; }
+});
+
+// Drag-to-reorder within type groups
+let _dragIdx = null, _dragType = null;
+const bagDisplay = document.getElementById('bag-display');
+
+bagDisplay.addEventListener('dragstart', e => {
+  const card = e.target.closest('[data-bag-idx]');
+  if (!card) return;
+  _dragIdx = parseInt(card.dataset.bagIdx);
+  _dragType = card.dataset.type;
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => card.classList.add('dragging'), 0);
+});
+
+bagDisplay.addEventListener('dragend', () => {
+  bagDisplay.querySelectorAll('.bag-disc').forEach(c => c.classList.remove('dragging', 'drag-over'));
+  _dragIdx = null; _dragType = null;
+});
+
+bagDisplay.addEventListener('dragover', e => {
+  e.preventDefault();
+  const card = e.target.closest('[data-bag-idx]');
+  bagDisplay.querySelectorAll('.bag-disc.drag-over').forEach(c => c.classList.remove('drag-over'));
+  if (card && card.dataset.type === _dragType && parseInt(card.dataset.bagIdx) !== _dragIdx)
+    card.classList.add('drag-over');
+});
+
+bagDisplay.addEventListener('drop', e => {
+  e.preventDefault();
+  const card = e.target.closest('[data-bag-idx]');
+  if (!card || _dragIdx === null || card.dataset.type !== _dragType) return;
+  const toIdx = parseInt(card.dataset.bagIdx);
+  if (toIdx === _dragIdx) return;
+  const [disc] = myBag.splice(_dragIdx, 1);
+  myBag.splice(toIdx > _dragIdx ? toIdx - 1 : toIdx, 0, disc);
+  scheduleSave();
+  render();
 });
 
 document.getElementById('type-tabs').addEventListener('click', e => {

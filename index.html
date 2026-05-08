@@ -1164,20 +1164,11 @@ function updateBrandFilterButtons() {
 }
 
 function setBrandFilter(filter) {
-  const allSelected = selectedBrands.size === ALL_BRANDS.length;
-  if (allSelected) {
-    selectedBrands = new Set([filter]);
+  if (selectedBrands.has(filter)) {
+    selectedBrands.delete(filter);
+    if (selectedBrands.size === 0) selectedBrands = new Set(ALL_BRANDS);
   } else {
-    if (selectedBrands.has(filter)) {
-      if (selectedBrands.size > 1) {
-        selectedBrands.delete(filter);
-      }
-    } else {
-      selectedBrands.add(filter);
-    }
-    if (selectedBrands.size === 0) {
-      selectedBrands = new Set(ALL_BRANDS);
-    }
+    selectedBrands.add(filter);
   }
   updateBrandFilterButtons();
   render();

@@ -455,7 +455,7 @@ function renderProfile(user) {
         s.classList.toggle('active', s.dataset.val === currentColor)
       );
       try {
-        await db.collection('bags').doc(user.uid).set({ prefs: { avatarColor: currentColor } }, { merge: true });
+        await db.collection('bags').doc(user.uid).update({ 'prefs.avatarColor': currentColor });
       } catch (e) { console.error(e); }
     });
 
@@ -482,7 +482,7 @@ function renderProfile(user) {
         applyAvatar(currentColor, currentPhoto, initial);
         removeBtn.style.display = '';
         try {
-          await db.collection('bags').doc(user.uid).set({ prefs: { avatarPhoto: currentPhoto } }, { merge: true });
+          await db.collection('bags').doc(user.uid).update({ 'prefs.avatarPhoto': currentPhoto });
         } catch (e) { console.error(e); }
       };
       img.src = url;
@@ -495,7 +495,7 @@ function renderProfile(user) {
         applyAvatar(currentColor, currentPhoto, initial);
         removeBtn.style.display = '';
         try {
-          await db.collection('bags').doc(user.uid).set({ prefs: { avatarPhoto: currentPhoto } }, { merge: true });
+          await db.collection('bags').doc(user.uid).update({ 'prefs.avatarPhoto': currentPhoto });
         } catch (e) { console.error(e); }
       });
     }
@@ -505,7 +505,7 @@ function renderProfile(user) {
       applyAvatar(currentColor, null, initial);
       removeBtn.style.display = 'none';
       try {
-        await db.collection('bags').doc(user.uid).set({ prefs: { avatarPhoto: null } }, { merge: true });
+        await db.collection('bags').doc(user.uid).update({ 'prefs.avatarPhoto': null });
       } catch (e) { console.error(e); }
     });
 
@@ -516,10 +516,12 @@ function renderProfile(user) {
       const newDist    = Math.max(100, Math.min(600, parseInt(distInput.value)    || 300));
       const newBagSize = Math.max(0,   Math.min(36,  parseInt(bagSizeInput.value) || 0));
       try {
-        await db.collection('bags').doc(user.uid).set(
-          { prefs: { dist: newDist, bagSize: newBagSize } },
-          { merge: true }
-        );
+        const ref = db.collection('bags').doc(user.uid);
+        try {
+          await ref.update({ 'prefs.dist': newDist, 'prefs.bagSize': newBagSize });
+        } catch {
+          await ref.set({ prefs: { dist: newDist, bagSize: newBagSize, avatarColor: currentColor, avatarPhoto: currentPhoto } }, { merge: true });
+        }
         bagStatus.textContent = 'Saved.'; bagStatus.className = 'status-msg success';
       } catch (e) {
         bagStatus.textContent = e.message; bagStatus.className = 'status-msg error';
