@@ -1045,13 +1045,6 @@ function getBag() {
 
   const byType = type => eligible.filter(d => d.type === type);
   const byStab = (pool, s) => pool.filter(d => d.stability === s);
-  const pickNUnique = (pool, n, usedKeys) => {
-    if (!n || !pool.length) return [];
-    const available = pool.filter(d => !usedKeys.has(discKey(d)));
-    const picked = pickN(available, n);
-    picked.forEach(d => usedKeys.add(discKey(d)));
-    return picked;
-  };
 
   const selectCategory = type => {
     const pool = byType(type);
@@ -1062,20 +1055,38 @@ function getBag() {
     const selected = [];
     const usedKeys = new Set();
 
-    selected.push(...pickNUnique(byStab(pool, "very overstable"), vos, usedKeys));
+    const vosPool = byStab(pool, "very overstable");
+    const osPool  = byStab(pool, "overstable");
+    const nePool  = byStab(pool, "neutral");
+    const usPool  = byStab(pool, "understable");
+    const vusPool = byStab(pool, "very understable");
 
-    let overstablePool;
+    // Pick n discs trying each pool in order, filling any shortfall from the next
+    const pickWithFallback = (n, ...pools) => {
+      const picked = [];
+      for (const p of pools) {
+        if (picked.length >= n) break;
+        const available = p.filter(d => !usedKeys.has(discKey(d)));
+        const batch = pickN(available, n - picked.length);
+        batch.forEach(d => usedKeys.add(discKey(d)));
+        picked.push(...batch);
+      }
+      return picked;
+    };
+
+    selected.push(...pickWithFallback(vos, vosPool, osPool));
+
+    let primaryOsPool;
     if (type === 'putter' && dist >= 450) {
-      const vosDiscs = byStab(pool, "very overstable");
-      overstablePool = vosDiscs.length > 0 && Math.random() < 0.5 ? vosDiscs : byStab(pool, "overstable");
+      primaryOsPool = vosPool.length > 0 && Math.random() < 0.5 ? vosPool : osPool;
     } else {
-      overstablePool = byStab(pool, "overstable");
+      primaryOsPool = osPool;
     }
-    selected.push(...pickNUnique(overstablePool, os, usedKeys));
+    selected.push(...pickWithFallback(os, primaryOsPool, vosPool, nePool));
 
-    selected.push(...pickNUnique(byStab(pool, "neutral"), ne, usedKeys));
-    selected.push(...pickNUnique(byStab(pool, "understable"), us, usedKeys));
-    selected.push(...pickNUnique(byStab(pool, "very understable"), vus, usedKeys));
+    selected.push(...pickWithFallback(ne, nePool, osPool, usPool));
+    selected.push(...pickWithFallback(us, usPool, vusPool, nePool));
+    selected.push(...pickWithFallback(vus, vusPool, usPool));
 
     return selected;
   };
