@@ -445,10 +445,15 @@ function sortBagByStability() {
 function discKey(d) { return `${d.brand}|${d.type}|${d.name}`; }
 
 function encodeBag(bag) {
-  return btoa(JSON.stringify(bag.map(discKey)));
+  return bag.map(d => DISCS.indexOf(d)).filter(i => i !== -1).join('-');
 }
 function decodeBag(str) {
   try {
+    // New format: hyphen-separated indices
+    if (/^\d[\d-]*$/.test(str)) {
+      return str.split('-').map(i => DISCS[parseInt(i)]).filter(Boolean);
+    }
+    // Legacy base64 format
     const keys = JSON.parse(atob(str));
     return keys.flatMap(key => {
       const [brand, type, ...rest] = key.split('|');
@@ -819,14 +824,18 @@ const shareBtn = document.getElementById('share-btn');
 shareBtn.addEventListener('click', () => {
   if (!myBag.length) return;
   const url = `${location.origin}${location.pathname}?bag=${encodeBag(myBag)}`;
-  navigator.clipboard.writeText(url).then(() => {
-    shareBtn.classList.add('copied');
-    shareBtn.innerHTML = '✓ Copied!';
-    setTimeout(() => {
-      shareBtn.classList.remove('copied');
-      shareBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="2.5" r="1.5"/><circle cx="13" cy="13.5" r="1.5"/><circle cx="3" cy="8" r="1.5"/><line x1="4.5" y1="7" x2="11.5" y2="3.5"/><line x1="4.5" y1="9" x2="11.5" y2="12.5"/></svg>Share Bag`;
-    }, 2000);
-  });
+  if (navigator.share) {
+    navigator.share({ title: 'My Disc Golf Bag', url });
+  } else {
+    navigator.clipboard.writeText(url).then(() => {
+      shareBtn.classList.add('copied');
+      shareBtn.innerHTML = '✓ Copied!';
+      setTimeout(() => {
+        shareBtn.classList.remove('copied');
+        shareBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="2.5" r="1.5"/><circle cx="13" cy="13.5" r="1.5"/><circle cx="3" cy="8" r="1.5"/><line x1="4.5" y1="7" x2="11.5" y2="3.5"/><line x1="4.5" y1="9" x2="11.5" y2="12.5"/></svg>Share Bag`;
+      }, 2000);
+    });
+  }
 });
 
 document.getElementById('clear-btn').addEventListener('click', () => {
