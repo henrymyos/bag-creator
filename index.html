@@ -1074,7 +1074,7 @@ function getBag() {
       return picked;
     };
 
-    selected.push(...pickWithFallback(vos, vosPool, osPool));
+    selected.push(...pickWithFallback(vos, vosPool, osPool, nePool));
 
     let primaryOsPool;
     if (type === 'putter' && dist >= 450) {
@@ -1085,8 +1085,8 @@ function getBag() {
     selected.push(...pickWithFallback(os, primaryOsPool, vosPool, nePool));
 
     selected.push(...pickWithFallback(ne, nePool, osPool, usPool));
-    selected.push(...pickWithFallback(us, usPool, vusPool, nePool));
-    selected.push(...pickWithFallback(vus, vusPool, usPool));
+    selected.push(...pickWithFallback(us, usPool, nePool));
+    selected.push(...pickWithFallback(vus, vusPool, usPool, nePool));
 
     return selected;
   };
