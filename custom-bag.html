@@ -158,11 +158,14 @@
 
     /* ── BAG PANEL ── */
     .bag-panel { padding: 1.5rem 2rem 3rem; }
+    .bag-meta {
+      display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem;
+    }
     .bag-actions {
       display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.5rem;
       padding-bottom: 1.25rem; border-bottom: 1px solid var(--border);
     }
-    .bag-count { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 600; color: var(--muted); flex: 1; }
+    .bag-count { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 600; color: var(--muted); }
     .bag-count strong { color: var(--text); font-size: 20px; font-weight: 700; margin-right: 2px; }
     .action-btn {
       padding: 7px 14px; font-family: 'Barlow', sans-serif; font-size: 12px; font-weight: 600;
@@ -441,14 +444,17 @@
 
   <!-- BAG -->
   <div class="bag-panel">
-    <div class="bag-actions">
+    <div class="bag-meta">
       <div class="bag-count" id="bag-count"><strong>0</strong> discs</div>
       <span class="save-status" id="save-status"></span>
+      <div style="flex:1"></div>
       <div class="user-badge" id="user-badge">
         <div class="user-avatar" id="user-avatar"></div>
         <span id="user-email"></span>
-        <button class="action-btn" id="logout-btn" style="padding:4px 10px;font-size:11px">Sign Out</button>
       </div>
+      <button class="action-btn" id="clear-btn">Clear</button>
+    </div>
+    <div class="bag-actions">
       <button class="action-btn share-btn" id="share-btn">
         <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="13" cy="2.5" r="1.5"/><circle cx="13" cy="13.5" r="1.5"/><circle cx="3" cy="8" r="1.5"/>
@@ -456,9 +462,8 @@
         </svg>
         Share Bag
       </button>
-      <button class="action-btn fc-btn" id="fc-btn">Flight Charts</button>
       <button class="action-btn eval-btn" id="eval-btn">Evaluate</button>
-      <button class="action-btn" id="clear-btn">Clear</button>
+      <button class="action-btn fc-btn" id="fc-btn">Flight Charts</button>
       <button class="action-btn undo-btn" id="undo-btn" style="display:none">Undo</button>
     </div>
     <div id="bag-display"></div>
@@ -711,7 +716,6 @@ async function applyAuthState(user) {
 supabase.auth.onAuthStateChange(async (event, session) => applyAuthState(session?.user ?? null));
 getSupabaseSession(supabase).then(session => applyAuthState(session?.user ?? null));
 
-document.getElementById('logout-btn')?.addEventListener('click', () => signOutAndRedirect(supabase, 'index.html'));
 // ──────────────────────────────────────────────────────────
 
 let lastClearedBag = null;
