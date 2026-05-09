@@ -212,9 +212,9 @@
 </div>
 
 <div class="page" id="page-content">
-  <div class="not-logged-in">
+  <div class="not-logged-in" id="not-logged-in" style="display:none">
     <h2>Not signed in</h2>
-    <p>Please <a href="login.html">sign in</a> to view your profile.</p>
+    <p>Please <a href="login.html?from=profile.html">sign in</a> to view your profile.</p>
   </div>
 </div>
 
@@ -225,8 +225,7 @@ supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: { flowType: 'implicit', detectSessionInUrl: true }
 });
 
-supabase.auth.onAuthStateChange((event, session) => {
-  const user        = session?.user ?? null;
+function applyAuthState(user) {
   const navAuth     = document.getElementById('nav-auth');
   const navProfile  = document.getElementById('nav-profile');
   const navAuthM    = document.getElementById('nav-auth-mobile');
@@ -238,12 +237,16 @@ supabase.auth.onAuthStateChange((event, session) => {
     if (navAuthM) { navAuthM.textContent = 'Sign Out'; navAuthM.href = '#'; navAuthM.onclick = e => { e.preventDefault(); supabase.auth.signOut(); }; }
     renderProfile(user);
   } else {
+    document.getElementById('not-logged-in').style.display = '';
     if (navProfile)  navProfile.style.display  = 'none';
     if (navProfileM) navProfileM.style.display = 'none';
     if (navAuth)  { navAuth.textContent  = 'Sign In'; navAuth.href  = 'login.html?from=profile.html'; navAuth.onclick  = null; }
     if (navAuthM) { navAuthM.textContent = 'Sign In'; navAuthM.href = 'login.html?from=profile.html'; navAuthM.onclick = null; }
   }
-});
+}
+
+supabase.auth.getSession().then(({ data }) => applyAuthState(data.session?.user ?? null));
+supabase.auth.onAuthStateChange((event, session) => applyAuthState(session?.user ?? null));
 
 const AVATAR_COLORS = [
   { bg:'rgba(57,211,83,0.15)',   border:'rgba(57,211,83,0.3)',   text:'#39d353', val:'#39d353' },
