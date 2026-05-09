@@ -190,14 +190,22 @@
     submitBtn.disabled = true;
     submitBtn.textContent = mode === 'signin' ? 'Signing in…' : 'Creating account…';
 
+    function storeAndRedirect(session) {
+      if (session) {
+        localStorage.setItem('bc_at', session.access_token);
+        localStorage.setItem('bc_rt', session.refresh_token);
+      }
+      doRedirect();
+    }
+
     if (mode === 'signin') {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         errorEl.textContent = error.message;
         submitBtn.disabled = false;
         submitBtn.textContent = 'Sign In';
       } else {
-        doRedirect();
+        storeAndRedirect(data.session);
       }
     } else {
       const { error } = await supabase.auth.signUp({ email, password });
@@ -207,14 +215,14 @@
         submitBtn.textContent = 'Sign Up';
       } else {
         successEl.textContent = 'Account created! Signing you in…';
-        const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+        const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
         if (signInErr) {
           successEl.textContent = '';
           errorEl.textContent = signInErr.message;
           submitBtn.disabled = false;
           submitBtn.textContent = 'Sign Up';
         } else {
-          doRedirect();
+          storeAndRedirect(signInData.session);
         }
       }
     }

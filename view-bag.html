@@ -324,8 +324,8 @@ if (!targetUid) {
     if (currentUser) {
       if (navProfile)  navProfile.style.display  = '';
       if (navProfileM) navProfileM.style.display = '';
-      if (navAuth)  { navAuth.textContent  = 'Sign Out'; navAuth.href  = '#'; navAuth.onclick  = e => { e.preventDefault(); supabase.auth.signOut().then(() => window.location.href = 'index.html'); }; }
-      if (navAuthM) { navAuthM.textContent = 'Sign Out'; navAuthM.href = '#'; navAuthM.onclick = e => { e.preventDefault(); supabase.auth.signOut().then(() => window.location.href = 'index.html'); }; }
+      if (navAuth)  { navAuth.textContent  = 'Sign Out'; navAuth.href  = '#'; navAuth.onclick  = e => { e.preventDefault(); signOutAndRedirect(supabase, 'index.html'); }; }
+      if (navAuthM) { navAuthM.textContent = 'Sign Out'; navAuthM.href = '#'; navAuthM.onclick = e => { e.preventDefault(); signOutAndRedirect(supabase, 'index.html'); }; }
     } else {
       if (navProfile)  navProfile.style.display  = 'none';
       if (navProfileM) navProfileM.style.display = 'none';
@@ -340,7 +340,7 @@ if (!targetUid) {
     }
   }
   supabase.auth.onAuthStateChange((event, session) => applyAuthNav(session?.user ?? null));
-  supabase.auth.getSession().then(({ data }) => applyAuthNav(data.session?.user ?? null));
+  getSupabaseSession(supabase).then(session => applyAuthNav(session?.user ?? null));
 
   supabase.from('bags').select('*').eq('user_id', targetUid).single()
     .then(({ data, error }) => {

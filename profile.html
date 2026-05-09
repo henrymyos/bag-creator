@@ -233,8 +233,8 @@ function applyAuthState(user) {
   if (user) {
     if (navProfile)  navProfile.style.display  = '';
     if (navProfileM) navProfileM.style.display = '';
-    if (navAuth)  { navAuth.textContent  = 'Sign Out'; navAuth.href  = '#'; navAuth.onclick  = e => { e.preventDefault(); supabase.auth.signOut().then(() => window.location.href = 'index.html'); }; }
-    if (navAuthM) { navAuthM.textContent = 'Sign Out'; navAuthM.href = '#'; navAuthM.onclick = e => { e.preventDefault(); supabase.auth.signOut().then(() => window.location.href = 'index.html'); }; }
+    if (navAuth)  { navAuth.textContent  = 'Sign Out'; navAuth.href  = '#'; navAuth.onclick  = e => { e.preventDefault(); supabase.auth.signOut().finally(() => window.location.href = 'index.html'); }; }
+    if (navAuthM) { navAuthM.textContent = 'Sign Out'; navAuthM.href = '#'; navAuthM.onclick = e => { e.preventDefault(); supabase.auth.signOut().finally(() => window.location.href = 'index.html'); }; }
     renderProfile(user);
   } else {
     document.getElementById('not-logged-in').style.display = '';
@@ -245,7 +245,7 @@ function applyAuthState(user) {
   }
 }
 
-supabase.auth.getSession().then(({ data }) => applyAuthState(data.session?.user ?? null));
+getSupabaseSession(supabase).then(session => applyAuthState(session?.user ?? null));
 supabase.auth.onAuthStateChange((event, session) => applyAuthState(session?.user ?? null));
 
 const AVATAR_COLORS = [
@@ -283,6 +283,8 @@ function getUserLabel(user) {
 
 function renderProfile(user) {
   const userLabel = getUserLabel(user);
+  const identities = user.identities || [];
+  const isGoogle = identities.some(id => id.provider === 'google');
   document.getElementById('page-content').innerHTML = `
     <div class="avatar-row">
       <div class="avatar-circle" id="avatar-circle">${(userLabel || '?')[0].toUpperCase()}</div>
@@ -409,9 +411,8 @@ function renderProfile(user) {
   });
 
   // Sign out
-  document.getElementById('signout-btn').addEventListener('click', async () => {
-    await supabase.auth.signOut();
-    window.location.href = 'login.html?from=profile.html';
+  document.getElementById('signout-btn').addEventListener('click', () => {
+    signOutAndRedirect(supabase, 'index.html');
   });
 
   // Load all prefs: bag info + appearance

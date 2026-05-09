@@ -141,13 +141,13 @@
       transition: all 0.15s;
     }
     .filter-btn:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
-    .filter-btn.active.brand-innova { background: rgba(224,92,42,0.12); border-color: rgba(224,92,42,0.4); color: var(--innova); }
+    .filter-btn.active.brand-all      { background: rgba(57,211,83,0.12);  border-color: rgba(57,211,83,0.4);  color: var(--accent); }
+    .filter-btn.active.brand-innova   { background: rgba(224,92,42,0.12);  border-color: rgba(224,92,42,0.4);  color: var(--innova); }
     .filter-btn.active.brand-discraft { background: rgba(88,166,255,0.12); border-color: rgba(88,166,255,0.4); color: var(--discraft); }
-    .filter-btn.active.brand-trilogy { background: rgba(163,113,247,0.12); border-color: rgba(163,113,247,0.4); color: #a371f7; }
-    .filter-btn.active.brand-both { background: rgba(163,113,247,0.12); border-color: rgba(163,113,247,0.4); color: #a371f7; }
-    .filter-btn.active.brand-mvp { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.4); color: var(--mvp); }
-    .filter-btn.active.brand-discmania { background: rgba(230,57,70,0.12); border-color: rgba(230,57,70,0.4); color: var(--discmania); }
-    .filter-btn.active.brand-prodigy { background: rgba(14,165,233,0.12); border-color: rgba(14,165,233,0.4); color: var(--prodigy); }
+    .filter-btn.active.brand-trilogy  { background: rgba(163,113,247,0.12);border-color: rgba(163,113,247,0.4);color: #a371f7; }
+    .filter-btn.active.brand-mvp      { background: rgba(34,197,94,0.12);  border-color: rgba(34,197,94,0.4);  color: var(--mvp); }
+    .filter-btn.active.brand-discmania{ background: rgba(230,57,70,0.12);  border-color: rgba(230,57,70,0.4);  color: var(--discmania); }
+    .filter-btn.active.brand-prodigy  { background: rgba(14,165,233,0.12); border-color: rgba(14,165,233,0.4); color: var(--prodigy); }
     .filter-btn.active.stab-all { background: rgba(57,211,83,0.12); border-color: rgba(57,211,83,0.4); color: var(--accent); }
     .filter-btn.active.stab-overstable { background: rgba(247,129,102,0.15); border-color: rgba(247,129,102,0.4); color: #f78166; }
     .filter-btn.active.stab-neutral { background: rgba(57,211,83,0.12); border-color: rgba(57,211,83,0.4); color: var(--accent); }
@@ -509,20 +509,11 @@ function updateBrandFilterButtons() {
 }
 
 function setBrandFilter(filter) {
-  const allSelected = selectedBrands.size === ALL_BRANDS.length;
-  if (allSelected) {
-    selectedBrands = new Set([filter]);
+  if (selectedBrands.has(filter)) {
+    selectedBrands.delete(filter);
+    if (selectedBrands.size === 0) selectedBrands = new Set(ALL_BRANDS);
   } else {
-    if (selectedBrands.has(filter)) {
-      if (selectedBrands.size > 1) {
-        selectedBrands.delete(filter);
-      }
-    } else {
-      selectedBrands.add(filter);
-    }
-    if (selectedBrands.size === 0) {
-      selectedBrands = new Set(ALL_BRANDS);
-    }
+    selectedBrands.add(filter);
   }
   updateBrandFilterButtons();
   render();
@@ -668,8 +659,8 @@ render();
     if (user) {
       if (navProfile)  navProfile.style.display  = '';
       if (navProfileM) navProfileM.style.display = '';
-      if (navAuth)  { navAuth.textContent  = 'Sign Out'; navAuth.href  = '#'; navAuth.onclick  = e => { e.preventDefault(); supabase.auth.signOut().then(() => window.location.href = 'index.html'); }; }
-      if (navAuthM) { navAuthM.textContent = 'Sign Out'; navAuthM.href = '#'; navAuthM.onclick = e => { e.preventDefault(); supabase.auth.signOut().then(() => window.location.href = 'index.html'); }; }
+      if (navAuth)  { navAuth.textContent  = 'Sign Out'; navAuth.href  = '#'; navAuth.onclick  = e => { e.preventDefault(); signOutAndRedirect(supabase, 'index.html'); }; }
+      if (navAuthM) { navAuthM.textContent = 'Sign Out'; navAuthM.href = '#'; navAuthM.onclick = e => { e.preventDefault(); signOutAndRedirect(supabase, 'index.html'); }; }
     } else {
       if (navProfile)  navProfile.style.display  = 'none';
       if (navProfileM) navProfileM.style.display = 'none';
@@ -678,7 +669,7 @@ render();
     }
   }
   supabase.auth.onAuthStateChange((event, session) => applyAuthNav(session?.user ?? null));
-  supabase.auth.getSession().then(({ data }) => applyAuthNav(data.session?.user ?? null));
+  getSupabaseSession(supabase).then(session => applyAuthNav(session?.user ?? null));
 })();
 </script>
 

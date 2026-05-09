@@ -569,8 +569,8 @@ function updateAuthUI() {
     avatarEl.dataset.initial = initial;
     avatarEl.textContent = initial;
     document.getElementById('user-email').textContent = label;
-    if (navAuth)  { navAuth.textContent  = 'Sign Out'; navAuth.href  = '#'; navAuth.onclick  = e => { e.preventDefault(); supabase.auth.signOut().then(() => window.location.href = 'index.html'); }; }
-    if (navAuthM) { navAuthM.textContent = 'Sign Out'; navAuthM.href = '#'; navAuthM.onclick = e => { e.preventDefault(); supabase.auth.signOut().then(() => window.location.href = 'index.html'); }; }
+    if (navAuth)  { navAuth.textContent  = 'Sign Out'; navAuth.href  = '#'; navAuth.onclick  = e => { e.preventDefault(); signOutAndRedirect(supabase, 'index.html'); }; }
+    if (navAuthM) { navAuthM.textContent = 'Sign Out'; navAuthM.href = '#'; navAuthM.onclick = e => { e.preventDefault(); signOutAndRedirect(supabase, 'index.html'); }; }
   } else {
     banner.style.display  = 'flex';
     badge.style.display   = 'none';
@@ -662,9 +662,9 @@ async function applyAuthState(user) {
   _authApplied = true;
 }
 supabase.auth.onAuthStateChange(async (event, session) => applyAuthState(session?.user ?? null));
-supabase.auth.getSession().then(({ data }) => applyAuthState(data.session?.user ?? null));
+getSupabaseSession(supabase).then(session => applyAuthState(session?.user ?? null));
 
-document.getElementById('logout-btn')?\.addEventListener('click', () => supabase.auth.signOut().then(() => window.location.href = 'index.html'));
+document.getElementById('logout-btn')?.addEventListener('click', () => signOutAndRedirect(supabase, 'index.html'));
 // ──────────────────────────────────────────────────────────
 
 let lastClearedBag = null;
