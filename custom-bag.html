@@ -526,7 +526,7 @@ function updateURL() {
 }
 
 // ── Supabase auth + database ──────────────────────────────
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let currentUser = null;
 
 function getUserLabel(user) {
