@@ -640,12 +640,14 @@ async function saveToDB() {
   } catch (e) { console.error('DB save error:', e); }
 }
 
-supabase.auth.onAuthStateChange(async (event, session) => {
-  currentUser = session?.user ?? null;
+let _authApplied = false;
+async function applyAuthState(user) {
+  const wasUser = currentUser;
+  currentUser = user;
   updateAuthUI();
   if (currentUser) {
-    await loadFromDB();
-  } else {
+    if (!wasUser) await loadFromDB();
+  } else if (!_authApplied) {
     myBag = [];
     profileDist = null;
     if (urlAdd) {
@@ -657,7 +659,10 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     updateURL();
     render();
   }
-});
+  _authApplied = true;
+}
+supabase.auth.onAuthStateChange(async (event, session) => applyAuthState(session?.user ?? null));
+supabase.auth.getSession().then(({ data }) => applyAuthState(data.session?.user ?? null));
 
 document.getElementById('logout-btn')?\.addEventListener('click', () => supabase.auth.signOut().then(() => window.location.href = 'index.html'));
 // ──────────────────────────────────────────────────────────

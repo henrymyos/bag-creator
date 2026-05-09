@@ -324,8 +324,7 @@ supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 });
 
 // Auth nav
-supabase.auth.onAuthStateChange((event, session) => {
-  const user        = session?.user ?? null;
+function applyAuthNav(user) {
   const navAuth     = document.getElementById('nav-auth');
   const navProfile  = document.getElementById('nav-profile');
   const navAuthM    = document.getElementById('nav-auth-mobile');
@@ -341,7 +340,9 @@ supabase.auth.onAuthStateChange((event, session) => {
     if (navAuth)  { navAuth.textContent  = 'Sign In'; navAuth.href  = 'login.html?from=social.html'; navAuth.onclick  = null; }
     if (navAuthM) { navAuthM.textContent = 'Sign In'; navAuthM.href = 'login.html?from=social.html'; navAuthM.onclick = null; }
   }
-});
+}
+supabase.auth.onAuthStateChange((event, session) => applyAuthNav(session?.user ?? null));
+supabase.auth.getSession().then(({ data }) => applyAuthNav(data.session?.user ?? null));
 
 // Load community bags
 (async function() {

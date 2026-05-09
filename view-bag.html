@@ -314,8 +314,8 @@ if (!targetUid) {
 
   const loginUrl = 'login.html?from=' + encodeURIComponent('view-bag.html?uid=' + targetUid);
 
-  supabase.auth.onAuthStateChange((event, session) => {
-    currentUser = session?.user ?? null;
+  function applyAuthNav(user) {
+    currentUser = user;
 
     const navAuth     = document.getElementById('nav-auth');
     const navProfile  = document.getElementById('nav-profile');
@@ -338,7 +338,9 @@ if (!targetUid) {
       updateLikeBtn();
       updateCommentInput();
     }
-  });
+  }
+  supabase.auth.onAuthStateChange((event, session) => applyAuthNav(session?.user ?? null));
+  supabase.auth.getSession().then(({ data }) => applyAuthNav(data.session?.user ?? null));
 
   supabase.from('bags').select('*').eq('user_id', targetUid).single()
     .then(({ data, error }) => {

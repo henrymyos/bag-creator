@@ -1476,8 +1476,9 @@ render();
     }, 1000);
   };
 
-  supabase.auth.onAuthStateChange(async (event, session) => {
-    currentUser = session?.user ?? null;
+  async function applyAuthState(user) {
+    const wasUser = currentUser;
+    currentUser = user;
     const navAuth     = document.getElementById('nav-auth');
     const navProfile  = document.getElementById('nav-profile');
     const navAuthM    = document.getElementById('nav-auth-mobile');
@@ -1487,14 +1488,16 @@ render();
       if (navProfileM) navProfileM.style.display = '';
       if (navAuth)  { navAuth.textContent  = 'Sign Out'; navAuth.href  = '#'; navAuth.onclick  = e => { e.preventDefault(); supabase.auth.signOut().then(() => window.location.href = 'index.html'); }; }
       if (navAuthM) { navAuthM.textContent = 'Sign Out'; navAuthM.href = '#'; navAuthM.onclick = e => { e.preventDefault(); supabase.auth.signOut().then(() => window.location.href = 'index.html'); }; }
-      await loadSettings(currentUser);
+      if (!wasUser) await loadSettings(currentUser);
     } else {
       if (navProfile)  navProfile.style.display  = 'none';
       if (navProfileM) navProfileM.style.display = 'none';
       if (navAuth)  { navAuth.textContent  = 'Sign In'; navAuth.href  = 'login.html?from=index.html'; navAuth.onclick  = null; }
       if (navAuthM) { navAuthM.textContent = 'Sign In'; navAuthM.href = 'login.html?from=index.html'; navAuthM.onclick = null; }
     }
-  });
+  }
+  supabase.auth.onAuthStateChange(async (event, session) => applyAuthState(session?.user ?? null));
+  supabase.auth.getSession().then(({ data }) => applyAuthState(data.session?.user ?? null));
 })();
 </script>
 
