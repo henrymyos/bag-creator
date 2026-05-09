@@ -70,34 +70,42 @@
     }
 
     /* Page */
-    .page { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+    .page { max-width: 680px; margin: 0 auto; padding: 2rem 1rem 4rem; }
     .page-head { margin-bottom: 1.75rem; }
     .page-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1.75rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
     .page-sub { font-size: 13px; color: var(--muted); margin-top: 0.3rem; }
 
-    /* Feed grid */
-    .feed { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 1rem; }
-    @media (max-width: 500px) { .feed { grid-template-columns: 1fr; } }
+    /* Feed — single column */
+    .feed { display: flex; flex-direction: column; gap: 1.5rem; }
 
     /* Card */
     .bag-card {
       background: var(--bg2); border: 1px solid var(--border);
-      border-radius: 12px; padding: 1.25rem;
-      display: flex; flex-direction: column; gap: 0.85rem;
+      border-radius: 12px;
+      display: flex; flex-direction: column;
+      max-width: 620px; width: 100%; margin: 0 auto;
       transition: border-color 0.15s;
     }
     .bag-card:hover { border-color: var(--border2); }
 
-    .card-header { display: flex; align-items: center; gap: 0.75rem; }
+    /* Card header */
+    .card-header {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.9rem 1.1rem 0.85rem;
+    }
     .card-avatar {
-      width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+      width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
-      font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700;
+      font-family: 'Barlow Condensed', sans-serif; font-size: 19px; font-weight: 700;
       overflow: hidden;
     }
     .card-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
     .card-name { font-family: 'Barlow Condensed', sans-serif; font-size: 1.05rem; font-weight: 700; letter-spacing: 0.02em; }
     .card-updated { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .card-header-timestamp { margin-left: auto; font-size: 11px; color: var(--muted); flex-shrink: 0; }
+
+    /* Card body */
+    .card-body { padding: 0 1.1rem 0.85rem; display: flex; flex-direction: column; gap: 0.65rem; }
 
     /* Breakdown badges */
     .disc-breakdown { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
@@ -121,11 +129,25 @@
     }
     .disc-chip-more { color: rgba(255,255,255,0.28); border-color: transparent; background: none; }
 
-    .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 0.25rem; }
-    .card-stats { display: flex; gap: 0.9rem; align-items: center; }
-    .card-stat { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted); font-weight: 500; }
-    .card-stat svg { width: 12px; height: 12px; flex-shrink: 0; }
+    /* Actions row */
+    .card-actions {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.65rem 1.1rem;
+      border-top: 1px solid var(--border);
+    }
+    .action-btn {
+      background: none; border: none; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 5px;
+      color: var(--muted); font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 500;
+      padding: 3px 0; transition: color 0.12s;
+    }
+    .action-btn:hover { color: var(--text); }
+    .action-btn svg { width: 20px; height: 20px; flex-shrink: 0; transition: fill 0.12s, stroke 0.12s; }
+    .like-btn.liked svg { stroke: #f85149; fill: rgba(248,81,73,0.18); }
+    .like-btn.liked { color: #f85149; }
+    .like-btn:hover svg { stroke: #f85149; }
     .view-btn {
+      margin-left: auto;
       font-family: 'Barlow', sans-serif; font-size: 12px; font-weight: 600;
       color: var(--accent); text-decoration: none;
       padding: 5px 12px; border: 1px solid rgba(57,211,83,0.35); border-radius: 6px;
@@ -133,10 +155,31 @@
     }
     .view-btn:hover { background: rgba(57,211,83,0.16); }
 
+    /* Likes line */
+    .card-likes-line {
+      padding: 0 1.1rem 0.55rem;
+      font-size: 12px; font-weight: 600; color: var(--text);
+    }
+
+    /* Comments section */
+    .card-comments {
+      border-top: 1px solid var(--border);
+      padding: 0.6rem 1.1rem 0.75rem;
+      display: flex; flex-direction: column; gap: 0.35rem;
+    }
+    .card-comment-line { font-size: 13px; line-height: 1.45; }
+    .card-comment-line .comment-author { font-weight: 600; margin-right: 0.4em; }
+    .card-comment-line .comment-text { color: var(--text); }
+    .card-view-comments {
+      font-size: 12px; color: var(--muted); text-decoration: none; margin-top: 0.15rem;
+      display: inline-block;
+    }
+    .card-view-comments:hover { color: var(--text); }
+
     /* States */
     .state-msg {
       text-align: center; padding: 4rem 2rem; color: var(--muted);
-      font-size: 14px; grid-column: 1 / -1; line-height: 1.6;
+      font-size: 14px; line-height: 1.6;
     }
     .state-msg strong {
       display: block; font-family: 'Barlow Condensed', sans-serif;
@@ -267,7 +310,10 @@ const TYPE_ORDER = [
   { key:'distance', label:'D',  cls:'distance' },
 ];
 
-function renderCard(data, docId) {
+// Current signed-in user (populated after auth resolves)
+let currentUser = null;
+
+function renderCard(data, docId, commentsForCard) {
   const discs = decodeBagKeys(data.bag || []);
   if (!discs.length) return '';
 
@@ -291,13 +337,58 @@ function renderCard(data, docId) {
   for (const d of discs) counts[d.name] = (counts[d.name] || 0) + 1;
   const entries = Object.entries(counts);
   const SHOW = 10;
-  const chips = entries.slice(0, SHOW).map(([name, qty]) =>
-    `<span class="disc-chip">${esc(name)}${qty > 1 ? ` <span style="opacity:0.55">×${qty}</span>` : ''}</span>`
+  const chips = entries.slice(0, SHOW).map(([dname, qty]) =>
+    `<span class="disc-chip">${esc(dname)}${qty > 1 ? ` <span style="opacity:0.55">×${qty}</span>` : ''}</span>`
   ).join('');
   const more = entries.length > SHOW ? `<span class="disc-chip disc-chip-more">+${entries.length - SHOW} more</span>` : '';
 
   const viewHref = docId ? `view-bag.html?uid=${encodeURIComponent(docId)}` : '#';
   const ago = timeAgo(data.updated_at);
+
+  // Like state
+  const likeCount = data.like_count || 0;
+  const likedBy = Array.isArray(data.liked_by) ? data.liked_by : [];
+  const isLiked = currentUser ? likedBy.includes(currentUser.id) : false;
+  const likedClass = isLiked ? ' liked' : '';
+
+  // Actions row
+  const actionsHtml = `
+    <div class="card-actions">
+      <button class="action-btn like-btn${likedClass}" data-uid="${esc(docId)}" data-liked="${isLiked ? '1' : '0'}" data-count="${likeCount}" aria-label="Like">
+        <svg viewBox="0 0 24 24" fill="${isLiked ? 'rgba(248,81,73,0.18)' : 'none'}" stroke="${isLiked ? '#f85149' : 'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+        <span class="like-count">${likeCount}</span>
+      </button>
+      <a class="action-btn" href="${esc(viewHref)}#comments" aria-label="Comments">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        <span>${data.comment_count || 0}</span>
+      </a>
+      <a class="view-btn" href="${esc(viewHref)}">View Bag →</a>
+    </div>`;
+
+  // Likes line
+  const likesLineHtml = likeCount > 0
+    ? `<div class="card-likes-line">${likeCount} ${likeCount === 1 ? 'like' : 'likes'}</div>`
+    : '';
+
+  // Comments section
+  let commentsHtml = '';
+  if (commentsForCard && commentsForCard.length > 0) {
+    const totalCount = data.comment_count || commentsForCard.length;
+    const shown = commentsForCard.slice(-2);
+    const lines = shown.map(c => {
+      const author = esc(c.author_name || 'Anonymous');
+      const text = esc(c.text || '');
+      return `<div class="card-comment-line"><span class="comment-author">${author}</span><span class="comment-text">${text}</span></div>`;
+    }).join('');
+    const viewAllHtml = totalCount > 2
+      ? `<a class="card-view-comments" href="${esc(viewHref)}#comments">View all ${totalCount} comments</a>`
+      : '';
+    commentsHtml = `<div class="card-comments">${lines}${viewAllHtml}</div>`;
+  }
 
   return `
     <div class="bag-card">
@@ -305,24 +396,16 @@ function renderCard(data, docId) {
         ${avatarHtml}
         <div>
           <div class="card-name">${esc(name)}</div>
-          ${ago ? `<div class="card-updated">${ago}</div>` : ''}
         </div>
+        ${ago ? `<span class="card-header-timestamp">${ago}</span>` : ''}
       </div>
-      <div class="disc-breakdown">${breakdownHtml}</div>
-      <div class="disc-chips">${chips}${more}</div>
-      <div class="card-footer">
-        <div class="card-stats">
-          <span class="card-stat">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            ${data.like_count || 0}
-          </span>
-          <span class="card-stat">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            ${data.comment_count || 0}
-          </span>
-        </div>
-        <a class="view-btn" href="${esc(viewHref)}">View Bag →</a>
+      <div class="card-body">
+        <div class="disc-breakdown">${breakdownHtml}</div>
+        <div class="disc-chips">${chips}${more}</div>
       </div>
+      ${actionsHtml}
+      ${likesLineHtml}
+      ${commentsHtml}
     </div>`;
 }
 
@@ -333,6 +416,7 @@ supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 
 // Auth nav
 function applyAuthNav(user) {
+  currentUser = user;
   const navAuth     = document.getElementById('nav-auth');
   const navProfile  = document.getElementById('nav-profile');
   const navAuthM    = document.getElementById('nav-auth-mobile');
@@ -350,10 +434,130 @@ function applyAuthNav(user) {
   }
 }
 supabase.auth.onAuthStateChange((event, session) => applyAuthNav(session?.user ?? null));
-getSupabaseSession(supabase).then(session => applyAuthNav(session?.user ?? null));
+
+// Like toggle via event delegation
+feed.addEventListener('click', async function(e) {
+  const btn = e.target.closest('.like-btn');
+  if (!btn) return;
+
+  if (!currentUser) return; // not signed in — do nothing
+
+  const uid = btn.dataset.uid;
+  if (!uid) return;
+
+  const wasLiked = btn.dataset.liked === '1';
+  const oldCount = parseInt(btn.dataset.count, 10) || 0;
+
+  // Optimistic UI update
+  const newLiked = !wasLiked;
+  const newCount = newLiked ? oldCount + 1 : Math.max(0, oldCount - 1);
+  btn.dataset.liked = newLiked ? '1' : '0';
+  btn.dataset.count = newCount;
+  btn.querySelector('.like-count').textContent = newCount;
+  const svg = btn.querySelector('svg');
+  if (newLiked) {
+    btn.classList.add('liked');
+    svg.setAttribute('fill', 'rgba(248,81,73,0.18)');
+    svg.setAttribute('stroke', '#f85149');
+  } else {
+    btn.classList.remove('liked');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+  }
+
+  // Update likes line
+  const card = btn.closest('.bag-card');
+  if (card) {
+    let likesLine = card.querySelector('.card-likes-line');
+    if (newCount > 0) {
+      const text = `${newCount} ${newCount === 1 ? 'like' : 'likes'}`;
+      if (likesLine) {
+        likesLine.textContent = text;
+      } else {
+        // Insert after actions row
+        const actions = card.querySelector('.card-actions');
+        if (actions) {
+          likesLine = document.createElement('div');
+          likesLine.className = 'card-likes-line';
+          likesLine.textContent = text;
+          actions.insertAdjacentElement('afterend', likesLine);
+        }
+      }
+    } else if (likesLine) {
+      likesLine.remove();
+    }
+  }
+
+  // Fetch current liked_by from DB to avoid races
+  const { data: row, error: fetchErr } = await supabase
+    .from('bags')
+    .select('liked_by, like_count')
+    .eq('user_id', uid)
+    .single();
+
+  if (fetchErr) { console.error(fetchErr); return; }
+
+  const likedBy = Array.isArray(row.liked_by) ? row.liked_by : [];
+  let newArr;
+  if (newLiked) {
+    newArr = likedBy.includes(currentUser.id) ? likedBy : [...likedBy, currentUser.id];
+  } else {
+    newArr = likedBy.filter(id => id !== currentUser.id);
+  }
+  const serverCount = newArr.length;
+
+  const { error: updateErr } = await supabase
+    .from('bags')
+    .update({ like_count: serverCount, liked_by: newArr })
+    .eq('user_id', uid);
+
+  if (updateErr) {
+    console.error(updateErr);
+    // Revert optimistic update on error
+    btn.dataset.liked = wasLiked ? '1' : '0';
+    btn.dataset.count = oldCount;
+    btn.querySelector('.like-count').textContent = oldCount;
+    if (wasLiked) {
+      btn.classList.add('liked');
+      svg.setAttribute('fill', 'rgba(248,81,73,0.18)');
+      svg.setAttribute('stroke', '#f85149');
+    } else {
+      btn.classList.remove('liked');
+      svg.setAttribute('fill', 'none');
+      svg.setAttribute('stroke', 'currentColor');
+    }
+  } else {
+    // Sync displayed count with server truth
+    btn.dataset.count = serverCount;
+    btn.querySelector('.like-count').textContent = serverCount;
+    if (card) {
+      let likesLine = card.querySelector('.card-likes-line');
+      if (serverCount > 0) {
+        const text = `${serverCount} ${serverCount === 1 ? 'like' : 'likes'}`;
+        if (likesLine) {
+          likesLine.textContent = text;
+        } else {
+          const actions = card.querySelector('.card-actions');
+          if (actions) {
+            likesLine = document.createElement('div');
+            likesLine.className = 'card-likes-line';
+            likesLine.textContent = text;
+            actions.insertAdjacentElement('afterend', likesLine);
+          }
+        }
+      } else if (likesLine) {
+        likesLine.remove();
+      }
+    }
+  }
+});
 
 // Load community bags
 (async function() {
+  // Wait for auth to resolve so currentUser is set before rendering
+  const session = await getSupabaseSession(supabase);
+  applyAuthNav(session?.user ?? null);
+
   try {
     const { data: rows, error } = await supabase
       .from('bags')
@@ -366,7 +570,23 @@ getSupabaseSession(supabase).then(session => applyAuthNav(session?.user ?? null)
       return;
     }
     const sorted = visible.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
-    const html = sorted.map(d => renderCard(d, d.user_id)).filter(Boolean).join('');
+
+    // Fetch all comments for visible bags in one query
+    const uidList = sorted.map(d => d.user_id).filter(Boolean);
+    let commentsByUid = {};
+    if (uidList.length) {
+      const { data: commentRows } = await supabase
+        .from('comments')
+        .select('*')
+        .in('bag_user_id', uidList)
+        .order('created_at', { ascending: true });
+      for (const c of (commentRows || [])) {
+        if (!commentsByUid[c.bag_user_id]) commentsByUid[c.bag_user_id] = [];
+        commentsByUid[c.bag_user_id].push(c);
+      }
+    }
+
+    const html = sorted.map(d => renderCard(d, d.user_id, commentsByUid[d.user_id] || [])).filter(Boolean).join('');
     feed.innerHTML = html || '<div class="state-msg"><strong>No bags yet</strong>Be the first — turn on sharing from your <a href="profile.html">Profile</a>.</div>';
   } catch (e) {
     console.error(e);
@@ -415,6 +635,8 @@ getSupabaseSession(supabase).then(session => applyAuthNav(session?.user ?? null)
     { icon: '🌐', title: 'Community', text: 'Browse bags shared by other BagCreator players. Cards show each player\'s disc breakdown and disc names. Bags are sorted by most recently updated.' },
     { icon: '🔓', title: 'Share Your Bag', text: 'To appear here, go to your Profile page and turn on "Show my bag publicly on the Community page." You can toggle it off any time to hide your bag.' },
     { icon: '👀', title: 'View Bag', text: 'Click "View Bag →" on any card to open that bag in the My Bag page. This lets you explore what discs others are throwing and how their bag is structured.' },
+    { icon: '❤️', title: 'Liking Bags', text: 'Click the heart on any community bag to like it. You need to be signed in to like a bag. The like count is shown on each card and updates in real time.' },
+    { icon: '💬', title: 'Commenting', text: 'Open a bag with "View Bag →" and scroll down to leave a comment. Comments are public and tied to your display name. You can delete your own comments at any time.' },
   ];
   let cur = 0;
   function render() {

@@ -249,11 +249,22 @@
     .group-count { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; color: var(--muted); }
 
     .bag-disc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.75rem; }
-    .bag-disc { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem 0.9rem; transition: border-color 0.12s, opacity 0.12s; }
+    .bag-disc { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem 0.9rem; transition: border-color 0.12s, opacity 0.12s; position: relative; }
     .bag-disc[draggable] { cursor: grab; }
     .bag-disc[draggable]:active { cursor: grabbing; }
     .bag-disc.dragging { opacity: 0.3; }
-    .bag-disc.drag-over { border-color: rgba(57,211,83,0.6); box-shadow: 0 0 0 1px rgba(57,211,83,0.3); }
+    .bag-disc.drop-before::before,
+    .bag-disc.drop-after::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 3px;
+      background: var(--accent);
+      border-radius: 2px;
+      z-index: 2;
+    }
+    .bag-disc.drop-before::before { left: -7px; }
+    .bag-disc.drop-after::after { right: -7px; }
     .bag-disc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; margin-bottom: 0.5rem; }
     .bag-disc-badges { display: flex; gap: 4px; flex-wrap: wrap; }
     .brand-badge { font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; }
@@ -554,7 +565,7 @@ let myBag = [];
 let profileDist = null;
 const urlParam = new URLSearchParams(location.search).get('bag');
 const urlAdd   = new URLSearchParams(location.search).get('add');
-if (urlParam) { myBag = decodeBag(urlParam); sortBagByStability(); }
+if (urlParam) { myBag = decodeBag(urlParam); }
 
 let searchQuery = '';
 let selectedType = 'all';
@@ -653,7 +664,6 @@ async function loadFromDB() {
         const d = DISCS.find(d => d.brand === brand && d.type === type && d.name === rest.join('|'));
         return d ? [d] : [];
       });
-      sortBagByStability();
     } else if (myBag.length) {
       await saveToDB();
     }
@@ -922,16 +932,18 @@ bagDisplay.addEventListener('dragstart', e => {
 });
 
 bagDisplay.addEventListener('dragend', () => {
-  bagDisplay.querySelectorAll('.bag-disc').forEach(c => c.classList.remove('dragging', 'drag-over'));
+  bagDisplay.querySelectorAll('.bag-disc').forEach(c => c.classList.remove('dragging', 'drop-before', 'drop-after'));
   _dragIdx = null; _dragType = null;
 });
 
 bagDisplay.addEventListener('dragover', e => {
   e.preventDefault();
   const card = e.target.closest('[data-bag-idx]');
-  bagDisplay.querySelectorAll('.bag-disc.drag-over').forEach(c => c.classList.remove('drag-over'));
-  if (card && card.dataset.type === _dragType && parseInt(card.dataset.bagIdx) !== _dragIdx)
-    card.classList.add('drag-over');
+  bagDisplay.querySelectorAll('.bag-disc').forEach(c => c.classList.remove('drop-before', 'drop-after'));
+  if (!card || card.dataset.type !== _dragType) return;
+  if (parseInt(card.dataset.bagIdx) === _dragIdx) return;
+  const rect = card.getBoundingClientRect();
+  card.classList.add(e.clientX < rect.left + rect.width / 2 ? 'drop-before' : 'drop-after');
 });
 
 bagDisplay.addEventListener('drop', e => {
@@ -940,8 +952,11 @@ bagDisplay.addEventListener('drop', e => {
   if (!card || _dragIdx === null || card.dataset.type !== _dragType) return;
   const toIdx = parseInt(card.dataset.bagIdx);
   if (toIdx === _dragIdx) return;
+  const rect = card.getBoundingClientRect();
+  const insertBefore = e.clientX < rect.left + rect.width / 2;
   const [disc] = myBag.splice(_dragIdx, 1);
-  myBag.splice(toIdx > _dragIdx ? toIdx - 1 : toIdx, 0, disc);
+  const adjustedTo = toIdx > _dragIdx ? toIdx - 1 : toIdx;
+  myBag.splice(insertBefore ? adjustedTo : adjustedTo + 1, 0, disc);
   scheduleSave();
   render();
 });
@@ -1043,6 +1058,8 @@ render();
     { icon: '🔍', title: 'Browsing Discs', text: 'Use the search bar to find a disc by name. Filter by disc type (Putter, Midrange, Fairway, Distance) or by brand using the tabs. Click any disc in the list to add it to your bag.' },
     { icon: '📋', title: 'Managing Your Bag', text: 'Your bag is shown on the right, grouped by disc type. Click the × button on any disc to remove it. The total disc count is shown at the top of the bag panel.' },
     { icon: '🔗', title: 'Share Your Bag', text: 'Click "Share Bag" to copy a link to your exact disc setup. Anyone with the link can view your bag layout, even without an account.' },
+    { icon: '📊', title: 'Evaluate Your Bag', text: 'Click "Evaluate" to get a breakdown of how well your bag covers different shot types and distances based on your max throw distance. It scores your bag and highlights any gaps in coverage.' },
+    { icon: '✈️', title: 'Flight Charts', text: 'Click "Flight Charts" to see a visual flight path chart for every disc in your bag. Each chart shows the expected trajectory based on the disc\'s speed, glide, turn, and fade ratings.' },
     { icon: '💾', title: 'Saving Your Bag', text: 'Sign in to have your bag automatically saved to your account. Changes are saved a second after you add or remove a disc. Your bag will be waiting for you on any device when you log in.' },
   ];
   let cur = 0;
