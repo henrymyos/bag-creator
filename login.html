@@ -116,42 +116,25 @@
   });
 
   const ALLOWED_PAGES = ['index.html', 'custom-bag.html', 'profile.html', 'archive.html', 'social.html'];
+  let redirected = false;
 
   function doRedirect() {
+    if (redirected) return;
+    redirected = true;
     const from = localStorage.getItem('loginFrom');
     localStorage.removeItem('loginFrom');
     window.location.replace((from && ALLOWED_PAGES.includes(from)) ? from : 'custom-bag.html');
   }
 
-  // PKCE flow: Supabase v2 default — code arrives as ?code= query param
-  const urlCode = new URLSearchParams(location.search).get('code');
-  if (urlCode) {
-    supabase.auth.exchangeCodeForSession(urlCode).then(({ data, error }) => {
-      if (data?.session) doRedirect();
-      else document.getElementById('error-msg').textContent = error?.message || 'Sign-in failed.';
-    });
-  }
+  // detectSessionInUrl handles the PKCE code exchange internally — just listen for the result
+  supabase.auth.onAuthStateChange((event, session) => {
+    if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) doRedirect();
+  });
 
-  // Implicit flow fallback: tokens arrive as #access_token= hash fragment
-  const hashParams = new URLSearchParams(window.location.hash.slice(1));
-  const accessToken = hashParams.get('access_token');
-  if (accessToken) {
-    supabase.auth.setSession({ access_token: accessToken, refresh_token: hashParams.get('refresh_token') || '' })
-      .then(({ data, error }) => {
-        if (data?.session) doRedirect();
-        else document.getElementById('error-msg').textContent = error?.message || 'Sign-in failed.';
-      });
-  }
-
-  // Normal page load: check for an already-active session
-  if (!urlCode && !accessToken) {
-    supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) doRedirect();
-    });
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session?.user) doRedirect();
-    });
-  }
+  // Belt and suspenders: catch any already-stored session immediately
+  supabase.auth.getSession().then(({ data }) => {
+    if (data.session?.user) doRedirect();
+  });
 
   document.getElementById('google-btn').addEventListener('click', async () => {
     document.getElementById('google-btn').disabled = true;
