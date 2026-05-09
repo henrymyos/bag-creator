@@ -113,23 +113,41 @@
     auth: { flowType: 'implicit', detectSessionInUrl: true }
   });
 
-  supabase.auth.onAuthStateChange((event, session) => {
-    if (session?.user) window.location.href = 'custom-bag.html';
-  });
+  const ALLOWED_PAGES = ['index.html', 'custom-bag.html', 'profile.html', 'archive.html', 'social.html'];
 
-  supabase.auth.getSession().then(({ data }) => {
-    if (data.session?.user) window.location.href = 'custom-bag.html';
-  });
+  function redirect() {
+    const from = localStorage.getItem('loginFrom');
+    localStorage.removeItem('loginFrom');
+    window.location.href = (from && ALLOWED_PAGES.includes(from)) ? from : 'custom-bag.html';
+  }
+
+  // Implicit flow: tokens land in the URL hash after OAuth redirect
+  const hashParams = new URLSearchParams(window.location.hash.slice(1));
+  const accessToken  = hashParams.get('access_token');
+  const refreshToken = hashParams.get('refresh_token');
+  if (accessToken) {
+    supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken || '' })
+      .then(({ data, error }) => {
+        if (data?.session?.user) redirect();
+        else if (error) document.getElementById('error-msg').textContent = error.message;
+      });
+  } else {
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) redirect();
+    });
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session?.user) redirect();
+    });
+  }
 
   document.getElementById('google-btn').addEventListener('click', async () => {
     document.getElementById('google-btn').disabled = true;
     document.getElementById('error-msg').textContent = '';
+    const from = new URLSearchParams(location.search).get('from');
+    if (from && ALLOWED_PAGES.includes(from)) localStorage.setItem('loginFrom', from);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: window.location.origin + '/login.html',
-        queryParams: { access_type: 'offline', prompt: 'consent' }
-      }
+      options: { redirectTo: window.location.origin + '/login.html' }
     });
     if (error) {
       document.getElementById('error-msg').textContent = error.message || 'Something went wrong.';
