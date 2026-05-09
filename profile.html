@@ -221,7 +221,9 @@
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { flowType: 'implicit', detectSessionInUrl: true }
+});
 
 supabase.auth.onAuthStateChange((event, session) => {
   const user        = session?.user ?? null;

@@ -290,7 +290,9 @@ function colorForId(id) {
   return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
 }
 
-supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { flowType: 'implicit', detectSessionInUrl: true }
+});
 const params    = new URLSearchParams(location.search);
 const targetUid = params.get('uid');
 const pageMsg   = document.getElementById('page-msg');

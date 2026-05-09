@@ -319,7 +319,9 @@ function renderCard(data, docId) {
 }
 
 var feed = document.getElementById('feed');
-supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { flowType: 'implicit', detectSessionInUrl: true }
+});
 
 // Auth nav
 supabase.auth.onAuthStateChange((event, session) => {

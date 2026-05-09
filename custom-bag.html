@@ -526,7 +526,9 @@ function updateURL() {
 }
 
 // ── Supabase auth + database ──────────────────────────────
-supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { flowType: 'implicit', detectSessionInUrl: true }
+});
 let currentUser = null;
 
 function getUserLabel(user) {

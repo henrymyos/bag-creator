@@ -109,10 +109,16 @@
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { flowType: 'implicit', detectSessionInUrl: true }
+  });
 
   supabase.auth.onAuthStateChange((event, session) => {
     if (session?.user) window.location.href = 'custom-bag.html';
+  });
+
+  supabase.auth.getSession().then(({ data }) => {
+    if (data.session?.user) window.location.href = 'custom-bag.html';
   });
 
   document.getElementById('google-btn').addEventListener('click', async () => {
@@ -120,7 +126,10 @@
     document.getElementById('error-msg').textContent = '';
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin + window.location.pathname }
+      options: {
+        redirectTo: window.location.origin + '/login.html',
+        queryParams: { access_type: 'offline', prompt: 'consent' }
+      }
     });
     if (error) {
       document.getElementById('error-msg').textContent = error.message || 'Something went wrong.';
