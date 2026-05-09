@@ -120,7 +120,14 @@
       gap: 1.25rem;
       margin-bottom: 1.25rem;
     }
-    @media (max-width: 600px) { .control-row { grid-template-columns: 1fr; } }
+    @media (max-width: 600px) {
+      .control-row { grid-template-columns: 1fr; }
+      .brand-filter-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        padding: 0 1rem;
+      }
+    }
  
     .control-card {
       background: var(--bg2);
