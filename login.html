@@ -120,7 +120,7 @@
     document.getElementById('error-msg').textContent = '';
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin + '/login.html' }
+      options: { redirectTo: window.location.origin + window.location.pathname }
     });
     if (error) {
       document.getElementById('error-msg').textContent = error.message || 'Something went wrong.';
