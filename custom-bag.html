@@ -581,9 +581,22 @@ function updateAuthUI() {
   }
 }
 
+function _getAuthToken() {
+  const key = Object.keys(localStorage).find(k => k.startsWith('sb-') && k.includes('-auth-token'));
+  try { return (key && JSON.parse(localStorage.getItem(key)))?.access_token ?? null; } catch { return null; }
+}
+
 async function loadFromDB() {
   try {
-    const { data } = await supabase.from('bags').select('bag, prefs').eq('user_id', currentUser.id).single();
+    const token = _getAuthToken();
+    if (!token) { render(); return; }
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/bags?user_id=eq.${currentUser.id}&select=bag,prefs&limit=1`,
+      { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${token}` } }
+    );
+    if (!res.ok) { render(); return; }
+    const rows = await res.json();
+    const data = rows[0] ?? null;
     if (data) {
       const p = data.prefs || {};
       if (p.avatarColor || p.avatarPhoto) {
@@ -615,7 +628,7 @@ async function loadFromDB() {
 
     updateURL();
     render();
-  } catch (e) { console.error('DB load error:', e); }
+  } catch (e) { console.error('DB load error:', e); render(); }
 }
 
 let saveTimeout;
@@ -625,19 +638,51 @@ function scheduleSave() {
   const s = document.getElementById('save-status');
   if (s) { s.textContent = 'Saving…'; s.className = 'save-status'; }
   saveTimeout = setTimeout(async () => {
-    await saveToDB();
-    if (s) { s.textContent = 'Saved'; s.className = 'save-status saved'; setTimeout(() => { s.textContent = ''; }, 2000); }
+    const err = await saveToDB();
+    if (s) {
+      if (err) {
+        s.textContent = 'Save failed: ' + err;
+        s.className = 'save-status';
+        s.style.color = '#f85149';
+        setTimeout(() => { s.textContent = ''; s.style.color = ''; }, 4000);
+      } else {
+        s.textContent = 'Saved';
+        s.className = 'save-status saved';
+        s.style.color = '';
+        setTimeout(() => { s.textContent = ''; }, 2000);
+      }
+    }
   }, 1200);
 }
 
 async function saveToDB() {
-  if (!currentUser) return;
+  if (!currentUser) return null;
+  const token = _getAuthToken();
+  if (!token) return 'No auth token — please sign out and back in';
+  const ctrl = new AbortController();
+  const tid = setTimeout(() => ctrl.abort(), 8000);
   try {
-    await supabase.from('bags').upsert(
-      { user_id: currentUser.id, bag: myBag.map(discKey), updated_at: new Date().toISOString() },
-      { onConflict: 'user_id' }
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/bags?on_conflict=user_id`,
+      {
+        method: 'POST',
+        signal: ctrl.signal,
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates,return=minimal'
+        },
+        body: JSON.stringify({ user_id: currentUser.id, bag: myBag.map(discKey) })
+      }
     );
-  } catch (e) { console.error('DB save error:', e); }
+    clearTimeout(tid);
+    if (!res.ok) { const t = await res.text(); return `HTTP ${res.status}: ${t}`; }
+    return null;
+  } catch (e) {
+    clearTimeout(tid);
+    return e.name === 'AbortError' ? 'Request timed out' : e.message;
+  }
 }
 
 let _authApplied = false;

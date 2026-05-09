@@ -526,20 +526,11 @@ function updateStabilityFilterButtons() {
 }
 
 function toggleStabilityFilter(stab) {
-  const allSelected = selectedStabilities.size === ALL_STABILITIES.length;
-  if (allSelected) {
-    selectedStabilities = new Set([stab]);
+  if (selectedStabilities.has(stab)) {
+    selectedStabilities.delete(stab);
+    if (selectedStabilities.size === 0) selectedStabilities = new Set(ALL_STABILITIES);
   } else {
-    if (selectedStabilities.has(stab)) {
-      if (selectedStabilities.size > 1) {
-        selectedStabilities.delete(stab);
-      }
-    } else {
-      selectedStabilities.add(stab);
-    }
-    if (selectedStabilities.size === 0) {
-      selectedStabilities = new Set(ALL_STABILITIES);
-    }
+    selectedStabilities.add(stab);
   }
   updateStabilityFilterButtons();
   render();
