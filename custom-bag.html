@@ -158,13 +158,21 @@
 
     /* ── BAG PANEL ── */
     .bag-panel { padding: 1.5rem 2rem 3rem; }
-    .bag-meta {
-      display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem;
-    }
     .bag-actions {
-      display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.5rem;
-      padding-bottom: 1.25rem; border-bottom: 1px solid var(--border);
+      display: grid;
+      grid-template-areas: "info btns gap right";
+      grid-template-columns: auto auto 1fr auto;
+      align-items: center;
+      column-gap: 0.75rem;
+      row-gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
     }
+    .bag-info { grid-area: info; display: flex; align-items: center; gap: 0.6rem; }
+    .bag-btns { grid-area: btns; display: flex; align-items: center; gap: 0.6rem; }
+    .bag-gap { grid-area: gap; }
+    .bag-right { grid-area: right; display: flex; align-items: center; gap: 0.6rem; }
     .bag-count { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 600; color: var(--muted); }
     .bag-count strong { color: var(--text); font-size: 20px; font-weight: 700; margin-right: 2px; }
     .action-btn {
@@ -307,7 +315,13 @@
       .disc-list { max-height: 320px; }
       .bag-panel { padding: 1.25rem 1.25rem 3rem; }
       .bag-disc-grid { grid-template-columns: repeat(2, 1fr); }
-      .bag-actions { flex-wrap: wrap; }
+    }
+    @media (max-width: 640px) {
+      .bag-actions {
+        grid-template-areas: "info gap right" "btns btns btns";
+        grid-template-columns: auto 1fr auto;
+      }
+      .bag-btns { justify-self: end; }
     }
 
     footer { text-align: center; padding: 2rem; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); }
@@ -444,27 +458,31 @@
 
   <!-- BAG -->
   <div class="bag-panel">
-    <div class="bag-meta">
-      <div class="bag-count" id="bag-count"><strong>0</strong> discs</div>
-      <span class="save-status" id="save-status"></span>
-      <div style="flex:1"></div>
-      <div class="user-badge" id="user-badge">
-        <div class="user-avatar" id="user-avatar"></div>
-        <span id="user-email"></span>
-      </div>
-      <button class="action-btn" id="clear-btn">Clear</button>
-    </div>
     <div class="bag-actions">
-      <button class="action-btn share-btn" id="share-btn">
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="13" cy="2.5" r="1.5"/><circle cx="13" cy="13.5" r="1.5"/><circle cx="3" cy="8" r="1.5"/>
-          <line x1="4.5" y1="7" x2="11.5" y2="3.5"/><line x1="4.5" y1="9" x2="11.5" y2="12.5"/>
-        </svg>
-        Share Bag
-      </button>
-      <button class="action-btn eval-btn" id="eval-btn">Evaluate</button>
-      <button class="action-btn fc-btn" id="fc-btn">Flight Charts</button>
-      <button class="action-btn undo-btn" id="undo-btn" style="display:none">Undo</button>
+      <div class="bag-info">
+        <div class="bag-count" id="bag-count"><strong>0</strong> discs</div>
+        <span class="save-status" id="save-status"></span>
+      </div>
+      <div class="bag-btns">
+        <button class="action-btn share-btn" id="share-btn">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="13" cy="2.5" r="1.5"/><circle cx="13" cy="13.5" r="1.5"/><circle cx="3" cy="8" r="1.5"/>
+            <line x1="4.5" y1="7" x2="11.5" y2="3.5"/><line x1="4.5" y1="9" x2="11.5" y2="12.5"/>
+          </svg>
+          Share Bag
+        </button>
+        <button class="action-btn eval-btn" id="eval-btn">Evaluate</button>
+        <button class="action-btn fc-btn" id="fc-btn">Flight Charts</button>
+        <button class="action-btn undo-btn" id="undo-btn" style="display:none">Undo</button>
+      </div>
+      <div class="bag-gap"></div>
+      <div class="bag-right">
+        <div class="user-badge" id="user-badge">
+          <div class="user-avatar" id="user-avatar"></div>
+          <span id="user-email"></span>
+        </div>
+        <button class="action-btn" id="clear-btn">Clear</button>
+      </div>
     </div>
     <div id="bag-display"></div>
   </div>
