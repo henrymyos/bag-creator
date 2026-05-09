@@ -108,6 +108,8 @@
     }
     .search-clear:hover { color: var(--text); }
 
+    .tab-group { display: flex; flex-direction: column; gap: 0.35rem; }
+    .tab-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
     .type-tabs { display: flex; gap: 4px; }
     .type-tab {
       flex: 1; padding: 5px 2px; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700;
@@ -436,21 +438,27 @@
         <input class="search-input" id="search-input" type="text" placeholder="Search discs…" autocomplete="off" />
         <button class="search-clear" id="search-clear">✕</button>
       </div>
-      <div class="type-tabs" id="type-tabs">
-        <button class="type-tab active" data-type="all">All</button>
-        <button class="type-tab" data-type="putter">Putters</button>
-        <button class="type-tab" data-type="midrange">Mid</button>
-        <button class="type-tab" data-type="fairway">Fairway</button>
-        <button class="type-tab" data-type="distance">Distance</button>
+      <div class="tab-group">
+        <span class="tab-label">Disc Type</span>
+        <div class="type-tabs" id="type-tabs">
+          <button class="type-tab active" data-type="all">All</button>
+          <button class="type-tab" data-type="putter">Putters</button>
+          <button class="type-tab" data-type="midrange">Mid</button>
+          <button class="type-tab" data-type="fairway">Fairway</button>
+          <button class="type-tab" data-type="distance">Distance</button>
+        </div>
       </div>
-      <div class="brand-tabs" id="brand-tabs">
-        <button class="brand-tab active" data-brand="all">All Brands</button>
-        <button class="brand-tab" data-brand="innova">Innova</button>
-        <button class="brand-tab" data-brand="discraft">Discraft</button>
-        <button class="brand-tab" data-brand="trilogy">Trilogy</button>
-        <button class="brand-tab" data-brand="mvp">MVP</button>
-        <button class="brand-tab" data-brand="discmania">Discmania</button>
-        <button class="brand-tab" data-brand="prodigy">Prodigy</button>
+      <div class="tab-group">
+        <span class="tab-label">Brand</span>
+        <div class="brand-tabs" id="brand-tabs">
+          <button class="brand-tab active" data-brand="all">All</button>
+          <button class="brand-tab" data-brand="innova">Innova</button>
+          <button class="brand-tab" data-brand="discraft">Discraft</button>
+          <button class="brand-tab" data-brand="trilogy">Trilogy</button>
+          <button class="brand-tab" data-brand="mvp">MVP</button>
+          <button class="brand-tab" data-brand="discmania">Discmania</button>
+          <button class="brand-tab" data-brand="prodigy">Prodigy</button>
+        </div>
       </div>
     </div>
     <div class="disc-list" id="disc-list"></div>
