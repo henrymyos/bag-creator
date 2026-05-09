@@ -229,11 +229,9 @@
   </div>
 </div>
 
-<script src="firebase-config.js"></script>
+<script src="supabase-config.js"></script>
 <script src="discs.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const AVATAR_COLORS = [
   { val:'#39d353', bg:'rgba(57,211,83,0.15)',   border:'rgba(57,211,83,0.3)'   },
@@ -276,8 +274,8 @@ function encodeBagIndices(discs) {
 }
 
 function timeAgo(ts) {
-  if (!ts || !ts.seconds) return '';
-  const secs = Math.floor(Date.now() / 1000 - ts.seconds);
+  if (!ts) return '';
+  const secs = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
   if (secs < 60)     return 'just now';
   if (secs < 3600)   return Math.floor(secs / 60) + 'm ago';
   if (secs < 86400)  return Math.floor(secs / 3600) + 'h ago';
@@ -292,6 +290,7 @@ function colorForId(id) {
   return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
 }
 
+const supabase  = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const params    = new URLSearchParams(location.search);
 const targetUid = params.get('uid');
 const pageMsg   = document.getElementById('page-msg');
@@ -303,18 +302,9 @@ function showError(msg) {
   bagWrap.style.display = 'none';
 }
 
-const FB_READY = typeof FIREBASE_CONFIG !== 'undefined' &&
-  FIREBASE_CONFIG.projectId !== 'YOUR_PROJECT_ID';
-
 if (!targetUid) {
   showError('No bag specified. Go back to Community.');
-} else if (!FB_READY) {
-  showError('Firebase is not configured.');
 } else {
-  firebase.initializeApp(FIREBASE_CONFIG);
-  const auth = firebase.auth();
-  const db   = firebase.firestore();
-
   let currentUser = null;
   let bagData     = null;
   let liked       = false;
@@ -322,18 +312,18 @@ if (!targetUid) {
 
   const loginUrl = 'login.html?from=' + encodeURIComponent('view-bag.html?uid=' + targetUid);
 
-  auth.onAuthStateChanged(user => {
-    currentUser = user;
+  supabase.auth.onAuthStateChange((event, session) => {
+    currentUser = session?.user ?? null;
 
     const navAuth     = document.getElementById('nav-auth');
     const navProfile  = document.getElementById('nav-profile');
     const navAuthM    = document.getElementById('nav-auth-mobile');
     const navProfileM = document.getElementById('nav-profile-mobile');
-    if (user) {
+    if (currentUser) {
       if (navProfile)  navProfile.style.display  = '';
       if (navProfileM) navProfileM.style.display = '';
-      if (navAuth)  { navAuth.textContent  = 'Sign Out'; navAuth.href  = '#'; navAuth.onclick  = e => { e.preventDefault(); auth.signOut(); }; }
-      if (navAuthM) { navAuthM.textContent = 'Sign Out'; navAuthM.href = '#'; navAuthM.onclick = e => { e.preventDefault(); auth.signOut(); }; }
+      if (navAuth)  { navAuth.textContent  = 'Sign Out'; navAuth.href  = '#'; navAuth.onclick  = e => { e.preventDefault(); supabase.auth.signOut(); }; }
+      if (navAuthM) { navAuthM.textContent = 'Sign Out'; navAuthM.href = '#'; navAuthM.onclick = e => { e.preventDefault(); supabase.auth.signOut(); }; }
     } else {
       if (navProfile)  navProfile.style.display  = 'none';
       if (navProfileM) navProfileM.style.display = 'none';
@@ -342,33 +332,33 @@ if (!targetUid) {
     }
 
     if (bagData) {
-      liked = user ? (bagData.likedBy || []).includes(user.uid) : false;
+      liked = currentUser ? (bagData.liked_by || []).includes(currentUser.id) : false;
       updateLikeBtn();
       updateCommentInput();
     }
   });
 
-  db.collection('bags').doc(targetUid).get().then(doc => {
-    if (!doc.exists) { showError('This bag doesn\'t exist.'); return; }
-    const data = doc.data();
-    if (!data.prefs || !data.prefs.public) { showError('This bag is private.'); return; }
-    bagData   = data;
-    likeCount = data.likeCount || 0;
-    liked     = currentUser ? (data.likedBy || []).includes(currentUser.uid) : false;
-    renderBag(data);
-    loadComments();
-    pageMsg.style.display = 'none';
-    bagWrap.style.display = '';
-  }).catch(e => {
-    showError('Could not load bag. ' + (e.message || 'Check your connection.'));
-  });
+  supabase.from('bags').select('*').eq('user_id', targetUid).single()
+    .then(({ data, error }) => {
+      if (error || !data) { showError("This bag doesn't exist."); return; }
+      if (!data.prefs || !data.prefs.public) { showError('This bag is private.'); return; }
+      bagData   = data;
+      likeCount = data.like_count || 0;
+      liked     = currentUser ? (data.liked_by || []).includes(currentUser.id) : false;
+      renderBag(data);
+      loadComments();
+      pageMsg.style.display = 'none';
+      bagWrap.style.display = '';
+    }).catch(e => {
+      showError('Could not load bag. ' + (e.message || 'Check your connection.'));
+    });
 
   function renderBag(data) {
     const discs  = decodeBagKeys(data.bag || []);
     const prefs  = data.prefs || {};
-    const name   = data.displayName || 'Anonymous';
+    const name   = data.display_name || 'Anonymous';
     const color  = AVATAR_COLORS.find(c => c.val === prefs.avatarColor) || AVATAR_COLORS[0];
-    const ago    = timeAgo(data.updatedAt);
+    const ago    = timeAgo(data.updated_at);
     const encoded = encodeBagIndices(discs);
 
     const avatarHtml = prefs.avatarPhoto
@@ -445,45 +435,37 @@ if (!targetUid) {
   function toggleLike() {
     if (!currentUser) { location.href = loginUrl; return; }
     if (!bagData) return;
-    const wasLiked    = liked;
-    const prevCount   = likeCount;
-    const prevLikedBy = (bagData.likedBy || []).slice();
+    const wasLiked  = liked;
+    const prevCount = likeCount;
 
     liked     = !wasLiked;
     likeCount = Math.max(0, prevCount + (liked ? 1 : -1));
-    bagData.likedBy   = liked
-      ? [...prevLikedBy, currentUser.uid]
-      : prevLikedBy.filter(u => u !== currentUser.uid);
-    bagData.likeCount = likeCount;
     updateLikeBtn();
 
-    db.collection('bags').doc(targetUid).update({
-      likeCount: firebase.firestore.FieldValue.increment(liked ? 1 : -1),
-      likedBy: liked
-        ? firebase.firestore.FieldValue.arrayUnion(currentUser.uid)
-        : firebase.firestore.FieldValue.arrayRemove(currentUser.uid),
-    }).catch(e => {
-      liked             = wasLiked;
-      likeCount         = prevCount;
-      bagData.likedBy   = prevLikedBy;
-      bagData.likeCount = prevCount;
-      updateLikeBtn();
-      console.warn('Like failed — check Firestore rules:', e.message);
-    });
+    supabase.rpc('toggle_like', { p_bag_user_id: targetUid, p_user_id: currentUser.id })
+      .then(({ error }) => {
+        if (error) {
+          liked     = wasLiked;
+          likeCount = prevCount;
+          updateLikeBtn();
+          console.warn('Like failed:', error.message);
+        }
+      });
   }
 
-  function loadComments() {
-    db.collection('bags').doc(targetUid).collection('comments')
-      .orderBy('createdAt', 'asc').get()
-      .then(snap => {
-        renderComments(snap.docs.map(d => d.data()));
-        updateCommentInput();
-      })
-      .catch(() => {
-        document.getElementById('comment-list').innerHTML =
-          '<div class="no-comments">Comments unavailable.</div>';
-        updateCommentInput();
-      });
+  async function loadComments() {
+    const { data: comments, error } = await supabase
+      .from('comments')
+      .select('*')
+      .eq('bag_user_id', targetUid)
+      .order('created_at', { ascending: true });
+    if (error) {
+      document.getElementById('comment-list').innerHTML =
+        '<div class="no-comments">Comments unavailable.</div>';
+    } else {
+      renderComments(comments || []);
+    }
+    updateCommentInput();
   }
 
   function renderComments(comments) {
@@ -496,9 +478,9 @@ if (!targetUid) {
   }
 
   function commentHtml(c) {
-    const authorName = c.authorName || 'Anonymous';
-    const color = colorForId(c.authorId || authorName);
-    const ago   = timeAgo(c.createdAt);
+    const authorName = c.author_name || 'Anonymous';
+    const color = colorForId(c.author_id || authorName);
+    const ago   = timeAgo(c.created_at);
     return `<div class="comment">
       <div class="comment-avatar" style="background:${color.bg};border:1.5px solid ${color.border};color:${color.val}">${esc(authorName[0].toUpperCase())}</div>
       <div class="comment-body">
@@ -537,35 +519,38 @@ if (!targetUid) {
     }
   }
 
-  function postComment() {
+  async function postComment() {
     const ta  = document.getElementById('comment-textarea');
     const btn = document.getElementById('comment-submit');
     if (!ta || !currentUser) return;
     const text = ta.value.trim();
     if (!text) return;
 
-    const authorName = currentUser.displayName || currentUser.email.split('@')[0] || 'Anonymous';
+    const authorName = currentUser.user_metadata?.displayName ||
+      currentUser.user_metadata?.full_name ||
+      currentUser.email.split('@')[0] || 'Anonymous';
 
     ta.disabled = true;
     btn.disabled = true;
     btn.textContent = 'Posting…';
 
-    db.collection('bags').doc(targetUid).collection('comments').add({
+    const { error } = await supabase.from('comments').insert({
+      bag_user_id: targetUid,
       text,
-      authorId: currentUser.uid,
-      authorName,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    }).then(() => {
-      db.collection('bags').doc(targetUid).update({
-        commentCount: firebase.firestore.FieldValue.increment(1),
-      });
+      author_id: currentUser.id,
+      author_name: authorName,
+      created_at: new Date().toISOString(),
+    });
 
-      const list     = document.getElementById('comment-list');
-      const empty    = list.querySelector('.no-comments');
+    if (!error) {
+      await supabase.rpc('increment_comment_count', { p_bag_user_id: targetUid });
+
+      const list  = document.getElementById('comment-list');
+      const empty = list.querySelector('.no-comments');
       if (empty) list.innerHTML = '';
       list.insertAdjacentHTML('beforeend', commentHtml({
-        text, authorId: currentUser.uid, authorName,
-        createdAt: { seconds: Math.floor(Date.now() / 1000) },
+        text, author_id: currentUser.id, author_name: authorName,
+        created_at: new Date().toISOString(),
       }));
 
       const countEl = document.getElementById('comment-count');
@@ -576,16 +561,16 @@ if (!targetUid) {
       ta.disabled = false;
       btn.textContent = 'Post';
       btn.disabled = true;
-    }).catch(() => {
+    } else {
       ta.disabled = false;
       btn.disabled = false;
       btn.textContent = 'Post';
       const errEl = document.getElementById('comment-error');
       if (errEl) {
-        errEl.textContent = 'Failed to post — update your Firestore rules to allow comment writes.';
+        errEl.textContent = 'Failed to post comment. Please try again.';
         setTimeout(() => { errEl.textContent = ''; }, 6000);
       }
-    });
+    }
   }
 }
 </script>

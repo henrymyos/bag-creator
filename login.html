@@ -156,92 +156,90 @@
   <a class="back-link" href="#" onclick="event.preventDefault(); history.back()">← Go Back</a>
 </div>
 
-<script src="firebase-config.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="supabase-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  if (typeof FIREBASE_CONFIG === 'undefined' || FIREBASE_CONFIG.projectId === 'YOUR_PROJECT_ID') {
-    document.querySelector('.card-sub').textContent = 'Firebase is not configured yet. Fill in firebase-config.js to enable login.';
-    document.getElementById('google-btn').disabled = true;
-    document.getElementById('submit-btn').disabled = true;
-  } else {
-    firebase.initializeApp(FIREBASE_CONFIG);
-    const auth = firebase.auth();
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Already logged in → go straight to My Bag
-    auth.onAuthStateChanged(user => {
-      if (user) window.location.href = 'custom-bag.html';
-    });
+  // Already logged in → go straight to My Bag
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (session?.user) window.location.href = 'custom-bag.html';
+  });
 
-    let mode = 'signin';
+  let mode = 'signin';
 
-    function setError(msg) {
-      document.getElementById('error-msg').textContent = msg;
-    }
-    function clearError() {
-      document.getElementById('error-msg').textContent = '';
-    }
-    function setLoading(yes) {
-      document.getElementById('google-btn').disabled = yes;
-      document.getElementById('submit-btn').disabled = yes;
-    }
-    function friendlyError(code) {
-      return {
-        'auth/user-not-found':     'No account found with that email.',
-        'auth/wrong-password':     'Incorrect password.',
-        'auth/invalid-credential': 'Incorrect email or password.',
-        'auth/email-already-in-use': 'That email is already registered.',
-        'auth/weak-password':      'Password must be at least 6 characters.',
-        'auth/invalid-email':      'Please enter a valid email address.',
-        'auth/popup-closed-by-user': 'Sign-in window was closed.',
-        'auth/too-many-requests':  'Too many attempts. Please wait a moment.',
-      }[code] || 'Something went wrong. Please try again.';
-    }
-
-    document.getElementById('google-btn').addEventListener('click', async () => {
-      clearError();
-      setLoading(true);
-      try {
-        await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
-      } catch (e) {
-        setError(friendlyError(e.code));
-        setLoading(false);
-      }
-    });
-
-    document.getElementById('auth-form').addEventListener('submit', async e => {
-      e.preventDefault();
-      clearError();
-      const email    = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      if (!email || !password) { setError('Please fill in all fields.'); return; }
-      setLoading(true);
-      try {
-        if (mode === 'signin') {
-          await auth.signInWithEmailAndPassword(email, password);
-        } else {
-          const confirm = document.getElementById('confirm-password').value;
-          if (password !== confirm) { setError('Passwords do not match.'); setLoading(false); return; }
-          await auth.createUserWithEmailAndPassword(email, password);
-        }
-      } catch (e) {
-        setError(friendlyError(e.code));
-        setLoading(false);
-      }
-    });
-
-    document.getElementById('mode-toggle').addEventListener('click', () => {
-      mode = mode === 'signin' ? 'register' : 'signin';
-      const isReg = mode === 'register';
-      document.getElementById('card-title').textContent    = isReg ? 'Create Account' : 'Sign In';
-      document.getElementById('submit-btn').textContent    = isReg ? 'Create Account' : 'Sign In';
-      document.getElementById('toggle-label').textContent  = isReg ? 'Already have an account?' : "Don't have an account?";
-      document.getElementById('mode-toggle').textContent   = isReg ? 'Sign in' : 'Create one';
-      document.getElementById('confirm-field').style.display = isReg ? 'block' : 'none';
-      document.getElementById('password').autocomplete = isReg ? 'new-password' : 'current-password';
-      clearError();
-    });
+  function setError(msg) { document.getElementById('error-msg').textContent = msg; }
+  function clearError() {
+    const el = document.getElementById('error-msg');
+    el.textContent = '';
+    el.style.color = '';
   }
+  function setLoading(yes) {
+    document.getElementById('google-btn').disabled = yes;
+    document.getElementById('submit-btn').disabled = yes;
+  }
+  function friendlyError(msg) {
+    if (!msg) return 'Something went wrong. Please try again.';
+    if (msg.includes('Invalid login credentials') || msg.includes('invalid_credentials'))
+      return 'Incorrect email or password.';
+    if (msg.includes('Email not confirmed'))
+      return 'Please check your email to confirm your account first.';
+    if (msg.includes('User already registered'))
+      return 'That email is already registered.';
+    if (msg.includes('Password should be at least'))
+      return 'Password must be at least 6 characters.';
+    if (msg.includes('Unable to validate email'))
+      return 'Please enter a valid email address.';
+    if (msg.includes('too many requests') || msg.includes('rate limit'))
+      return 'Too many attempts. Please wait a moment.';
+    return msg;
+  }
+
+  document.getElementById('google-btn').addEventListener('click', async () => {
+    clearError();
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin + '/login.html' }
+    });
+    if (error) { setError(friendlyError(error.message)); setLoading(false); }
+  });
+
+  document.getElementById('auth-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    clearError();
+    const email    = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    if (!email || !password) { setError('Please fill in all fields.'); return; }
+    setLoading(true);
+    if (mode === 'signin') {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) { setError(friendlyError(error.message)); setLoading(false); }
+    } else {
+      const confirm = document.getElementById('confirm-password').value;
+      if (password !== confirm) { setError('Passwords do not match.'); setLoading(false); return; }
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      if (error) { setError(friendlyError(error.message)); setLoading(false); return; }
+      if (!data.session) {
+        const el = document.getElementById('error-msg');
+        el.style.color = '#39d353';
+        el.textContent = 'Check your email to confirm your account, then sign in.';
+        setLoading(false);
+      }
+    }
+  });
+
+  document.getElementById('mode-toggle').addEventListener('click', () => {
+    mode = mode === 'signin' ? 'register' : 'signin';
+    const isReg = mode === 'register';
+    document.getElementById('card-title').textContent   = isReg ? 'Create Account' : 'Sign In';
+    document.getElementById('submit-btn').textContent   = isReg ? 'Create Account' : 'Sign In';
+    document.getElementById('toggle-label').textContent = isReg ? 'Already have an account?' : "Don't have an account?";
+    document.getElementById('mode-toggle').textContent  = isReg ? 'Sign in' : 'Create one';
+    document.getElementById('confirm-field').style.display = isReg ? 'block' : 'none';
+    document.getElementById('password').autocomplete = isReg ? 'new-password' : 'current-password';
+    clearError();
+  });
 </script>
 </body>
 </html>

@@ -466,10 +466,8 @@
 
 <footer>Flight numbers: Speed · Glide · Turn · Fade &nbsp;|&nbsp; Data based on manufacturer specs</footer>
 
-<script src="firebase-config.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="supabase-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="discs.js"></script>
 <script>
 const TYPE_ORDER = ['putter','midrange','fairway','distance'];
@@ -527,38 +525,15 @@ function updateURL() {
   history.replaceState(null, '', location.pathname + encoded);
 }
 
-// ── Firebase auth + Firestore ──────────────────────────────
+// ── Supabase auth + database ──────────────────────────────
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let currentUser = null;
-let auth, db;
-const FB_READY = typeof FIREBASE_CONFIG !== 'undefined' &&
-  FIREBASE_CONFIG.projectId !== 'YOUR_PROJECT_ID';
 
-if (FB_READY) {
-  firebase.initializeApp(FIREBASE_CONFIG);
-  auth = firebase.auth();
-  db   = firebase.firestore();
-
-  auth.onAuthStateChanged(async user => {
-    currentUser = user;
-    updateAuthUI();
-    if (user) {
-      await loadFromFirestore();
-    } else {
-      myBag = [];
-      profileDist = null;
-      if (urlAdd) {
-        const toAdd = decodeBag(urlAdd);
-        myBag.push(...toAdd);
-        const cleanUrl = location.pathname + (myBag.length ? `?bag=${encodeBag(myBag)}` : '');
-        history.replaceState(null, '', cleanUrl);
-      }
-      updateURL();
-      render();
-    }
-  });
+function getUserLabel(user) {
+  return user.user_metadata?.displayName || user.user_metadata?.full_name || user.email || '';
 }
 
-function applyAvatarBadge(colorVal, photoData) {
+function applyAvatarBadge(colorVal, photoData, initial) {
   const el = document.getElementById('user-avatar');
   if (!el) return;
   const hex = colorVal || '#39d353';
@@ -568,102 +543,121 @@ function applyAvatarBadge(colorVal, photoData) {
     el.style.background = 'none';
     el.style.color = '';
   } else {
-    el.innerHTML = el.dataset.initial || '?';
+    el.innerHTML = initial || '?';
     el.style.background = `rgba(${r},${g},${b},0.2)`;
     el.style.color = hex;
   }
 }
 
 function updateAuthUI() {
-  const banner     = document.getElementById('auth-banner');
-  const badge      = document.getElementById('user-badge');
-  const navAuth    = document.getElementById('nav-auth');
-  const navProfile = document.getElementById('nav-profile');
-  const navAuthM   = document.getElementById('nav-auth-mobile');
+  const banner      = document.getElementById('auth-banner');
+  const badge       = document.getElementById('user-badge');
+  const navAuth     = document.getElementById('nav-auth');
+  const navProfile  = document.getElementById('nav-profile');
+  const navAuthM    = document.getElementById('nav-auth-mobile');
   const navProfileM = document.getElementById('nav-profile-mobile');
   if (currentUser) {
-    banner.style.display     = 'none';
-    badge.style.display      = 'flex';
-    if (navProfile) navProfile.style.display = '';
+    banner.style.display  = 'none';
+    badge.style.display   = 'flex';
+    if (navProfile)  navProfile.style.display  = '';
     if (navProfileM) navProfileM.style.display = '';
-    const label = currentUser.displayName || currentUser.email || '';
-    const avatarEl = document.getElementById('user-avatar');
+    const label   = getUserLabel(currentUser);
     const initial = label[0]?.toUpperCase() || '?';
+    const avatarEl = document.getElementById('user-avatar');
     avatarEl.dataset.initial = initial;
     avatarEl.textContent = initial;
-    document.getElementById('user-email').textContent  = label;
-    if (navAuth) { navAuth.textContent = 'Sign Out'; navAuth.href = '#'; navAuth.onclick = e => { e.preventDefault(); auth.signOut(); }; }
-    if (navAuthM) { navAuthM.textContent = 'Sign Out'; navAuthM.href = '#'; navAuthM.onclick = e => { e.preventDefault(); auth.signOut(); }; }
+    document.getElementById('user-email').textContent = label;
+    if (navAuth)  { navAuth.textContent  = 'Sign Out'; navAuth.href  = '#'; navAuth.onclick  = e => { e.preventDefault(); supabase.auth.signOut(); }; }
+    if (navAuthM) { navAuthM.textContent = 'Sign Out'; navAuthM.href = '#'; navAuthM.onclick = e => { e.preventDefault(); supabase.auth.signOut(); }; }
   } else {
-    banner.style.display     = FB_READY ? 'flex' : 'none';
-    badge.style.display      = 'none';
-    if (navProfile) navProfile.style.display = 'none';
+    banner.style.display  = 'flex';
+    badge.style.display   = 'none';
+    if (navProfile)  navProfile.style.display  = 'none';
     if (navProfileM) navProfileM.style.display = 'none';
-    if (navAuth) { navAuth.textContent = 'Sign In'; navAuth.href = 'login.html?from=custom-bag.html'; navAuth.onclick = null; }
+    if (navAuth)  { navAuth.textContent  = 'Sign In'; navAuth.href  = 'login.html?from=custom-bag.html'; navAuth.onclick  = null; }
     if (navAuthM) { navAuthM.textContent = 'Sign In'; navAuthM.href = 'login.html?from=custom-bag.html'; navAuthM.onclick = null; }
   }
 }
 
-async function loadFromFirestore() {
+async function loadFromDB() {
   try {
-    const doc = await db.collection('bags').doc(currentUser.uid).get();
-    if (doc.exists) {
-      const p = doc.data().prefs;
-      if (p?.avatarColor || p?.avatarPhoto) applyAvatarBadge(p.avatarColor, p.avatarPhoto);
-      if (p?.dist) profileDist = parseInt(p.dist);
+    const { data } = await supabase.from('bags').select('bag, prefs').eq('user_id', currentUser.id).single();
+    if (data) {
+      const p = data.prefs || {};
+      if (p.avatarColor || p.avatarPhoto) {
+        const initial = getUserLabel(currentUser)[0]?.toUpperCase() || '?';
+        applyAvatarBadge(p.avatarColor, p.avatarPhoto, initial);
+      }
+      if (p.dist) profileDist = parseInt(p.dist);
     }
-    if (doc.exists && doc.data().bag?.length) {
-      myBag = doc.data().bag.flatMap(key => {
+    if (data?.bag?.length) {
+      myBag = data.bag.flatMap(key => {
         const [brand, type, ...rest] = key.split('|');
         const d = DISCS.find(d => d.brand === brand && d.type === type && d.name === rest.join('|'));
         return d ? [d] : [];
       });
       sortBagByStability();
     } else if (myBag.length) {
-      // First login — persist the current URL bag
-      await saveToFirestore();
+      await saveToDB();
     }
 
-    // Merge discs passed via ?add= (from bag builder), skipping duplicates
     if (urlAdd) {
       const toAdd = decodeBag(urlAdd);
       const existingKeys = new Set(myBag.map(discKey));
       const merged = toAdd.filter(d => !existingKeys.has(discKey(d)));
       myBag.push(...merged);
-      if (merged.length) await saveToFirestore();
-      // Remove ?add= from the URL so refresh doesn't re-add
+      if (merged.length) await saveToDB();
       const cleanUrl = location.pathname + (myBag.length ? `?bag=${encodeBag(myBag)}` : '');
       history.replaceState(null, '', cleanUrl);
     }
 
     updateURL();
     render();
-  } catch (e) { console.error('Firestore load error:', e); }
+  } catch (e) { console.error('DB load error:', e); }
 }
 
 let saveTimeout;
 function scheduleSave() {
-  if (!currentUser || !FB_READY) return;
+  if (!currentUser) return;
   clearTimeout(saveTimeout);
   const s = document.getElementById('save-status');
   if (s) { s.textContent = 'Saving…'; s.className = 'save-status'; }
   saveTimeout = setTimeout(async () => {
-    await saveToFirestore();
+    await saveToDB();
     if (s) { s.textContent = 'Saved'; s.className = 'save-status saved'; setTimeout(() => { s.textContent = ''; }, 2000); }
   }, 1200);
 }
 
-async function saveToFirestore() {
-  if (!currentUser || !db) return;
+async function saveToDB() {
+  if (!currentUser) return;
   try {
-    await db.collection('bags').doc(currentUser.uid).set({
-      bag: myBag.map(discKey),
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-  } catch (e) { console.error('Firestore save error:', e); }
+    await supabase.from('bags').upsert(
+      { user_id: currentUser.id, bag: myBag.map(discKey), updated_at: new Date().toISOString() },
+      { onConflict: 'user_id' }
+    );
+  } catch (e) { console.error('DB save error:', e); }
 }
 
-document.getElementById('logout-btn')?.addEventListener('click', () => auth?.signOut());
+supabase.auth.onAuthStateChange(async (event, session) => {
+  currentUser = session?.user ?? null;
+  updateAuthUI();
+  if (currentUser) {
+    await loadFromDB();
+  } else {
+    myBag = [];
+    profileDist = null;
+    if (urlAdd) {
+      const toAdd = decodeBag(urlAdd);
+      myBag.push(...toAdd);
+      const cleanUrl = location.pathname + (myBag.length ? `?bag=${encodeBag(myBag)}` : '');
+      history.replaceState(null, '', cleanUrl);
+    }
+    updateURL();
+    render();
+  }
+});
+
+document.getElementById('logout-btn')?.addEventListener('click', () => supabase.auth.signOut());
 // ──────────────────────────────────────────────────────────
 
 let lastClearedBag = null;

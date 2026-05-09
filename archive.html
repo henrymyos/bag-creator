@@ -653,32 +653,26 @@ function render() {
 updateBrandFilterButtons();
 render();
 </script>
-<script src="firebase-config.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="supabase-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function() {
-  const FB_READY = typeof FIREBASE_CONFIG !== 'undefined' &&
-    FIREBASE_CONFIG.projectId !== 'YOUR_PROJECT_ID';
-  if (!FB_READY) return;
-
-  firebase.initializeApp(FIREBASE_CONFIG);
-  const auth = firebase.auth();
-
-  auth.onAuthStateChanged(user => {
-    const navAuth    = document.getElementById('nav-auth');
-    const navProfile = document.getElementById('nav-profile');
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  supabase.auth.onAuthStateChange((event, session) => {
+    const user        = session?.user ?? null;
+    const navAuth     = document.getElementById('nav-auth');
+    const navProfile  = document.getElementById('nav-profile');
     const navAuthM    = document.getElementById('nav-auth-mobile');
     const navProfileM = document.getElementById('nav-profile-mobile');
     if (user) {
-      if (navProfile) navProfile.style.display = '';
+      if (navProfile)  navProfile.style.display  = '';
       if (navProfileM) navProfileM.style.display = '';
-      if (navAuth) { navAuth.textContent = 'Sign Out'; navAuth.href = '#'; navAuth.onclick = e => { e.preventDefault(); auth.signOut(); }; }
-      if (navAuthM) { navAuthM.textContent = 'Sign Out'; navAuthM.href = '#'; navAuthM.onclick = e => { e.preventDefault(); auth.signOut(); }; }
+      if (navAuth)  { navAuth.textContent  = 'Sign Out'; navAuth.href  = '#'; navAuth.onclick  = e => { e.preventDefault(); supabase.auth.signOut(); }; }
+      if (navAuthM) { navAuthM.textContent = 'Sign Out'; navAuthM.href = '#'; navAuthM.onclick = e => { e.preventDefault(); supabase.auth.signOut(); }; }
     } else {
-      if (navProfile) navProfile.style.display = 'none';
+      if (navProfile)  navProfile.style.display  = 'none';
       if (navProfileM) navProfileM.style.display = 'none';
-      if (navAuth) { navAuth.textContent = 'Sign In'; navAuth.href = 'login.html?from=archive.html'; navAuth.onclick = null; }
+      if (navAuth)  { navAuth.textContent  = 'Sign In'; navAuth.href  = 'login.html?from=archive.html'; navAuth.onclick  = null; }
       if (navAuthM) { navAuthM.textContent = 'Sign In'; navAuthM.href = 'login.html?from=archive.html'; navAuthM.onclick = null; }
     }
   });

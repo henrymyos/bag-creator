@@ -218,43 +218,30 @@
   </div>
 </div>
 
-<script src="firebase-config.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="supabase-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const FB_READY = typeof FIREBASE_CONFIG !== 'undefined' &&
-  FIREBASE_CONFIG.projectId !== 'YOUR_PROJECT_ID';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-let db;
-
-if (!FB_READY) {
-  document.getElementById('page-content').innerHTML =
-    '<div class="not-logged-in"><h2>Firebase not configured</h2><p>Fill in firebase-config.js to enable accounts.</p></div>';
-} else {
-  firebase.initializeApp(FIREBASE_CONFIG);
-  const auth = firebase.auth();
-  db = firebase.firestore();
-
-  auth.onAuthStateChanged(user => {
-    const navAuth     = document.getElementById('nav-auth');
-    const navProfile  = document.getElementById('nav-profile');
-    const navAuthM    = document.getElementById('nav-auth-mobile');
-    const navProfileM = document.getElementById('nav-profile-mobile');
-    if (user) {
-      if (navProfile) navProfile.style.display = '';
-      if (navProfileM) navProfileM.style.display = '';
-      if (navAuth) { navAuth.textContent = 'Sign Out'; navAuth.href = '#'; navAuth.onclick = e => { e.preventDefault(); auth.signOut(); }; }
-      if (navAuthM) { navAuthM.textContent = 'Sign Out'; navAuthM.href = '#'; navAuthM.onclick = e => { e.preventDefault(); auth.signOut(); }; }
-      renderProfile(user);
-    } else {
-      if (navProfile) navProfile.style.display = 'none';
-      if (navProfileM) navProfileM.style.display = 'none';
-      if (navAuth) { navAuth.textContent = 'Sign In'; navAuth.href = 'login.html?from=profile.html'; navAuth.onclick = null; }
-      if (navAuthM) { navAuthM.textContent = 'Sign In'; navAuthM.href = 'login.html?from=profile.html'; navAuthM.onclick = null; }
-    }
-  });
-}
+supabase.auth.onAuthStateChange((event, session) => {
+  const user        = session?.user ?? null;
+  const navAuth     = document.getElementById('nav-auth');
+  const navProfile  = document.getElementById('nav-profile');
+  const navAuthM    = document.getElementById('nav-auth-mobile');
+  const navProfileM = document.getElementById('nav-profile-mobile');
+  if (user) {
+    if (navProfile)  navProfile.style.display  = '';
+    if (navProfileM) navProfileM.style.display = '';
+    if (navAuth)  { navAuth.textContent  = 'Sign Out'; navAuth.href  = '#'; navAuth.onclick  = e => { e.preventDefault(); supabase.auth.signOut(); }; }
+    if (navAuthM) { navAuthM.textContent = 'Sign Out'; navAuthM.href = '#'; navAuthM.onclick = e => { e.preventDefault(); supabase.auth.signOut(); }; }
+    renderProfile(user);
+  } else {
+    if (navProfile)  navProfile.style.display  = 'none';
+    if (navProfileM) navProfileM.style.display = 'none';
+    if (navAuth)  { navAuth.textContent  = 'Sign In'; navAuth.href  = 'login.html?from=profile.html'; navAuth.onclick  = null; }
+    if (navAuthM) { navAuthM.textContent = 'Sign In'; navAuthM.href = 'login.html?from=profile.html'; navAuthM.onclick = null; }
+  }
+});
 
 const AVATAR_COLORS = [
   { bg:'rgba(57,211,83,0.15)',   border:'rgba(57,211,83,0.3)',   text:'#39d353', val:'#39d353' },
@@ -286,16 +273,21 @@ function applyAvatar(colorVal, photoData, initial) {
 }
 
 function isGoogleUser(user) {
-  return user.providerData.some(p => p.providerId === 'google.com');
+  return user.app_metadata?.provider === 'google';
+}
+
+function getUserLabel(user) {
+  return user.user_metadata?.displayName || user.user_metadata?.full_name || user.email || '';
 }
 
 function renderProfile(user) {
-  const isGoogle = isGoogleUser(user);
+  const isGoogle  = isGoogleUser(user);
+  const userLabel = getUserLabel(user);
   document.getElementById('page-content').innerHTML = `
     <div class="avatar-row">
-      <div class="avatar-circle" id="avatar-circle">${(user.displayName || user.email || '?')[0].toUpperCase()}</div>
+      <div class="avatar-circle" id="avatar-circle">${(userLabel || '?')[0].toUpperCase()}</div>
       <div class="avatar-info">
-        <h2 id="display-name-heading">${user.displayName || 'No name set'}</h2>
+        <h2 id="display-name-heading">${user.user_metadata?.displayName || user.user_metadata?.full_name || 'No name set'}</h2>
         <p>${user.email}</p>
       </div>
     </div>
@@ -308,8 +300,8 @@ function renderProfile(user) {
       </div>
       <div class="field">
         <label>Display Name</label>
-        <input type="text" id="display-name-input" value="${user.displayName || ''}" placeholder="Your name" maxlength="30" />
-        <div style="font-size:11px;color:var(--muted);margin-top:4px;text-align:right" id="name-char-count">${(user.displayName || '').length}/30</div>
+        <input type="text" id="display-name-input" value="${user.user_metadata?.displayName || user.user_metadata?.full_name || ''}" placeholder="Your name" maxlength="30" />
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;text-align:right" id="name-char-count">${(user.user_metadata?.displayName || user.user_metadata?.full_name || '').length}/30</div>
       </div>
       <div class="field">
         <label>Sign-in method</label>
@@ -414,9 +406,12 @@ function renderProfile(user) {
     const btn    = document.getElementById('save-profile-btn');
     btn.disabled = true;
     try {
-      await firebase.auth().currentUser.updateProfile({ displayName: name });
+      await supabase.auth.updateUser({ data: { displayName: name } });
       if (isPublic) {
-        try { await db.collection('bags').doc(user.uid).update({ displayName: name || user.email || '' }); } catch {}
+        await supabase.from('bags').upsert(
+          { user_id: user.id, display_name: name || user.email || '' },
+          { onConflict: 'user_id' }
+        );
       }
       document.getElementById('display-name-heading').textContent = name || 'No name set';
       const circle = document.getElementById('avatar-circle');
@@ -439,16 +434,13 @@ function renderProfile(user) {
       if (!np) { status.textContent = 'Enter a new password.'; status.className = 'status-msg error'; return; }
       if (np !== cp) { status.textContent = 'Passwords do not match.'; status.className = 'status-msg error'; return; }
       btn.disabled = true;
-      try {
-        await firebase.auth().currentUser.updatePassword(np);
+      const { error } = await supabase.auth.updateUser({ password: np });
+      if (!error) {
         document.getElementById('new-password').value = '';
         document.getElementById('confirm-password').value = '';
         status.textContent = 'Password updated.'; status.className = 'status-msg success';
-      } catch (e) {
-        const msg = e.code === 'auth/requires-recent-login'
-          ? 'Please sign out and sign back in before changing your password.'
-          : e.message;
-        status.textContent = msg; status.className = 'status-msg error';
+      } else {
+        status.textContent = error.message; status.className = 'status-msg error';
       }
       btn.disabled = false;
       setTimeout(() => { status.textContent = ''; }, 4000);
@@ -456,8 +448,9 @@ function renderProfile(user) {
   }
 
   // Sign out
-  document.getElementById('signout-btn').addEventListener('click', () => {
-    firebase.auth().signOut().then(() => { window.location.href = 'login.html?from=profile.html'; });
+  document.getElementById('signout-btn').addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    window.location.href = 'login.html?from=profile.html';
   });
 
   // Load all prefs: bag info + appearance
@@ -465,19 +458,29 @@ function renderProfile(user) {
     const distInput    = document.getElementById('prof-dist');
     const bagSizeInput = document.getElementById('prof-bagsize');
     const bagStatus    = document.getElementById('bag-settings-status');
-    const initial      = (user.displayName || user.email || '?')[0].toUpperCase();
+    const initial      = getUserLabel(user)[0]?.toUpperCase() || '?';
 
     let currentColor = '#39d353';
     let currentPhoto = null;
+    let currentPrefs = {};
+
+    async function savePrefs(updates) {
+      currentPrefs = { ...currentPrefs, ...updates };
+      await supabase.from('bags').upsert(
+        { user_id: user.id, prefs: currentPrefs },
+        { onConflict: 'user_id' }
+      );
+    }
 
     try {
-      const doc = await db.collection('bags').doc(user.uid).get();
-      const p   = doc.exists ? doc.data().prefs : null;
-      if (p?.dist)         distInput.value    = p.dist;
-      if (p?.bagSize)      bagSizeInput.value = p.bagSize;
-      if (p?.avatarColor)  currentColor       = p.avatarColor;
-      if (p?.avatarPhoto)  currentPhoto       = p.avatarPhoto;
-      if (p?.public)       isPublic           = true;
+      const { data } = await supabase.from('bags').select('prefs').eq('user_id', user.id).single();
+      const p = data?.prefs || {};
+      currentPrefs = p;
+      if (p.dist)        distInput.value    = p.dist;
+      if (p.bagSize)     bagSizeInput.value = p.bagSize;
+      if (p.avatarColor) currentColor       = p.avatarColor;
+      if (p.avatarPhoto) currentPhoto       = p.avatarPhoto;
+      if (p.public)      isPublic           = true;
     } catch (e) { console.error(e); }
 
     document.getElementById('public-toggle').checked = isPublic;
@@ -497,9 +500,7 @@ function renderProfile(user) {
       swatchWrap.querySelectorAll('.color-swatch').forEach(s =>
         s.classList.toggle('active', s.dataset.val === currentColor)
       );
-      try {
-        await db.collection('bags').doc(user.uid).update({ 'prefs.avatarColor': currentColor });
-      } catch (e) { console.error(e); }
+      try { await savePrefs({ avatarColor: currentColor }); } catch (e) { console.error(e); }
     });
 
     // Photo upload
@@ -524,9 +525,7 @@ function renderProfile(user) {
         URL.revokeObjectURL(url);
         applyAvatar(currentColor, currentPhoto, initial);
         removeBtn.style.display = '';
-        try {
-          await db.collection('bags').doc(user.uid).update({ 'prefs.avatarPhoto': currentPhoto });
-        } catch (e) { console.error(e); }
+        try { await savePrefs({ avatarPhoto: currentPhoto }); } catch (e) { console.error(e); }
       };
       img.src = url;
     });
@@ -534,12 +533,10 @@ function renderProfile(user) {
     const googlePhotoBtn = document.getElementById('use-google-photo-btn');
     if (googlePhotoBtn) {
       googlePhotoBtn.addEventListener('click', async () => {
-        currentPhoto = user.photoURL;
+        currentPhoto = user.user_metadata?.avatar_url || user.user_metadata?.picture || null;
         applyAvatar(currentColor, currentPhoto, initial);
         removeBtn.style.display = '';
-        try {
-          await db.collection('bags').doc(user.uid).update({ 'prefs.avatarPhoto': currentPhoto });
-        } catch (e) { console.error(e); }
+        try { await savePrefs({ avatarPhoto: currentPhoto }); } catch (e) { console.error(e); }
       });
     }
 
@@ -547,9 +544,7 @@ function renderProfile(user) {
       currentPhoto = null;
       applyAvatar(currentColor, null, initial);
       removeBtn.style.display = 'none';
-      try {
-        await db.collection('bags').doc(user.uid).update({ 'prefs.avatarPhoto': null });
-      } catch (e) { console.error(e); }
+      try { await savePrefs({ avatarPhoto: null }); } catch (e) { console.error(e); }
     });
 
     // Public toggle
@@ -557,11 +552,11 @@ function renderProfile(user) {
       isPublic = this.checked;
       const privStatus = document.getElementById('privacy-status');
       try {
-        const ref = db.collection('bags').doc(user.uid);
-        await ref.set({
-          'prefs': { public: isPublic },
-          'displayName': user.displayName || user.email || '',
-        }, { merge: true });
+        await savePrefs({ public: isPublic });
+        await supabase.from('bags').upsert(
+          { user_id: user.id, display_name: getUserLabel(user) },
+          { onConflict: 'user_id' }
+        );
         privStatus.textContent = isPublic ? 'Your bag is now visible on the Community page.' : 'Your bag is now hidden.';
         privStatus.className = 'status-msg success';
       } catch (e) {
@@ -580,12 +575,7 @@ function renderProfile(user) {
       const newDist    = Math.max(100, Math.min(600, parseInt(distInput.value)    || 300));
       const newBagSize = Math.max(0,   Math.min(36,  parseInt(bagSizeInput.value) || 0));
       try {
-        const ref = db.collection('bags').doc(user.uid);
-        try {
-          await ref.update({ 'prefs.dist': newDist, 'prefs.bagSize': newBagSize });
-        } catch {
-          await ref.set({ prefs: { dist: newDist, bagSize: newBagSize, avatarColor: currentColor, avatarPhoto: currentPhoto } }, { merge: true });
-        }
+        await savePrefs({ dist: newDist, bagSize: newBagSize });
         bagStatus.textContent = 'Saved.'; bagStatus.className = 'status-msg success';
       } catch (e) {
         bagStatus.textContent = e.message; bagStatus.className = 'status-msg error';
