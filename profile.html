@@ -272,16 +272,11 @@ function applyAvatar(colorVal, photoData, initial) {
   }
 }
 
-function isGoogleUser(user) {
-  return user.app_metadata?.provider === 'google';
-}
-
 function getUserLabel(user) {
   return user.user_metadata?.displayName || user.user_metadata?.full_name || user.email || '';
 }
 
 function renderProfile(user) {
-  const isGoogle  = isGoogleUser(user);
   const userLabel = getUserLabel(user);
   document.getElementById('page-content').innerHTML = `
     <div class="avatar-row">
@@ -352,22 +347,6 @@ function renderProfile(user) {
       </div>
     </div>
 
-    ${!isGoogle ? `
-    <div class="section">
-      <div class="section-title">Change Password</div>
-      <div class="field">
-        <label>New Password</label>
-        <input type="password" id="new-password" placeholder="At least 6 characters" autocomplete="new-password" />
-      </div>
-      <div class="field">
-        <label>Confirm New Password</label>
-        <input type="password" id="confirm-password" placeholder="Repeat new password" autocomplete="new-password" />
-      </div>
-      <div class="status-msg" id="password-status"></div>
-      <div class="btn-row">
-        <button class="btn btn-primary" id="change-password-btn">Update Password</button>
-      </div>
-    </div>` : ''}
 
     <div class="section">
       <div class="section-title">Privacy</div>
@@ -423,29 +402,6 @@ function renderProfile(user) {
     btn.disabled = false;
     setTimeout(() => { status.textContent = ''; }, 3000);
   });
-
-  // Change password (email users only)
-  if (!isGoogle) {
-    document.getElementById('change-password-btn').addEventListener('click', async () => {
-      const np     = document.getElementById('new-password').value;
-      const cp     = document.getElementById('confirm-password').value;
-      const status = document.getElementById('password-status');
-      const btn    = document.getElementById('change-password-btn');
-      if (!np) { status.textContent = 'Enter a new password.'; status.className = 'status-msg error'; return; }
-      if (np !== cp) { status.textContent = 'Passwords do not match.'; status.className = 'status-msg error'; return; }
-      btn.disabled = true;
-      const { error } = await supabase.auth.updateUser({ password: np });
-      if (!error) {
-        document.getElementById('new-password').value = '';
-        document.getElementById('confirm-password').value = '';
-        status.textContent = 'Password updated.'; status.className = 'status-msg success';
-      } else {
-        status.textContent = error.message; status.className = 'status-msg error';
-      }
-      btn.disabled = false;
-      setTimeout(() => { status.textContent = ''; }, 4000);
-    });
-  }
 
   // Sign out
   document.getElementById('signout-btn').addEventListener('click', async () => {
@@ -612,7 +568,6 @@ function renderProfile(user) {
     { icon: '👤', title: 'Your Profile', text: 'Manage your account from here. You can update your display name, store your bag preferences, and sign out.' },
     { icon: '✏️', title: 'Display Name', text: 'Set a display name up to 30 characters. This personalizes your account — it appears in the header when you are signed in.' },
     { icon: '🎒', title: 'Bag Info', text: 'Store your max throw distance and total bag size here for reference. These are informational only and do not affect the Bag Builder page.' },
-    { icon: '🔒', title: 'Change Password', text: 'If you signed up with email and password, you can update your password here. This section does not appear for Google sign-in accounts.' },
     { icon: '🚪', title: 'Sign Out', text: 'Use the Sign Out button at the bottom to log out of your account. Your bag and settings are saved to your account and will be waiting when you sign back in.' },
   ];
   let cur = 0;
