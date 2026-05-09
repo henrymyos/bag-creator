@@ -6,6 +6,7 @@
   <title>Profile — Bag Creator</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="theme.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -13,6 +14,12 @@
       --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
       --text: #e6edf3; --muted: #8b949e; --accent: #39d353; --accent2: #58a6ff;
     }
+    [data-theme="light"] {
+      --bg: #f6f8fa; --bg2: #ffffff; --bg3: #eaeef2;
+      --border: rgba(0,0,0,0.09); --border2: rgba(0,0,0,0.16);
+      --text: #1f2328; --muted: #57606a; --accent: #1a7f37; --accent2: #0969da;
+    }
+    [data-theme="light"] .mobile-menu-link:hover { background: rgba(0,0,0,0.05); }
     body { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; min-height: 100vh; }
 
     header {
@@ -336,6 +343,16 @@ function renderProfile(user) {
           <button class="btn btn-danger" id="remove-photo-btn" style="display:none">Remove Photo</button>
         </div>
       </div>
+      <div class="field">
+        <label>Theme</label>
+        <div class="toggle-row">
+          <label class="toggle-switch">
+            <input type="checkbox" id="theme-toggle" ${document.documentElement.getAttribute('data-theme') === 'light' ? 'checked' : ''} />
+            <span class="toggle-track"></span>
+          </label>
+          <span class="toggle-label">Light mode</span>
+        </div>
+      </div>
     </div>
 
     <div class="section">
@@ -413,6 +430,17 @@ function renderProfile(user) {
   // Sign out
   document.getElementById('signout-btn').addEventListener('click', () => {
     signOutAndRedirect(supabase, 'index.html');
+  });
+
+  // Theme toggle
+  document.getElementById('theme-toggle').addEventListener('change', function() {
+    if (this.checked) {
+      document.documentElement.setAttribute('data-theme', 'light');
+      localStorage.setItem('bc_theme', 'light');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.removeItem('bc_theme');
+    }
   });
 
   // Load all prefs: bag info + appearance
