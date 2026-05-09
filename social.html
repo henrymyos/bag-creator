@@ -113,7 +113,10 @@
     }
     .disc-chip-more { color: rgba(255,255,255,0.28); border-color: transparent; background: none; }
 
-    .card-footer { display: flex; justify-content: flex-end; margin-top: auto; padding-top: 0.1rem; }
+    .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 0.25rem; }
+    .card-stats { display: flex; gap: 0.9rem; align-items: center; }
+    .card-stat { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted); font-weight: 500; }
+    .card-stat svg { width: 12px; height: 12px; flex-shrink: 0; }
     .view-btn {
       font-family: 'Barlow', sans-serif; font-size: 12px; font-weight: 600;
       color: var(--accent); text-decoration: none;
@@ -258,7 +261,7 @@ const TYPE_ORDER = [
   { key:'distance', label:'D',  cls:'distance' },
 ];
 
-function renderCard(data) {
+function renderCard(data, docId) {
   const discs = decodeBagKeys(data.bag || []);
   if (!discs.length) return '';
 
@@ -287,8 +290,7 @@ function renderCard(data) {
   ).join('');
   const more = entries.length > SHOW ? `<span class="disc-chip disc-chip-more">+${entries.length - SHOW} more</span>` : '';
 
-  const encoded = encodeBagIndices(discs);
-  const viewHref = encoded ? `custom-bag.html?bag=${encoded}` : '#';
+  const viewHref = docId ? `view-bag.html?uid=${encodeURIComponent(docId)}` : '#';
   const ago = timeAgo(data.updatedAt);
 
   return `
@@ -303,6 +305,16 @@ function renderCard(data) {
       <div class="disc-breakdown">${breakdownHtml}</div>
       <div class="disc-chips">${chips}${more}</div>
       <div class="card-footer">
+        <div class="card-stats">
+          <span class="card-stat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            ${data.likeCount || 0}
+          </span>
+          <span class="card-stat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            ${data.commentCount || 0}
+          </span>
+        </div>
         <a class="view-btn" href="${esc(viewHref)}">View Bag →</a>
       </div>
     </div>`;
@@ -353,9 +365,10 @@ var feed = document.getElementById('feed');
       feed.innerHTML = '<div class="state-msg"><strong>No bags yet</strong>Be the first — turn on sharing from your <a href="profile.html">Profile</a>.</div>';
       return;
     }
-    const docs = snap.docs.map(d => d.data()).filter(d => (d.bag || []).length > 0);
-    docs.sort((a, b) => (b.updatedAt?.seconds || 0) - (a.updatedAt?.seconds || 0));
-    const html = docs.map(renderCard).filter(Boolean).join('');
+    const sorted = snap.docs
+      .filter(d => (d.data().bag || []).length > 0)
+      .sort((a, b) => (b.data().updatedAt?.seconds || 0) - (a.data().updatedAt?.seconds || 0));
+    const html = sorted.map(d => renderCard(d.data(), d.id)).filter(Boolean).join('');
     feed.innerHTML = html || '<div class="state-msg"><strong>No bags yet</strong>Be the first — turn on sharing from your <a href="profile.html">Profile</a>.</div>';
   } catch (e) {
     console.error(e);

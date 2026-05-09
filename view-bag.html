@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>View Bag — Bag Creator</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d1117; --bg2: #161b22; --bg3: #21262d;
+      --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
+      --text: #e6edf3; --muted: #8b949e; --accent: #39d353;
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; min-height: 100vh; }
+
+    header {
+      background: var(--bg2); border-bottom: 1px solid var(--border);
+      padding: 0 2rem; display: grid; grid-template-columns: 1fr auto 1fr;
+      column-gap: 1.5rem; align-items: center; height: 64px;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: 0.02em; color: var(--text); text-decoration: none; justify-self: start; }
+    .logo span { color: var(--accent); }
+    .nav-tabs { display: flex; gap: 6px; }
+    .nav-right { display: flex; align-items: center; gap: 6px; justify-self: end; }
+    .nav-link { font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none; letter-spacing: 0.05em; padding: 6px 16px; border: 1px solid var(--border2); border-radius: 6px; transition: all 0.15s; white-space: nowrap; }
+    .nav-link:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
+    .nav-link.active { background: rgba(57,211,83,0.12); border-color: rgba(57,211,83,0.4); color: var(--accent); }
+
+    .hamburger-btn {
+      display: none; grid-column: 3; grid-row: 1; justify-self: end;
+      background: none; border: 1px solid var(--border2); border-radius: 6px;
+      color: var(--muted); cursor: pointer; padding: 6px 12px;
+      align-items: center; gap: 6px;
+      font-family: 'Barlow', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.04em;
+    }
+    .hamburger-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
+    .mobile-menu {
+      display: none; flex-direction: column;
+      position: fixed; top: 64px; left: 0; right: 0; z-index: 99;
+      background: var(--bg2); border-bottom: 1px solid var(--border2);
+      padding: 0.4rem 0.75rem 0.75rem;
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu-link {
+      display: block; width: 100%; text-align: left;
+      padding: 10px 12px; font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 600;
+      color: var(--muted); text-decoration: none; border-radius: 6px;
+      letter-spacing: 0.04em; background: none; border: none; cursor: pointer;
+      transition: background 0.12s, color 0.12s;
+    }
+    .mobile-menu-link:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+    .mobile-menu-link.active { color: var(--accent); }
+    .mobile-menu-divider { height: 1px; background: var(--border); margin: 0.4rem 0; }
+    @media (max-width: 768px) {
+      header { padding: 0 1.25rem; }
+      .nav-tabs { display: none; }
+      .nav-right { display: none; }
+      .hamburger-btn { display: flex; }
+    }
+
+    .page { max-width: 700px; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 5px;
+      color: var(--muted); font-size: 13px; font-weight: 600;
+      text-decoration: none; letter-spacing: 0.04em;
+      margin-bottom: 1.25rem; transition: color 0.15s;
+    }
+    .back-link:hover { color: var(--text); }
+
+    .bag-header {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.35rem; margin-bottom: 0.75rem;
+    }
+    .owner-row { display: flex; align-items: center; gap: 0.85rem; margin-bottom: 1rem; }
+    .owner-avatar {
+      width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700;
+      overflow: hidden;
+    }
+    .owner-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+    .owner-name { font-family: 'Barlow Condensed', sans-serif; font-size: 1.15rem; font-weight: 700; letter-spacing: 0.02em; }
+    .owner-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+    .disc-breakdown { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.1rem; }
+    .breakdown-item { padding: 2px 8px; border-radius: 4px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 11.5px; letter-spacing: 0.04em; border: 1px solid; }
+    .breakdown-putter   { color: #3fb950; border-color: rgba(63,185,80,0.25);   background: rgba(63,185,80,0.08);   }
+    .breakdown-midrange { color: #d29922; border-color: rgba(210,153,34,0.25);  background: rgba(210,153,34,0.08);  }
+    .breakdown-fairway  { color: #a371f7; border-color: rgba(163,113,247,0.25); background: rgba(163,113,247,0.08); }
+    .breakdown-distance { color: #f78166; border-color: rgba(247,129,102,0.25); background: rgba(247,129,102,0.08); }
+    .breakdown-total    { color: var(--muted); border-color: var(--border2); background: var(--bg3); margin-left: auto; }
+
+    .bag-actions { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+    .like-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px; font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 600;
+      border-radius: 7px; border: 1px solid var(--border2); background: var(--bg3);
+      color: var(--muted); cursor: pointer; transition: all 0.15s; user-select: none;
+    }
+    .like-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
+    .like-btn.liked { color: #f78166; border-color: rgba(247,129,102,0.4); background: rgba(247,129,102,0.1); }
+    .like-btn svg { width: 14px; height: 14px; flex-shrink: 0; transition: fill 0.15s; }
+    .open-btn {
+      margin-left: auto; display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px; font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 600;
+      border-radius: 7px; border: 1px solid rgba(57,211,83,0.35);
+      background: rgba(57,211,83,0.08); color: var(--accent);
+      text-decoration: none; transition: all 0.15s;
+    }
+    .open-btn:hover { background: rgba(57,211,83,0.16); }
+
+    .disc-sections { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 0.75rem; }
+    .disc-section { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .disc-section-hdr {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.65rem 1rem; border-bottom: 1px solid var(--border);
+    }
+    .disc-section-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .disc-section-label { font-family: 'Barlow Condensed', sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+    .disc-section-count { font-size: 11px; color: var(--muted); margin-left: auto; }
+    .disc-list { padding: 0.4rem 0.5rem; }
+    .disc-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.45rem 0.5rem; border-radius: 6px; transition: background 0.1s;
+    }
+    .disc-row:hover { background: var(--bg3); }
+    .disc-name { font-size: 13px; font-weight: 600; }
+    .disc-brand { font-size: 11px; color: var(--muted); }
+    .disc-qty { margin-left: auto; font-family: 'Barlow Condensed', sans-serif; font-size: 11.5px; font-weight: 700; color: var(--muted); }
+
+    .comments-section { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .comments-hdr {
+      padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--border);
+      font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700;
+      letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .comment { display: flex; gap: 0.75rem; padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--border); }
+    .comment-avatar {
+      width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700;
+    }
+    .comment-body { flex: 1; min-width: 0; }
+    .comment-meta { display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 4px; }
+    .comment-author { font-size: 13px; font-weight: 600; }
+    .comment-time { font-size: 11px; color: var(--muted); }
+    .comment-text { font-size: 13px; color: var(--muted); line-height: 1.55; word-break: break-word; white-space: pre-wrap; }
+    .no-comments { text-align: center; padding: 1.75rem; font-size: 13px; color: var(--muted); }
+    .comment-form-wrap {
+      display: flex; gap: 0.65rem; align-items: flex-start;
+      padding: 0.9rem 1.25rem; border-top: 1px solid var(--border);
+    }
+    .comment-textarea {
+      flex: 1; padding: 8px 12px; background: var(--bg3);
+      border: 1px solid var(--border2); border-radius: 7px;
+      color: var(--text); font-family: 'Barlow', sans-serif; font-size: 13px;
+      resize: none; outline: none; min-height: 38px; max-height: 120px;
+      transition: border-color 0.15s; line-height: 1.4; overflow-y: auto;
+    }
+    .comment-textarea:focus { border-color: rgba(255,255,255,0.3); }
+    .comment-textarea::placeholder { color: var(--muted); }
+    .comment-submit {
+      padding: 8px 16px; font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 600;
+      border-radius: 7px; border: 1px solid rgba(57,211,83,0.4);
+      background: rgba(57,211,83,0.12); color: var(--accent);
+      cursor: pointer; transition: all 0.15s; flex-shrink: 0;
+    }
+    .comment-submit:hover:not(:disabled) { background: rgba(57,211,83,0.2); }
+    .comment-submit:disabled { opacity: 0.4; cursor: default; }
+    .sign-in-prompt {
+      padding: 1rem 1.25rem; border-top: 1px solid var(--border);
+      text-align: center; font-size: 13px; color: var(--muted);
+    }
+    .sign-in-prompt a { color: var(--accent); text-decoration: none; }
+    .sign-in-prompt a:hover { text-decoration: underline; }
+
+    .state-msg { text-align: center; padding: 4rem 2rem; color: var(--muted); font-size: 14px; line-height: 1.6; }
+    .state-msg strong { display: block; font-family: 'Barlow Condensed', sans-serif; font-size: 1.3rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text); margin-bottom: 0.35rem; }
+    .state-msg a { color: var(--accent); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="index.html">Bag<span>Creator</span></a>
+  <nav class="nav-tabs">
+    <a class="nav-link" href="index.html">Bag Builder</a>
+    <a class="nav-link" href="custom-bag.html">My Bag</a>
+    <a class="nav-link" href="archive.html">Disc Archive</a>
+    <a class="nav-link active" href="social.html">Community</a>
+  </nav>
+  <div class="nav-right">
+    <a class="nav-link" href="profile.html" id="nav-profile" style="display:none">Profile</a>
+    <a class="nav-link" href="login.html" id="nav-auth">Sign In</a>
+  </div>
+  <button class="hamburger-btn" id="hamburger-btn">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg> Menu
+  </button>
+</header>
+
+<div class="mobile-menu" id="mobile-menu">
+  <a class="mobile-menu-link" href="index.html">Bag Builder</a>
+  <a class="mobile-menu-link" href="custom-bag.html">My Bag</a>
+  <a class="mobile-menu-link" href="archive.html">Disc Archive</a>
+  <a class="mobile-menu-link active" href="social.html">Community</a>
+  <div class="mobile-menu-divider"></div>
+  <a class="mobile-menu-link" href="profile.html" id="nav-profile-mobile" style="display:none">Profile</a>
+  <a class="mobile-menu-link" href="login.html" id="nav-auth-mobile">Sign In</a>
+</div>
+
+<div class="page">
+  <div id="page-msg" class="state-msg"><strong>Loading</strong>Fetching bag…</div>
+  <div id="bag-wrap" style="display:none">
+    <a class="back-link" href="social.html">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Community
+    </a>
+    <div id="bag-header" class="bag-header"></div>
+    <div id="disc-sections" class="disc-sections"></div>
+    <div class="comments-section">
+      <div class="comments-hdr">Comments (<span id="comment-count">0</span>)</div>
+      <div id="comment-list"></div>
+      <div id="comment-input"></div>
+    </div>
+  </div>
+</div>
+
+<script src="firebase-config.js"></script>
+<script src="discs.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script>
+const AVATAR_COLORS = [
+  { val:'#39d353', bg:'rgba(57,211,83,0.15)',   border:'rgba(57,211,83,0.3)'   },
+  { val:'#58a6ff', bg:'rgba(88,166,255,0.15)',  border:'rgba(88,166,255,0.3)'  },
+  { val:'#a371f7', bg:'rgba(163,113,247,0.15)', border:'rgba(163,113,247,0.3)' },
+  { val:'#ff79c6', bg:'rgba(255,121,198,0.15)', border:'rgba(255,121,198,0.3)' },
+  { val:'#ffb800', bg:'rgba(255,184,0,0.15)',   border:'rgba(255,184,0,0.3)'   },
+  { val:'#e05c2a', bg:'rgba(224,92,42,0.15)',   border:'rgba(224,92,42,0.3)'   },
+  { val:'#f85149', bg:'rgba(248,81,73,0.15)',   border:'rgba(248,81,73,0.3)'   },
+  { val:'#00d2d3', bg:'rgba(0,210,211,0.15)',   border:'rgba(0,210,211,0.3)'   },
+];
+
+const TYPE_CONFIG = [
+  { key:'putter',   label:'Putters',         cls:'putter',   color:'#3fb950' },
+  { key:'midrange', label:'Midranges',        cls:'midrange', color:'#d29922' },
+  { key:'fairway',  label:'Fairway Drivers',  cls:'fairway',  color:'#a371f7' },
+  { key:'distance', label:'Distance Drivers', cls:'distance', color:'#f78166' },
+];
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function decodeBagKeys(keys) {
+  if (!Array.isArray(keys)) return [];
+  return keys.flatMap(key => {
+    if (/^\d+$/.test(String(key))) {
+      const d = DISCS[parseInt(key)];
+      return d ? [d] : [];
+    }
+    const parts = String(key).split('|');
+    const brand = parts[0], type = parts[1], name = parts.slice(2).join('|');
+    const d = DISCS.find(x => x.brand === brand && x.type === type && x.name === name);
+    return d ? [d] : [];
+  });
+}
+
+function encodeBagIndices(discs) {
+  return discs.map(d => DISCS.indexOf(d)).filter(i => i !== -1).join('-');
+}
+
+function timeAgo(ts) {
+  if (!ts || !ts.seconds) return '';
+  const secs = Math.floor(Date.now() / 1000 - ts.seconds);
+  if (secs < 60)     return 'just now';
+  if (secs < 3600)   return Math.floor(secs / 60) + 'm ago';
+  if (secs < 86400)  return Math.floor(secs / 3600) + 'h ago';
+  if (secs < 604800) return Math.floor(secs / 86400) + 'd ago';
+  return Math.floor(secs / 604800) + 'w ago';
+}
+
+function colorForId(id) {
+  let h = 0;
+  const s = String(id || 'x');
+  for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
+}
+
+const params    = new URLSearchParams(location.search);
+const targetUid = params.get('uid');
+const pageMsg   = document.getElementById('page-msg');
+const bagWrap   = document.getElementById('bag-wrap');
+
+function showError(msg) {
+  pageMsg.innerHTML = '<strong>Not Found</strong>' + esc(msg);
+  pageMsg.style.display = '';
+  bagWrap.style.display = 'none';
+}
+
+const FB_READY = typeof FIREBASE_CONFIG !== 'undefined' &&
+  FIREBASE_CONFIG.projectId !== 'YOUR_PROJECT_ID';
+
+if (!targetUid) {
+  showError('No bag specified. Go back to Community.');
+} else if (!FB_READY) {
+  showError('Firebase is not configured.');
+} else {
+  firebase.initializeApp(FIREBASE_CONFIG);
+  const auth = firebase.auth();
+  const db   = firebase.firestore();
+
+  let currentUser = null;
+  let bagData     = null;
+  let liked       = false;
+  let likeCount   = 0;
+
+  const loginUrl = 'login.html?from=' + encodeURIComponent('view-bag.html?uid=' + targetUid);
+
+  auth.onAuthStateChanged(user => {
+    currentUser = user;
+
+    const navAuth     = document.getElementById('nav-auth');
+    const navProfile  = document.getElementById('nav-profile');
+    const navAuthM    = document.getElementById('nav-auth-mobile');
+    const navProfileM = document.getElementById('nav-profile-mobile');
+    if (user) {
+      if (navProfile)  navProfile.style.display  = '';
+      if (navProfileM) navProfileM.style.display = '';
+      if (navAuth)  { navAuth.textContent  = 'Sign Out'; navAuth.href  = '#'; navAuth.onclick  = e => { e.preventDefault(); auth.signOut(); }; }
+      if (navAuthM) { navAuthM.textContent = 'Sign Out'; navAuthM.href = '#'; navAuthM.onclick = e => { e.preventDefault(); auth.signOut(); }; }
+    } else {
+      if (navProfile)  navProfile.style.display  = 'none';
+      if (navProfileM) navProfileM.style.display = 'none';
+      if (navAuth)  { navAuth.textContent  = 'Sign In'; navAuth.href  = loginUrl; navAuth.onclick  = null; }
+      if (navAuthM) { navAuthM.textContent = 'Sign In'; navAuthM.href = loginUrl; navAuthM.onclick = null; }
+    }
+
+    if (bagData) {
+      liked = user ? (bagData.likedBy || []).includes(user.uid) : false;
+      updateLikeBtn();
+      updateCommentInput();
+    }
+  });
+
+  db.collection('bags').doc(targetUid).get().then(doc => {
+    if (!doc.exists) { showError('This bag doesn\'t exist.'); return; }
+    const data = doc.data();
+    if (!data.prefs || !data.prefs.public) { showError('This bag is private.'); return; }
+    bagData   = data;
+    likeCount = data.likeCount || 0;
+    liked     = currentUser ? (data.likedBy || []).includes(currentUser.uid) : false;
+    renderBag(data);
+    loadComments();
+    pageMsg.style.display = 'none';
+    bagWrap.style.display = '';
+  }).catch(e => {
+    showError('Could not load bag. ' + (e.message || 'Check your connection.'));
+  });
+
+  function renderBag(data) {
+    const discs  = decodeBagKeys(data.bag || []);
+    const prefs  = data.prefs || {};
+    const name   = data.displayName || 'Anonymous';
+    const color  = AVATAR_COLORS.find(c => c.val === prefs.avatarColor) || AVATAR_COLORS[0];
+    const ago    = timeAgo(data.updatedAt);
+    const encoded = encodeBagIndices(discs);
+
+    const avatarHtml = prefs.avatarPhoto
+      ? `<div class="owner-avatar" style="border:2px solid ${color.border}"><img src="${esc(prefs.avatarPhoto)}" alt=""></div>`
+      : `<div class="owner-avatar" style="background:${color.bg};border:2px solid ${color.border};color:${color.val}">${esc(name[0].toUpperCase())}</div>`;
+
+    const typeCounts = {};
+    for (const d of discs) typeCounts[d.type] = (typeCounts[d.type] || 0) + 1;
+    const breakdownHtml = TYPE_CONFIG
+      .filter(t => typeCounts[t.key])
+      .map(t => `<span class="breakdown-item breakdown-${t.cls}">${typeCounts[t.key]} ${t.label.split(' ')[0]}</span>`)
+      .join('') + `<span class="breakdown-item breakdown-total">${discs.length} total</span>`;
+
+    document.getElementById('bag-header').innerHTML = `
+      <div class="owner-row">
+        ${avatarHtml}
+        <div>
+          <div class="owner-name">${esc(name)}</div>
+          ${ago ? `<div class="owner-meta">Updated ${ago}</div>` : ''}
+        </div>
+      </div>
+      <div class="disc-breakdown">${breakdownHtml}</div>
+      <div class="bag-actions">
+        <button class="like-btn" id="like-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <span id="like-label">Like</span>
+        </button>
+        ${encoded ? `<a class="open-btn" href="custom-bag.html?bag=${encoded}">Open in Bag Builder →</a>` : ''}
+      </div>`;
+
+    document.getElementById('like-btn').addEventListener('click', toggleLike);
+    updateLikeBtn();
+
+    let sectionsHtml = '';
+    for (const tc of TYPE_CONFIG) {
+      const group = discs.filter(d => d.type === tc.key);
+      if (!group.length) continue;
+      const nameCounts = {};
+      for (const d of group) nameCounts[d.name] = (nameCounts[d.name] || 0) + 1;
+      const rows = Object.keys(nameCounts).map(dname => {
+        const disc = group.find(d => d.name === dname);
+        const qty  = nameCounts[dname];
+        return `<div class="disc-row">
+          <div>
+            <span class="disc-name">${esc(dname)}</span>
+            <span class="disc-brand"> — ${esc(disc.brand)}</span>
+          </div>
+          ${qty > 1 ? `<span class="disc-qty">×${qty}</span>` : ''}
+        </div>`;
+      }).join('');
+      sectionsHtml += `
+        <div class="disc-section">
+          <div class="disc-section-hdr">
+            <span class="disc-section-dot" style="background:${tc.color}"></span>
+            <span class="disc-section-label">${tc.label}</span>
+            <span class="disc-section-count">${group.length}</span>
+          </div>
+          <div class="disc-list">${rows}</div>
+        </div>`;
+    }
+    document.getElementById('disc-sections').innerHTML = sectionsHtml;
+  }
+
+  function updateLikeBtn() {
+    const btn = document.getElementById('like-btn');
+    const lbl = document.getElementById('like-label');
+    if (!btn || !lbl) return;
+    lbl.textContent = (likeCount > 0 ? likeCount + ' ' : '') + (liked ? 'Liked' : 'Like');
+    const svg = btn.querySelector('svg');
+    if (svg) svg.setAttribute('fill', liked ? 'currentColor' : 'none');
+    btn.classList.toggle('liked', liked);
+  }
+
+  function toggleLike() {
+    if (!currentUser) { location.href = loginUrl; return; }
+    if (!bagData) return;
+    const wasLiked    = liked;
+    const prevCount   = likeCount;
+    const prevLikedBy = (bagData.likedBy || []).slice();
+
+    liked     = !wasLiked;
+    likeCount = Math.max(0, prevCount + (liked ? 1 : -1));
+    bagData.likedBy   = liked
+      ? [...prevLikedBy, currentUser.uid]
+      : prevLikedBy.filter(u => u !== currentUser.uid);
+    bagData.likeCount = likeCount;
+    updateLikeBtn();
+
+    db.collection('bags').doc(targetUid).update({
+      likeCount: firebase.firestore.FieldValue.increment(liked ? 1 : -1),
+      likedBy: liked
+        ? firebase.firestore.FieldValue.arrayUnion(currentUser.uid)
+        : firebase.firestore.FieldValue.arrayRemove(currentUser.uid),
+    }).catch(e => {
+      liked             = wasLiked;
+      likeCount         = prevCount;
+      bagData.likedBy   = prevLikedBy;
+      bagData.likeCount = prevCount;
+      updateLikeBtn();
+      console.warn('Like failed — check Firestore rules:', e.message);
+    });
+  }
+
+  function loadComments() {
+    db.collection('bags').doc(targetUid).collection('comments')
+      .orderBy('createdAt', 'asc').get()
+      .then(snap => {
+        renderComments(snap.docs.map(d => d.data()));
+        updateCommentInput();
+      })
+      .catch(() => {
+        document.getElementById('comment-list').innerHTML =
+          '<div class="no-comments">Comments unavailable.</div>';
+        updateCommentInput();
+      });
+  }
+
+  function renderComments(comments) {
+    const el      = document.getElementById('comment-list');
+    const countEl = document.getElementById('comment-count');
+    if (countEl) countEl.textContent = comments.length;
+    el.innerHTML = comments.length
+      ? comments.map(commentHtml).join('')
+      : '<div class="no-comments">No comments yet. Be the first!</div>';
+  }
+
+  function commentHtml(c) {
+    const authorName = c.authorName || 'Anonymous';
+    const color = colorForId(c.authorId || authorName);
+    const ago   = timeAgo(c.createdAt);
+    return `<div class="comment">
+      <div class="comment-avatar" style="background:${color.bg};border:1.5px solid ${color.border};color:${color.val}">${esc(authorName[0].toUpperCase())}</div>
+      <div class="comment-body">
+        <div class="comment-meta">
+          <span class="comment-author">${esc(authorName)}</span>
+          ${ago ? `<span class="comment-time">${ago}</span>` : ''}
+        </div>
+        <div class="comment-text">${esc(c.text)}</div>
+      </div>
+    </div>`;
+  }
+
+  function updateCommentInput() {
+    const el = document.getElementById('comment-input');
+    if (!el) return;
+    if (currentUser) {
+      el.innerHTML = `
+        <div class="comment-form-wrap">
+          <textarea class="comment-textarea" id="comment-textarea" placeholder="Add a comment… (Ctrl+Enter to post)" rows="1"></textarea>
+          <button class="comment-submit" id="comment-submit" disabled>Post</button>
+        </div>
+        <div id="comment-error" style="padding:0 1.25rem 0.6rem;font-size:12px;color:#f85149;min-height:0"></div>`;
+      const ta  = document.getElementById('comment-textarea');
+      const btn = document.getElementById('comment-submit');
+      ta.addEventListener('input', () => {
+        ta.style.height = 'auto';
+        ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
+        btn.disabled = !ta.value.trim();
+      });
+      ta.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) postComment();
+      });
+      btn.addEventListener('click', postComment);
+    } else {
+      el.innerHTML = `<div class="sign-in-prompt"><a href="${loginUrl}">Sign in</a> to leave a comment.</div>`;
+    }
+  }
+
+  function postComment() {
+    const ta  = document.getElementById('comment-textarea');
+    const btn = document.getElementById('comment-submit');
+    if (!ta || !currentUser) return;
+    const text = ta.value.trim();
+    if (!text) return;
+
+    const authorName = currentUser.displayName || currentUser.email.split('@')[0] || 'Anonymous';
+
+    ta.disabled = true;
+    btn.disabled = true;
+    btn.textContent = 'Posting…';
+
+    db.collection('bags').doc(targetUid).collection('comments').add({
+      text,
+      authorId: currentUser.uid,
+      authorName,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    }).then(() => {
+      db.collection('bags').doc(targetUid).update({
+        commentCount: firebase.firestore.FieldValue.increment(1),
+      });
+
+      const list     = document.getElementById('comment-list');
+      const empty    = list.querySelector('.no-comments');
+      if (empty) list.innerHTML = '';
+      list.insertAdjacentHTML('beforeend', commentHtml({
+        text, authorId: currentUser.uid, authorName,
+        createdAt: { seconds: Math.floor(Date.now() / 1000) },
+      }));
+
+      const countEl = document.getElementById('comment-count');
+      if (countEl) countEl.textContent = parseInt(countEl.textContent || '0') + 1;
+
+      ta.value = '';
+      ta.style.height = 'auto';
+      ta.disabled = false;
+      btn.textContent = 'Post';
+      btn.disabled = true;
+    }).catch(() => {
+      ta.disabled = false;
+      btn.disabled = false;
+      btn.textContent = 'Post';
+      const errEl = document.getElementById('comment-error');
+      if (errEl) {
+        errEl.textContent = 'Failed to post — update your Firestore rules to allow comment writes.';
+        setTimeout(() => { errEl.textContent = ''; }, 6000);
+      }
+    });
+  }
+}
+</script>
+
+<script>
+(function() {
+  var ham  = document.getElementById('hamburger-btn');
+  var menu = document.getElementById('mobile-menu');
+  ham.addEventListener('click', function(e) { e.stopPropagation(); menu.classList.toggle('open'); });
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('#mobile-menu') && !e.target.closest('#hamburger-btn')) menu.classList.remove('open');
+  });
+  menu.querySelectorAll('a').forEach(function(a) { a.addEventListener('click', function() { menu.classList.remove('open'); }); });
+})();
+</script>
+
+</body>
+</html>
