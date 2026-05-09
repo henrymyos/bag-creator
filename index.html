@@ -122,10 +122,13 @@
     }
     @media (max-width: 600px) {
       .control-row { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
       .brand-filter-row {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
         padding: 0 1rem;
+      }
+      .brand-filter-row .filter-btn {
+        flex: 0 0 calc((100% - 1.5rem) / 3);
       }
     }
  
