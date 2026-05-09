@@ -1103,6 +1103,7 @@ function getBag() {
  
 const discCounts = { putter: 3, midrange: 5, fairway: 5, distance: 5 };
 const COUNT_MIN = 0, COUNT_MAX = 12;
+const STEPPER_IDS = { putter: ['put-dec','put-inc'], midrange: ['mid-dec','mid-inc'], fairway: ['fw-dec','fw-inc'], distance: ['dist-dec','dist-inc'] };
 
 // Restore settings from localStorage immediately so the UI never flashes defaults
 (function restoreLocalSettings() {
@@ -1123,7 +1124,6 @@ const COUNT_MIN = 0, COUNT_MAX = 12;
     }
   } catch(e) {}
 })();
-const STEPPER_IDS = { putter: ['put-dec','put-inc'], midrange: ['mid-dec','mid-inc'], fairway: ['fw-dec','fw-inc'], distance: ['dist-dec','dist-inc'] };
 
 function setCount(type, val) {
   discCounts[type] = Math.max(COUNT_MIN, Math.min(COUNT_MAX, val));
