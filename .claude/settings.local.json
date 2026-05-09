@@ -4,7 +4,12 @@
       "WebFetch(domain:mvpdiscsports.com)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(sed -n '220,228p' /Users/henrymyos/Desktop/bag-creator/profile.html)",
+      "Bash(sed -n '318,326p' /Users/henrymyos/Desktop/bag-creator/social.html)",
+      "Bash(sed -n '525,533p' /Users/henrymyos/Desktop/bag-creator/custom-bag.html)",
+      "Bash(sed -n '289,297p' /Users/henrymyos/Desktop/bag-creator/view-bag.html)",
+      "Bash(sed -n '656,664p' /Users/henrymyos/Desktop/bag-creator/archive.html)"
     ]
   }
 }

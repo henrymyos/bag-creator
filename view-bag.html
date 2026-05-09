@@ -291,7 +291,7 @@ function colorForId(id) {
 }
 
 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { flowType: 'implicit', detectSessionInUrl: true }
+  auth: { detectSessionInUrl: true }
 });
 const params    = new URLSearchParams(location.search);
 const targetUid = params.get('uid');

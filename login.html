@@ -79,6 +79,8 @@
 <iframe class="bg-frame" id="bg-frame" scrolling="no" tabindex="-1" aria-hidden="true"></iframe>
 <script>
   (function() {
+    // Skip background iframe during OAuth callback so its Supabase client can't interfere
+    if (window.location.hash.includes('access_token') || new URLSearchParams(location.search).has('code')) return;
     const allowed = ['index.html', 'archive.html', 'custom-bag.html', 'profile.html'];
     const from = new URLSearchParams(location.search).get('from');
     document.getElementById('bg-frame').src = allowed.includes(from) ? from : 'index.html';
@@ -103,40 +105,51 @@
 
   <div class="error-msg" id="error-msg"></div>
 
-  <a class="back-link" href="#" onclick="event.preventDefault(); history.back()">← Go Back</a>
+  <a class="back-link" href="#" id="back-link">← Go Back</a>
 </div>
 
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: { flowType: 'implicit', detectSessionInUrl: true }
+    auth: { detectSessionInUrl: true }
   });
 
   const ALLOWED_PAGES = ['index.html', 'custom-bag.html', 'profile.html', 'archive.html', 'social.html'];
 
-  function redirect() {
+  function doRedirect() {
     const from = localStorage.getItem('loginFrom');
     localStorage.removeItem('loginFrom');
-    window.location.href = (from && ALLOWED_PAGES.includes(from)) ? from : 'custom-bag.html';
+    window.location.replace((from && ALLOWED_PAGES.includes(from)) ? from : 'custom-bag.html');
   }
 
-  // Implicit flow: tokens land in the URL hash after OAuth redirect
+  // PKCE flow: Supabase v2 default — code arrives as ?code= query param
+  const urlCode = new URLSearchParams(location.search).get('code');
+  if (urlCode) {
+    supabase.auth.exchangeCodeForSession(urlCode).then(({ data, error }) => {
+      if (data?.session) doRedirect();
+      else document.getElementById('error-msg').textContent = error?.message || 'Sign-in failed.';
+    });
+  }
+
+  // Implicit flow fallback: tokens arrive as #access_token= hash fragment
   const hashParams = new URLSearchParams(window.location.hash.slice(1));
-  const accessToken  = hashParams.get('access_token');
-  const refreshToken = hashParams.get('refresh_token');
+  const accessToken = hashParams.get('access_token');
   if (accessToken) {
-    supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken || '' })
+    supabase.auth.setSession({ access_token: accessToken, refresh_token: hashParams.get('refresh_token') || '' })
       .then(({ data, error }) => {
-        if (data?.session?.user) redirect();
-        else if (error) document.getElementById('error-msg').textContent = error.message;
+        if (data?.session) doRedirect();
+        else document.getElementById('error-msg').textContent = error?.message || 'Sign-in failed.';
       });
-  } else {
+  }
+
+  // Normal page load: check for an already-active session
+  if (!urlCode && !accessToken) {
     supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) redirect();
+      if (event === 'SIGNED_IN' && session?.user) doRedirect();
     });
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session?.user) redirect();
+      if (data.session?.user) doRedirect();
     });
   }
 
@@ -153,6 +166,12 @@
       document.getElementById('error-msg').textContent = error.message || 'Something went wrong.';
       document.getElementById('google-btn').disabled = false;
     }
+  });
+
+  document.getElementById('back-link').addEventListener('click', e => {
+    e.preventDefault();
+    const from = new URLSearchParams(location.search).get('from');
+    window.location.href = (from && ALLOWED_PAGES.includes(from)) ? from : 'index.html';
   });
 </script>
 </body>

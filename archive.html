@@ -658,7 +658,7 @@ render();
 <script>
 (function() {
   supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { flowType: 'implicit', detectSessionInUrl: true }
+  auth: { detectSessionInUrl: true }
 });
   supabase.auth.onAuthStateChange((event, session) => {
     const user        = session?.user ?? null;
