@@ -313,6 +313,18 @@ function renderProfile(user) {
         <div style="font-size:11px;color:var(--muted);margin-top:4px;text-align:right" id="name-char-count">${(user.user_metadata?.displayName || user.user_metadata?.full_name || '').length}/30</div>
       </div>
       <div class="field">
+        <label>PDGA Number</label>
+        <input type="text" id="prof-pdga" placeholder="e.g. 12345" maxlength="10" inputmode="numeric" />
+      </div>
+      <div class="field">
+        <label>Max Throw Distance (ft)</label>
+        <input type="number" id="prof-dist" min="100" max="600" step="25" placeholder="e.g. 300" />
+      </div>
+      <div class="field">
+        <label>Bag Size (total discs)</label>
+        <input type="number" id="prof-bagsize" min="0" max="36" placeholder="e.g. 18" />
+      </div>
+      <div class="field">
         <label>Sign-in method</label>
         <div style="margin-top:4px">
           <span class="provider-badge">
@@ -356,27 +368,6 @@ function renderProfile(user) {
     </div>
 
     <div class="section">
-      <div class="section-title">Bag Info</div>
-      <div class="field">
-        <label>PDGA Number</label>
-        <input type="text" id="prof-pdga" placeholder="e.g. 12345" maxlength="10" inputmode="numeric" />
-      </div>
-      <div class="field">
-        <label>Max Throw Distance (ft)</label>
-        <input type="number" id="prof-dist" min="100" max="600" step="25" placeholder="e.g. 300" />
-      </div>
-      <div class="field">
-        <label>Bag Size (total discs)</label>
-        <input type="number" id="prof-bagsize" min="0" max="36" placeholder="e.g. 18" />
-      </div>
-      <div class="status-msg" id="bag-settings-status"></div>
-      <div class="btn-row">
-        <button class="btn btn-primary" id="save-bag-settings-btn">Save</button>
-      </div>
-    </div>
-
-
-    <div class="section">
       <div class="section-title">Privacy</div>
       <div class="field">
         <label>Community Page</label>
@@ -406,7 +397,7 @@ function renderProfile(user) {
     document.getElementById('name-char-count').textContent = this.value.length + '/30';
   });
 
-  // Save display name
+  // Save display name + bag info
   document.getElementById('save-profile-btn').addEventListener('click', async () => {
     const name   = document.getElementById('display-name-input').value.trim();
     const status = document.getElementById('profile-status');
@@ -423,6 +414,10 @@ function renderProfile(user) {
       document.getElementById('display-name-heading').textContent = name || 'No name set';
       const circle = document.getElementById('avatar-circle');
       if (!circle.querySelector('img')) circle.textContent = (name || user.email || '?')[0].toUpperCase();
+      const newPdga    = document.getElementById('prof-pdga').value.trim().replace(/\D/g, '') || null;
+      const newDist    = Math.max(100, Math.min(600, parseInt(document.getElementById('prof-dist').value)    || 300));
+      const newBagSize = Math.max(0,   Math.min(36,  parseInt(document.getElementById('prof-bagsize').value) || 0));
+      await savePrefs({ pdgaNumber: newPdga, dist: newDist, bagSize: newBagSize });
       status.textContent = 'Saved.'; status.className = 'status-msg success';
     } catch (e) {
       status.textContent = e.message; status.className = 'status-msg error';
@@ -447,13 +442,9 @@ function renderProfile(user) {
     }
   });
 
-  // Load all prefs: bag info + appearance
+  // Load all prefs: account info + appearance
   (async () => {
-    const pdgaInput    = document.getElementById('prof-pdga');
-    const distInput    = document.getElementById('prof-dist');
-    const bagSizeInput = document.getElementById('prof-bagsize');
-    const bagStatus    = document.getElementById('bag-settings-status');
-    const initial      = getUserLabel(user)[0]?.toUpperCase() || '?';
+    const initial = getUserLabel(user)[0]?.toUpperCase() || '?';
 
     let currentColor = '#39d353';
     let currentPhoto = null;
@@ -471,9 +462,9 @@ function renderProfile(user) {
       const { data } = await supabase.from('bags').select('prefs').eq('user_id', user.id).single();
       const p = data?.prefs || {};
       currentPrefs = p;
-      if (p.pdgaNumber)  pdgaInput.value    = p.pdgaNumber;
-      if (p.dist)        distInput.value    = p.dist;
-      if (p.bagSize)     bagSizeInput.value = p.bagSize;
+      if (p.pdgaNumber)  document.getElementById('prof-pdga').value     = p.pdgaNumber;
+      if (p.dist)        document.getElementById('prof-dist').value     = p.dist;
+      if (p.bagSize)     document.getElementById('prof-bagsize').value  = p.bagSize;
       if (p.avatarColor) currentColor       = p.avatarColor;
       if (p.avatarPhoto) currentPhoto       = p.avatarPhoto;
       if (p.public)      isPublic           = true;
@@ -564,22 +555,6 @@ function renderProfile(user) {
       setTimeout(() => { privStatus.textContent = ''; }, 4000);
     });
 
-    // Bag info save
-    document.getElementById('save-bag-settings-btn').addEventListener('click', async () => {
-      const btn = document.getElementById('save-bag-settings-btn');
-      btn.disabled = true;
-      const newPdga    = pdgaInput.value.trim().replace(/\D/g, '') || null;
-      const newDist    = Math.max(100, Math.min(600, parseInt(distInput.value)    || 300));
-      const newBagSize = Math.max(0,   Math.min(36,  parseInt(bagSizeInput.value) || 0));
-      try {
-        await savePrefs({ pdgaNumber: newPdga, dist: newDist, bagSize: newBagSize });
-        bagStatus.textContent = 'Saved.'; bagStatus.className = 'status-msg success';
-      } catch (e) {
-        bagStatus.textContent = e.message; bagStatus.className = 'status-msg error';
-      }
-      btn.disabled = false;
-      setTimeout(() => { bagStatus.textContent = ''; }, 3000);
-    });
   })();
 }
 </script>
