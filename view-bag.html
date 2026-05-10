@@ -112,14 +112,6 @@
     .like-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
     .like-btn.liked { color: #f78166; border-color: rgba(247,129,102,0.4); background: rgba(247,129,102,0.1); }
     .like-btn svg { width: 14px; height: 14px; flex-shrink: 0; transition: fill 0.15s; }
-    .open-btn {
-      margin-left: auto; display: inline-flex; align-items: center; gap: 6px;
-      padding: 7px 14px; font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 600;
-      border-radius: 7px; border: 1px solid rgba(57,211,83,0.35);
-      background: rgba(57,211,83,0.08); color: var(--accent);
-      text-decoration: none; transition: all 0.15s;
-    }
-    .open-btn:hover { background: rgba(57,211,83,0.16); }
 
     .disc-sections { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 0.75rem; }
     .disc-section { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
@@ -146,7 +138,9 @@
       font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700;
       letter-spacing: 0.06em; text-transform: uppercase;
     }
-    .comment { display: flex; gap: 0.75rem; padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--border); }
+    .comment-thread { border-bottom: 1px solid var(--border); }
+    .comment-thread:last-child { border-bottom: none; }
+    .comment { display: flex; gap: 0.75rem; padding: 0.9rem 1.25rem 0.75rem; }
     .comment-avatar {
       width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
@@ -157,6 +151,24 @@
     .comment-author { font-size: 13px; font-weight: 600; }
     .comment-time { font-size: 11px; color: var(--muted); }
     .comment-text { font-size: 13px; color: var(--muted); line-height: 1.55; word-break: break-word; white-space: pre-wrap; }
+    .comment-reply-btn {
+      background: none; border: none; color: var(--muted); font-size: 11px; font-weight: 600;
+      cursor: pointer; padding: 3px 0; margin-top: 4px; letter-spacing: 0.03em;
+      transition: color 0.12s; display: block;
+    }
+    .comment-reply-btn:hover { color: var(--text); }
+    .comment-replies { margin-left: 1.25rem; padding-left: 0.75rem; border-left: 2px solid var(--border2); }
+    .reply { display: flex; gap: 0.55rem; padding: 0.6rem 1.25rem 0.6rem 0; }
+    .reply-avatar {
+      width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Barlow Condensed', sans-serif; font-size: 10px; font-weight: 700;
+    }
+    .reply-form-wrap {
+      display: flex; gap: 0.5rem; align-items: flex-start;
+      margin: 0 1.25rem 0.75rem 2rem; padding-left: 0.75rem;
+      border-left: 2px solid var(--border2);
+    }
     .no-comments { text-align: center; padding: 1.75rem; font-size: 13px; color: var(--muted); }
     .comment-form-wrap {
       display: flex; gap: 0.65rem; align-items: flex-start;
@@ -371,7 +383,6 @@ if (!targetUid) {
     const name   = data.display_name || 'Anonymous';
     const color  = AVATAR_COLORS.find(c => c.val === prefs.avatarColor) || AVATAR_COLORS[0];
     const ago    = timeAgo(data.updated_at);
-    const encoded = encodeBagIndices(discs);
 
     const avatarHtml = prefs.avatarPhoto
       ? `<div class="owner-avatar" style="border:2px solid ${color.border}"><img src="${esc(prefs.avatarPhoto)}" alt=""></div>`
@@ -398,7 +409,6 @@ if (!targetUid) {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
           <span id="like-label">Like</span>
         </button>
-        ${encoded ? `<a class="open-btn" href="custom-bag.html?bag=${encoded}">Open in Bag Builder →</a>` : ''}
       </div>`;
 
     document.getElementById('like-btn').addEventListener('click', toggleLike);
@@ -484,15 +494,31 @@ if (!targetUid) {
     const el      = document.getElementById('comment-list');
     const countEl = document.getElementById('comment-count');
     if (countEl) countEl.textContent = comments.length;
-    el.innerHTML = comments.length
-      ? comments.map(commentHtml).join('')
-      : '<div class="no-comments">No comments yet. Be the first!</div>';
+    if (!comments.length) { el.innerHTML = '<div class="no-comments">No comments yet. Be the first!</div>'; return; }
+
+    const roots = comments.filter(c => !c.parent_id);
+    const replyMap = {};
+    comments.filter(c => c.parent_id).forEach(r => {
+      (replyMap[r.parent_id] = replyMap[r.parent_id] || []).push(r);
+    });
+
+    el.innerHTML = roots.map(c => {
+      const replies = replyMap[c.id] || [];
+      const repliesHtml = replies.length
+        ? `<div class="comment-replies">${replies.map(replyHtml).join('')}</div>` : '';
+      return `<div class="comment-thread" data-id="${esc(c.id || '')}">${topLevelCommentHtml(c)}${repliesHtml}</div>`;
+    }).join('');
+
+    el.querySelectorAll('.comment-reply-btn').forEach(btn => {
+      btn.addEventListener('click', () => showReplyForm(btn.closest('.comment-thread')));
+    });
   }
 
-  function commentHtml(c) {
+  function topLevelCommentHtml(c) {
     const authorName = c.author_name || 'Anonymous';
     const color = colorForId(c.author_id || authorName);
     const ago   = timeAgo(c.created_at);
+    const replyBtn = currentUser ? `<button class="comment-reply-btn">Reply</button>` : '';
     return `<div class="comment">
       <div class="comment-avatar" style="background:${color.bg};border:1.5px solid ${color.border};color:${color.val}">${esc(authorName[0].toUpperCase())}</div>
       <div class="comment-body">
@@ -501,8 +527,90 @@ if (!targetUid) {
           ${ago ? `<span class="comment-time">${ago}</span>` : ''}
         </div>
         <div class="comment-text">${esc(c.text)}</div>
+        ${replyBtn}
       </div>
     </div>`;
+  }
+
+  function replyHtml(c) {
+    const authorName = c.author_name || 'Anonymous';
+    const color = colorForId(c.author_id || authorName);
+    const ago   = timeAgo(c.created_at);
+    return `<div class="reply">
+      <div class="reply-avatar" style="background:${color.bg};border:1.5px solid ${color.border};color:${color.val}">${esc(authorName[0].toUpperCase())}</div>
+      <div class="comment-body">
+        <div class="comment-meta">
+          <span class="comment-author">${esc(authorName)}</span>
+          ${ago ? `<span class="comment-time">${ago}</span>` : ''}
+        </div>
+        <div class="comment-text">${esc(c.text)}</div>
+      </div>
+    </div>`;
+  }
+
+  function showReplyForm(thread) {
+    const existing = thread.querySelector('.reply-form-wrap');
+    if (existing) { existing.remove(); return; }
+    document.querySelectorAll('.reply-form-wrap').forEach(f => f.remove());
+
+    const parentId = thread.dataset.id;
+    const wrap = document.createElement('div');
+    wrap.className = 'reply-form-wrap';
+    wrap.innerHTML = `
+      <textarea class="comment-textarea" placeholder="Write a reply… (Ctrl+Enter to post)" rows="1" style="font-size:12px;min-height:32px"></textarea>
+      <button class="comment-submit" disabled style="font-size:12px;padding:6px 12px">Reply</button>`;
+    thread.appendChild(wrap);
+
+    const ta  = wrap.querySelector('textarea');
+    const btn = wrap.querySelector('button');
+    ta.focus();
+    ta.addEventListener('input', () => {
+      ta.style.height = 'auto';
+      ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
+      btn.disabled = !ta.value.trim();
+    });
+    ta.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) postReply(parentId, thread, wrap);
+    });
+    btn.addEventListener('click', () => postReply(parentId, thread, wrap));
+  }
+
+  async function postReply(parentId, thread, wrap) {
+    const ta  = wrap.querySelector('textarea');
+    const btn = wrap.querySelector('button');
+    const text = ta.value.trim();
+    if (!text || !currentUser) return;
+
+    const authorName = currentUser.user_metadata?.displayName ||
+      currentUser.user_metadata?.full_name ||
+      currentUser.email.split('@')[0] || 'Anonymous';
+
+    ta.disabled = true; btn.disabled = true; btn.textContent = 'Posting…';
+
+    const { error } = await supabase.from('comments').insert({
+      bag_user_id: targetUid, text,
+      author_id: currentUser.id, author_name: authorName,
+      parent_id: parentId, created_at: new Date().toISOString(),
+    });
+
+    if (!error) {
+      await supabase.rpc('increment_comment_count', { p_bag_user_id: targetUid });
+      let repliesDiv = thread.querySelector('.comment-replies');
+      if (!repliesDiv) {
+        repliesDiv = document.createElement('div');
+        repliesDiv.className = 'comment-replies';
+        thread.insertBefore(repliesDiv, wrap);
+      }
+      repliesDiv.insertAdjacentHTML('beforeend', replyHtml({
+        text, author_id: currentUser.id, author_name: authorName,
+        created_at: new Date().toISOString(),
+      }));
+      const countEl = document.getElementById('comment-count');
+      if (countEl) countEl.textContent = parseInt(countEl.textContent || '0') + 1;
+      wrap.remove();
+    } else {
+      ta.disabled = false; btn.disabled = false; btn.textContent = 'Reply';
+    }
   }
 
   function updateCommentInput() {
@@ -560,10 +668,13 @@ if (!targetUid) {
       const list  = document.getElementById('comment-list');
       const empty = list.querySelector('.no-comments');
       if (empty) list.innerHTML = '';
-      list.insertAdjacentHTML('beforeend', commentHtml({
-        text, author_id: currentUser.id, author_name: authorName,
-        created_at: new Date().toISOString(),
-      }));
+
+      const thread = document.createElement('div');
+      thread.className = 'comment-thread';
+      const fakeComment = { text, author_id: currentUser.id, author_name: authorName, created_at: new Date().toISOString() };
+      thread.innerHTML = topLevelCommentHtml(fakeComment);
+      list.appendChild(thread);
+      thread.querySelector('.comment-reply-btn')?.addEventListener('click', () => showReplyForm(thread));
 
       const countEl = document.getElementById('comment-count');
       if (countEl) countEl.textContent = parseInt(countEl.textContent || '0') + 1;

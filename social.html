@@ -146,14 +146,6 @@
     .like-btn.liked svg { stroke: #f85149; fill: rgba(248,81,73,0.18); }
     .like-btn.liked { color: #f85149; }
     .like-btn:hover svg { stroke: #f85149; }
-    .view-btn {
-      margin-left: auto;
-      font-family: 'Barlow', sans-serif; font-size: 12px; font-weight: 600;
-      color: var(--accent); text-decoration: none;
-      padding: 5px 12px; border: 1px solid rgba(57,211,83,0.35); border-radius: 6px;
-      background: rgba(57,211,83,0.08); transition: all 0.15s;
-    }
-    .view-btn:hover { background: rgba(57,211,83,0.16); }
 
     /* Likes line */
     .card-likes-line {
@@ -366,7 +358,7 @@ function renderCard(data, docId, commentsForCard) {
         </svg>
         <span>${data.comment_count || 0}</span>
       </a>
-      <a class="view-btn" href="${esc(viewHref)}">View Bag →</a>
+      <a class="view-bag-btn" href="${esc(viewHref)}" style="margin-left:auto;font-size:12px;font-weight:600;color:var(--accent);text-decoration:none;padding:5px 12px;border:1px solid rgba(57,211,83,0.35);border-radius:6px;background:rgba(57,211,83,0.08);transition:all 0.15s">View Bag →</a>
     </div>`;
 
   // Likes line
@@ -634,9 +626,9 @@ feed.addEventListener('click', async function(e) {
   const STEPS = [
     { icon: '🌐', title: 'Community', text: 'Browse bags shared by other BagCreator players. Cards show each player\'s disc breakdown and disc names. Bags are sorted by most recently updated.' },
     { icon: '🔓', title: 'Share Your Bag', text: 'To appear here, go to your Profile page and turn on "Show my bag publicly on the Community page." You can toggle it off any time to hide your bag.' },
-    { icon: '👀', title: 'View Bag', text: 'Click "View Bag →" on any card to open that bag in the My Bag page. This lets you explore what discs others are throwing and how their bag is structured.' },
+    { icon: '👀', title: 'View Bag', text: 'Click "View Bag →" on any card to see the full bag, leave a comment, or like it.' },
     { icon: '❤️', title: 'Liking Bags', text: 'Click the heart on any community bag to like it. You need to be signed in to like a bag. The like count is shown on each card and updates in real time.' },
-    { icon: '💬', title: 'Commenting', text: 'Open a bag with "View Bag →" and scroll down to leave a comment. Comments are public and tied to your display name. You can delete your own comments at any time.' },
+    { icon: '💬', title: 'Commenting', text: 'Click the comment bubble on a bag to leave a comment. Comments are public and tied to your display name. You can reply to comments and delete your own at any time.' },
   ];
   let cur = 0;
   function render() {
