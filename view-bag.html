@@ -728,8 +728,8 @@ if (!targetUid) {
     <div class="fc-hdr">
       <span class="fc-title">Flight Charts</span>
       <div class="fc-throw-bar" id="fc-throw-toggle">
-        <button class="fc-throw-btn active" data-throw="rhbh">RHBH / LHFH</button>
-        <button class="fc-throw-btn" data-throw="rhfh">RHFH / LHBH</button>
+        <button class="fc-throw-btn active" data-throw="rhbh" onclick="if(window._fcSetMirror)window._fcSetMirror(false)">RHBH / LHFH</button>
+        <button class="fc-throw-btn" data-throw="rhfh" onclick="if(window._fcSetMirror)window._fcSetMirror(true)">RHFH / LHBH</button>
       </div>
       <button class="fc-close" id="fc-close">×</button>
     </div>
@@ -907,15 +907,25 @@ if (!targetUid) {
 
   window._openViewFC = openFC;
 
-  document.addEventListener('click', e => {
-    const btn = e.target.closest('[data-throw]');
-    if (!btn || !btn.closest('#fc-throw-toggle')) return;
-    _fcMirror = btn.dataset.throw === 'rhfh';
-    document.querySelectorAll('.fc-throw-btn').forEach(b => b.classList.toggle('active', b === btn));
+  window._fcSetMirror = function(isRhfh) {
+    _fcMirror = !!isRhfh;
+    document.querySelectorAll('#fc-throw-toggle .fc-throw-btn').forEach(b => b.classList.toggle('active', b.dataset.throw === (_fcMirror ? 'rhfh' : 'rhbh')));
     const chart = document.getElementById('fc-chart');
     if (!chart) return;
     const dist = viewBagPrefDist || parseInt(document.getElementById('fc-slider')?.value || 300);
     chart.innerHTML = buildSVG(dist, document.querySelector('.fc-type-tab.active')?.dataset?.fcType || 'all', getArrowLabels());
+  };
+
+  window.addEventListener('pageshow', function(e) {
+    if (e.persisted) {
+      document.querySelectorAll('#fc-throw-toggle .fc-throw-btn').forEach(b => b.classList.toggle('active', b.dataset.throw === (_fcMirror ? 'rhfh' : 'rhbh')));
+    }
+  });
+
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('[data-throw]');
+    if (!btn || !btn.closest('#fc-throw-toggle')) return;
+    window._fcSetMirror(btn.dataset.throw === 'rhfh');
   });
 
   document.getElementById('fc-close').addEventListener('click', closeFC);
