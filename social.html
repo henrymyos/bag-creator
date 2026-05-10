@@ -338,7 +338,6 @@ function renderCard(data, docId, commentsForCard) {
   const more = entries.length > SHOW ? `<span class="disc-chip disc-chip-more">+${entries.length - SHOW} more</span>` : '';
 
   const viewHref = docId ? `view-bag.html?uid=${encodeURIComponent(docId)}` : '#';
-  const fcHref   = docId ? `view-bag.html?uid=${encodeURIComponent(docId)}&fc=1` : '#';
   const ago = timeAgo(data.updated_at);
 
   // Like state
@@ -362,7 +361,6 @@ function renderCard(data, docId, commentsForCard) {
         </svg>
         <span>${data.comment_count || 0}</span>
       </a>
-      <a href="${esc(fcHref)}" style="font-size:12px;font-weight:600;color:#a78bfa;text-decoration:none;padding:5px 12px;border:1px solid rgba(167,139,250,0.35);border-radius:6px;background:rgba(167,139,250,0.08);transition:all 0.15s">Flight Charts</a>
       <a class="view-bag-btn" href="${esc(viewHref)}" style="margin-left:auto;font-size:12px;font-weight:600;color:var(--accent);text-decoration:none;padding:5px 12px;border:1px solid rgba(57,211,83,0.35);border-radius:6px;background:rgba(57,211,83,0.08);transition:all 0.15s">View Bag →</a>
     </div>`;
 

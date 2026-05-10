@@ -763,7 +763,24 @@ if (!targetUid) {
     { color:'#a371f7', label:'Very Understable',  x:480 },
   ];
 
-  function buildSVG(maxDist, typeFilter) {
+  const CAT_ABBR  = { putter:'Putt', midrange:'Mid', fairway:'FW', distance:'Dist' };
+  const STAB_ABBR = { 'very overstable':'VOS','overstable':'OS','neutral':'NE','understable':'US','very understable':'VUS' };
+
+  function getArrowLabels() {
+    const labels = {};
+    for (const disc of viewBagDiscs) {
+      const ca = CAT_ABBR[disc.type];
+      const sa = STAB_ABBR[disc.stability];
+      if (!ca || !sa) continue;
+      const key = `${ca}-${sa}`;
+      if (!labels[key]) labels[key] = [];
+      labels[key].push(disc.name);
+    }
+    return labels;
+  }
+
+  function buildSVG(maxDist, typeFilter, arrowLabels) {
+    arrowLabels = arrowLabels || {};
     const r = v => v.toFixed(1);
     const MAX_VERT = OY - 55;
     let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg">`;
@@ -795,7 +812,17 @@ if (!targetUid) {
         s += `<path d="M ${OX} ${OY} C ${r(cp1x)} ${r(cp1y)}, ${r(cp2x)} ${r(cp2y)}, ${r(ex)} ${r(stabEndY)}" fill="none" stroke="${color}" stroke-width="1.8" stroke-linecap="round" opacity="0.85"/>`;
         s += `<polygon points="${r(ex)},${r(stabEndY)} ${r(bx+px)},${r(by+py)} ${r(bx-px)},${r(by-py)}" fill="${color}" opacity="0.85"/>`;
         const lbx = ex + lx * lblDist, lby = stabEndY + ly * lblDist;
-        s += `<text x="${r(lbx)}" y="${r(lby+3)}" fill="${color}" font-size="8.5" font-family="Barlow,sans-serif" font-weight="700" text-anchor="${anchor}" opacity="0.9">${ca}-${sa}</text>`;
+        const arrowKey = `${ca}-${sa}`;
+        const rawLabel = arrowLabels[arrowKey];
+        const displayNames = Array.isArray(rawLabel) && rawLabel.length ? rawLabel : [arrowKey];
+        if (displayNames.length === 1) {
+          s += `<text x="${r(lbx)}" y="${r(lby+3)}" fill="${color}" font-size="8.5" font-family="Barlow,sans-serif" font-weight="700" text-anchor="${anchor}" opacity="0.9">${displayNames[0]}</text>`;
+        } else {
+          const lh = 9, sy = lby + 3 - (displayNames.length - 1) * lh / 2;
+          s += `<text fill="${color}" font-size="8.5" font-family="Barlow,sans-serif" font-weight="700" text-anchor="${anchor}" opacity="0.9">`;
+          displayNames.forEach((nm, i) => { s += `<tspan x="${r(lbx)}" y="${r(sy + i * lh)}">${nm}</tspan>`; });
+          s += `</text>`;
+        }
       }
     }
     s += `<circle cx="${OX}" cy="${OY}" r="4" fill="rgba(255,255,255,0.3)"/>`;
@@ -813,6 +840,7 @@ if (!targetUid) {
     const body = document.getElementById('fc-body');
     const initDist = viewBagPrefDist || 300;
     let fcFilter = 'all';
+    const arrowLabels = getArrowLabels();
 
     const FC_TYPES = ['all','putter','midrange','fairway','distance'];
     const FC_LABELS = { all:'All', putter:'Putters', midrange:'Midranges', fairway:'Fairways', distance:'Distance' };
@@ -834,7 +862,7 @@ if (!targetUid) {
       </div><div id="fc-chart"></div>`;
       document.getElementById('fc-slider').addEventListener('input', function() {
         document.getElementById('fc-dist-num').textContent = this.value;
-        document.getElementById('fc-chart').innerHTML = buildSVG(parseInt(this.value), fcFilter);
+        document.getElementById('fc-chart').innerHTML = buildSVG(parseInt(this.value), fcFilter, arrowLabels);
       });
       document.getElementById('fc-dec').addEventListener('click', () => {
         const sl = document.getElementById('fc-slider');
@@ -854,10 +882,10 @@ if (!targetUid) {
       fcFilter = btn.dataset.fcType;
       document.querySelectorAll('.fc-type-tab').forEach(b => b.classList.toggle('active', b === btn));
       const dist = viewBagPrefDist || parseInt(document.getElementById('fc-slider')?.value || initDist);
-      document.getElementById('fc-chart').innerHTML = buildSVG(dist, fcFilter);
+      document.getElementById('fc-chart').innerHTML = buildSVG(dist, fcFilter, arrowLabels);
     });
 
-    document.getElementById('fc-chart').innerHTML = buildSVG(initDist, fcFilter);
+    document.getElementById('fc-chart').innerHTML = buildSVG(initDist, fcFilter, arrowLabels);
     document.getElementById('fc-overlay').style.display = 'flex';
   }
 
