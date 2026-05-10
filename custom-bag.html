@@ -1166,10 +1166,6 @@ render();
       <span class="fc-title">Flight Charts</span>
       <button class="help-close" id="fc-close">×</button>
     </div>
-    <div class="fc-throw-bar" id="fc-throw-toggle">
-      <button class="fc-throw-btn active" data-throw="rhbh">RHBH / LHFH</button>
-      <button class="fc-throw-btn" data-throw="rhfh">RHFH / LHBH</button>
-    </div>
     <div class="fc-body" id="fc-body"></div>
   </div>
 </div>
@@ -1477,10 +1473,12 @@ render();
     const body = document.getElementById('fc-body');
     const initDist = profileDist || 300;
 
-    document.querySelectorAll('.fc-throw-btn').forEach(b => b.classList.toggle('active', b.dataset.throw === (_fcMirror ? 'rhfh' : 'rhbh')));
-
     const FC_TYPES = ['all','putter','midrange','fairway','distance'];
     const FC_LABELS = { all:'All', putter:'Putters', midrange:'Midranges', fairway:'Fairways', distance:'Distance' };
+    const throwToggleHtml = `<div class="fc-throw-bar" id="fc-throw-toggle">
+      <button class="fc-throw-btn${!_fcMirror ? ' active' : ''}" data-throw="rhbh">RHBH / LHFH</button>
+      <button class="fc-throw-btn${_fcMirror  ? ' active' : ''}" data-throw="rhfh">RHFH / LHBH</button>
+    </div>`;
     const tabsHtml = `<div class="fc-type-tabs" id="fc-type-tabs">
       ${FC_TYPES.map(t => `<button class="fc-type-tab${_fcFilter === t ? ' active' : ''}" data-fc-type="${t}">${FC_LABELS[t]}</button>`).join('')}
     </div>`;
@@ -1491,12 +1489,12 @@ render();
 
     if (profileDist) {
       body.innerHTML =
-        `${bannerHtml}${tabsHtml}<div style="padding-bottom:1rem">
+        `${throwToggleHtml}${bannerHtml}${tabsHtml}<div style="padding-bottom:1rem">
            <span class="eval-dist-label">Throw distance from your profile: <strong style="color:var(--text)">${profileDist} ft</strong></span>
          </div><div id="fc-chart"></div>`;
     } else {
       body.innerHTML =
-        `${bannerHtml}${tabsHtml}<div style="padding-bottom:1rem">
+        `${throwToggleHtml}${bannerHtml}${tabsHtml}<div style="padding-bottom:1rem">
            <span class="eval-dist-label">Your max throw distance</span>
            <div class="eval-dist-ctrl">
              <button class="eval-step-btn" id="fc-dec">−</button>
@@ -1559,9 +1557,9 @@ render();
 
   window._openFC = openFC;
 
-  document.getElementById('fc-throw-toggle').addEventListener('click', e => {
+  document.addEventListener('click', e => {
     const btn = e.target.closest('[data-throw]');
-    if (!btn) return;
+    if (!btn || !btn.closest('#fc-throw-toggle')) return;
     _fcMirror = btn.dataset.throw === 'rhfh';
     document.querySelectorAll('.fc-throw-btn').forEach(b => b.classList.toggle('active', b === btn));
     const chart = document.getElementById('fc-chart');

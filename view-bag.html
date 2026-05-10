@@ -729,10 +729,6 @@ if (!targetUid) {
       <span class="fc-title">Flight Charts</span>
       <button class="fc-close" id="fc-close">×</button>
     </div>
-    <div class="fc-throw-bar" id="fc-throw-toggle">
-      <button class="fc-throw-btn active" data-throw="rhbh">RHBH / LHFH</button>
-      <button class="fc-throw-btn" data-throw="rhfh">RHFH / LHBH</button>
-    </div>
     <div class="fc-body" id="fc-body"></div>
   </div>
 </div>
@@ -853,18 +849,21 @@ if (!targetUid) {
     const initDist = viewBagPrefDist || 300;
     let fcFilter = 'all';
     const arrowLabels = getArrowLabels();
-    document.querySelectorAll('.fc-throw-btn').forEach(b => b.classList.toggle('active', b.dataset.throw === (_fcMirror ? 'rhfh' : 'rhbh')));
 
     const FC_TYPES = ['all','putter','midrange','fairway','distance'];
     const FC_LABELS = { all:'All', putter:'Putters', midrange:'Midranges', fairway:'Fairways', distance:'Distance' };
+    const throwToggleHtml = `<div class="fc-throw-bar" id="fc-throw-toggle">
+      <button class="fc-throw-btn${!_fcMirror ? ' active' : ''}" data-throw="rhbh">RHBH / LHFH</button>
+      <button class="fc-throw-btn${_fcMirror  ? ' active' : ''}" data-throw="rhfh">RHFH / LHBH</button>
+    </div>`;
     const tabsHtml = `<div class="fc-type-tabs" id="fc-type-tabs">
       ${FC_TYPES.map(t => `<button class="fc-type-tab${fcFilter === t ? ' active' : ''}" data-fc-type="${t}">${FC_LABELS[t]}</button>`).join('')}
     </div>`;
 
     if (viewBagPrefDist) {
-      body.innerHTML = `${tabsHtml}<div style="padding-bottom:1rem"><span class="fc-dist-label">Throw distance from profile: <strong style="color:var(--text)">${viewBagPrefDist} ft</strong></span></div><div id="fc-chart"></div>`;
+      body.innerHTML = `${throwToggleHtml}${tabsHtml}<div style="padding-bottom:1rem"><span class="fc-dist-label">Throw distance from profile: <strong style="color:var(--text)">${viewBagPrefDist} ft</strong></span></div><div id="fc-chart"></div>`;
     } else {
-      body.innerHTML = `${tabsHtml}<div style="padding-bottom:1rem">
+      body.innerHTML = `${throwToggleHtml}${tabsHtml}<div style="padding-bottom:1rem">
         <span class="fc-dist-label">Max throw distance</span>
         <div class="fc-dist-ctrl">
           <button class="fc-step-btn" id="fc-dec">−</button>
@@ -906,16 +905,15 @@ if (!targetUid) {
 
   window._openViewFC = openFC;
 
-  document.getElementById('fc-throw-toggle').addEventListener('click', e => {
+  document.addEventListener('click', e => {
     const btn = e.target.closest('[data-throw]');
-    if (!btn) return;
+    if (!btn || !btn.closest('#fc-throw-toggle')) return;
     _fcMirror = btn.dataset.throw === 'rhfh';
     document.querySelectorAll('.fc-throw-btn').forEach(b => b.classList.toggle('active', b === btn));
     const chart = document.getElementById('fc-chart');
     if (!chart) return;
-    const arrowLabels = getArrowLabels();
     const dist = viewBagPrefDist || parseInt(document.getElementById('fc-slider')?.value || 300);
-    chart.innerHTML = buildSVG(dist, document.querySelector('.fc-type-tab.active')?.dataset?.fcType || 'all', arrowLabels);
+    chart.innerHTML = buildSVG(dist, document.querySelector('.fc-type-tab.active')?.dataset?.fcType || 'all', getArrowLabels());
   });
 
   document.getElementById('fc-close').addEventListener('click', closeFC);
