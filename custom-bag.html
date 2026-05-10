@@ -197,7 +197,7 @@
     .share-btn { border-color: rgba(57,211,83,0.4); color: var(--accent); background: rgba(57,211,83,0.08); display: flex; align-items: center; gap: 6px; }
     .share-btn:hover { background: rgba(57,211,83,0.15); color: var(--accent); }
     .share-btn.copied { border-color: rgba(57,211,83,0.6); background: rgba(57,211,83,0.2); }
-    .eval-btn { border-color: rgba(88,166,255,0.4); color: var(--accent2); background: rgba(88,166,255,0.08); }
+    .eval-btn { border-color: rgba(88,166,255,0.4); color: var(--accent2); background: rgba(88,166,255,0.08); align-self: stretch; }
     .eval-btn:hover { background: rgba(88,166,255,0.15); border-color: rgba(88,166,255,0.5); color: var(--accent2); }
     .eval-overlay { position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center;padding:1rem; }
     .eval-dialog { background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:100%;max-width:400px;overflow:hidden; }
@@ -236,6 +236,22 @@
     .fc-card-name { font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.04em;text-align:center; }
     .fc-card-nums { font-size:10px;color:var(--muted);text-align:center;letter-spacing:0.03em; }
     .fc-empty { text-align:center;color:var(--muted);font-size:13px;padding:2rem 0; }
+    .fc-type-tabs { display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem; }
+    .fc-type-tab { padding:5px 12px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;border-radius:5px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;transition:all 0.15s; }
+    .fc-type-tab.active { color:var(--accent);border-color:rgba(57,211,83,0.4);background:rgba(57,211,83,0.08); }
+    .fc-disc-btn { width:20px;height:20px;border-radius:4px;border:1px solid var(--border2);background:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0; }
+    .fc-disc-btn:hover { background:rgba(167,139,250,0.15);border-color:rgba(167,139,250,0.4);color:#a78bfa; }
+    .fc-assign-banner { display:flex;align-items:center;gap:0.5rem;background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.35);border-radius:8px;padding:0.55rem 0.9rem;margin-bottom:1rem;font-size:13px;color:#a78bfa; }
+    .fc-assign-name { font-weight:700; }
+    .fc-assign-cancel { margin-left:auto;background:none;border:none;color:#a78bfa;cursor:pointer;font-size:11px;padding:2px 6px;border-radius:4px;opacity:0.7;transition:opacity 0.12s; }
+    .fc-assign-cancel:hover { opacity:1; }
+    #fc-chart [data-arrow]:hover > path { opacity: 1; stroke-width: 2.8; }
+    #fc-chart [data-arrow]:hover > polygon { opacity: 1; }
+    #fc-chart [data-arrow]:hover > text { opacity: 1; }
+    #fc-chart [data-arrow]:hover > circle { fill: rgba(255,255,255,0.1); }
+    #fc-chart.assign-mode [data-arrow] { cursor: crosshair; }
+    #fc-chart.assign-mode [data-arrow]:hover > circle { fill: rgba(255,255,255,0.18); }
+    #fc-chart.assign-mode [data-arrow]:hover > path { stroke-width: 3; }
 
     .bag-empty { text-align: center; padding: 4rem 2rem; color: var(--muted); }
     .bag-empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
@@ -338,7 +354,7 @@
       .bag-panel { padding: 1.25rem 1.25rem 3rem; }
       .bag-disc-grid { grid-template-columns: repeat(2, 1fr); }
     }
-    @media (max-width: 640px) {
+    @media (max-width: 900px) {
       .bag-actions {
         grid-template-areas: "info gap right" "btns btns btns";
         grid-template-columns: auto 1fr auto;
@@ -562,10 +578,14 @@ function decodeBag(str) {
 }
 
 let myBag = [];
+let myBagIds = [];   // parallel to myBag — unique per disc instance
+let _nextId = 1;
+const newId = () => String(_nextId++);
+
 let profileDist = null;
 const urlParam = new URLSearchParams(location.search).get('bag');
 const urlAdd   = new URLSearchParams(location.search).get('add');
-if (urlParam) { myBag = decodeBag(urlParam); }
+if (urlParam) { myBag = decodeBag(urlParam); myBagIds = myBag.map(() => newId()); }
 
 let searchQuery = '';
 let selectedType = 'all';
@@ -664,6 +684,7 @@ async function loadFromDB() {
         const d = DISCS.find(d => d.brand === brand && d.type === type && d.name === rest.join('|'));
         return d ? [d] : [];
       });
+      myBagIds = myBag.map(() => newId());
     } else if (myBag.length) {
       await saveToDB();
     }
@@ -673,6 +694,7 @@ async function loadFromDB() {
       const existingKeys = new Set(myBag.map(discKey));
       const merged = toAdd.filter(d => !existingKeys.has(discKey(d)));
       myBag.push(...merged);
+      merged.forEach(() => myBagIds.push(newId()));
       if (merged.length) await saveToDB();
       const cleanUrl = location.pathname + (myBag.length ? `?bag=${encodeBag(myBag)}` : '');
       history.replaceState(null, '', cleanUrl);
@@ -746,10 +768,12 @@ async function applyAuthState(user) {
     if (!wasUser) await loadFromDB();
   } else if (!_authApplied) {
     myBag = [];
+    myBagIds = [];
     profileDist = null;
     if (urlAdd) {
       const toAdd = decodeBag(urlAdd);
       myBag.push(...toAdd);
+      toAdd.forEach(() => myBagIds.push(newId()));
       const cleanUrl = location.pathname + (myBag.length ? `?bag=${encodeBag(myBag)}` : '');
       history.replaceState(null, '', cleanUrl);
     }
@@ -773,6 +797,7 @@ function hideUndo() { clearBtn.style.display = ''; undoBtn.style.display = 'none
 
 function addDisc(disc) {
   myBag.push(disc);
+  myBagIds.push(newId());
   hideUndo();
   updateURL();
   scheduleSave();
@@ -780,7 +805,8 @@ function addDisc(disc) {
 }
 
 function removeDisc(key) {
-  myBag = myBag.filter(d => discKey(d) !== key);
+  const indices = myBag.reduce((acc, d, i) => (discKey(d) === key ? [...acc, i] : acc), []);
+  indices.reverse().forEach(i => { myBag.splice(i, 1); myBagIds.splice(i, 1); });
   updateURL();
   scheduleSave();
   render();
@@ -790,6 +816,7 @@ function incrementDisc(key) {
   const disc = DISCS.find(d => discKey(d) === key);
   if (!disc) return;
   myBag.push(disc);
+  myBagIds.push(newId());
   hideUndo();
   updateURL();
   scheduleSave();
@@ -800,6 +827,7 @@ function decrementDisc(key) {
   const idx = myBag.findLastIndex(d => discKey(d) === key);
   if (idx === -1) return;
   myBag.splice(idx, 1);
+  myBagIds.splice(idx, 1);
   updateURL();
   scheduleSave();
   render();
@@ -881,7 +909,10 @@ function renderBag() {
                 <span class="brand-badge ${d.brand}">${BRAND_LABEL[d.brand] || d.brand}</span>
                 <span class="stab-tag ${STAB_CLASS[d.stability]}">${STAB_SHORT[d.stability]}</span>
               </div>
-              <button class="remove-btn" data-key="${discKey(d)}" title="Remove">✕</button>
+              <div style="display:flex;gap:3px;align-items:center;flex-shrink:0">
+                <button class="fc-disc-btn" data-fc-disc-type="${d.type}" data-fc-disc-name="${d.name.replace(/"/g,'&quot;')}" data-fc-disc-id="${myBagIds[i]}" title="Assign to flight chart"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,12 5,7 9,9 13,4"/><polyline points="10,4 13,4 13,7"/></svg></button>
+                <button class="remove-btn" data-key="${discKey(d)}" title="Remove">✕</button>
+              </div>
             </div>
             <div class="bag-disc-name">${d.name}</div>
             <div class="bag-disc-flights">
@@ -916,6 +947,8 @@ document.getElementById('disc-list').addEventListener('click', e => {
 document.getElementById('bag-display').addEventListener('click', e => {
   const removeBtn = e.target.closest('.remove-btn');
   if (removeBtn) { decrementDisc(removeBtn.dataset.key); return; }
+  const fcDiscBtn = e.target.closest('.fc-disc-btn');
+  if (fcDiscBtn && window._openFC) { window._openFC(fcDiscBtn.dataset.fcDiscType, { name: fcDiscBtn.dataset.fcDiscName, id: fcDiscBtn.dataset.fcDiscId }); return; }
 });
 
 // Drag-to-reorder within type groups
@@ -955,8 +988,11 @@ bagDisplay.addEventListener('drop', e => {
   const rect = card.getBoundingClientRect();
   const insertBefore = e.clientX < rect.left + rect.width / 2;
   const [disc] = myBag.splice(_dragIdx, 1);
+  const [discId] = myBagIds.splice(_dragIdx, 1);
   const adjustedTo = toIdx > _dragIdx ? toIdx - 1 : toIdx;
-  myBag.splice(insertBefore ? adjustedTo : adjustedTo + 1, 0, disc);
+  const insertAt = insertBefore ? adjustedTo : adjustedTo + 1;
+  myBag.splice(insertAt, 0, disc);
+  myBagIds.splice(insertAt, 0, discId);
   scheduleSave();
   render();
 });
@@ -1011,10 +1047,13 @@ shareBtn.addEventListener('click', () => {
   }
 });
 
+let lastClearedIds = [];
 clearBtn.addEventListener('click', () => {
   if (!myBag.length) return;
   lastClearedBag = [...myBag];
+  lastClearedIds  = [...myBagIds];
   myBag = [];
+  myBagIds = [];
   updateURL();
   render();
   showUndo();
@@ -1022,7 +1061,8 @@ clearBtn.addEventListener('click', () => {
 
 undoBtn.addEventListener('click', () => {
   if (!lastClearedBag) return;
-  myBag = [...lastClearedBag];
+  myBag    = [...lastClearedBag];
+  myBagIds = [...lastClearedIds];
   updateURL();
   scheduleSave();
   render();
@@ -1288,10 +1328,10 @@ render();
 
   // distFrac: fraction of max throw distance each category represents
   const CATS = [
-    { abbr:'Putt', label:'Putters',          endY:303, stabs:['overstable','neutral','understable'],                                                      lblDist:26 },
-    { abbr:'Mid',  label:'Midranges',         endY:213, stabs:['very overstable','overstable','neutral','understable','very understable'], lblDist:16 },
-    { abbr:'FW',   label:'Fairway Drivers',   endY:123, stabs:['very overstable','overstable','neutral','understable','very understable'], lblDist:16 },
-    { abbr:'Dist', label:'Distance Drivers',  endY: 55, stabs:['very overstable','overstable','neutral','understable','very understable'], lblDist:16 },
+    { abbr:'Putt', typeKey:'putter',   label:'Putters',         endY:303, stabs:['overstable','neutral','understable'],                                                      lblDist:26 },
+    { abbr:'Mid',  typeKey:'midrange', label:'Midranges',        endY:213, stabs:['very overstable','overstable','neutral','understable','very understable'], lblDist:16 },
+    { abbr:'FW',   typeKey:'fairway',  label:'Fairway Drivers',  endY:123, stabs:['very overstable','overstable','neutral','understable','very understable'], lblDist:16 },
+    { abbr:'Dist', typeKey:'distance', label:'Distance Drivers', endY: 55, stabs:['very overstable','overstable','neutral','understable','very understable'], lblDist:16 },
   ];
 
   // Distance multipliers per stability: fraction of category distance each stability reaches
@@ -1312,8 +1352,27 @@ render();
     { color:'#a371f7', label:'Very Understable',  x:480 },
   ];
 
-  function buildSVG(maxDist) {
+  // fcAssignments: { [instanceId]: arrowKey } — one arrow per disc instance
+  let fcAssignments = JSON.parse(localStorage.getItem('bc_fc_assignments') || '{}');
+  function saveFcAssignments() { localStorage.setItem('bc_fc_assignments', JSON.stringify(fcAssignments)); }
+
+  function getArrowLabels() {
+    const labels = {};
+    myBagIds.forEach((id, bagIdx) => {
+      const arrowKey = fcAssignments[id];
+      if (!arrowKey) return;
+      if (!labels[arrowKey]) labels[arrowKey] = [];
+      labels[arrowKey].push(myBag[bagIdx].name);
+    });
+    return labels;
+  }
+
+  let _fcAssignDisc = null;
+  let _fcFilter = 'all';
+
+  function buildSVG(maxDist, typeFilter) {
     const r = v => v.toFixed(1);
+    const arrowLabels = getArrowLabels();
     const MAX_VERT = OY - 55; // 450px, distance driver baseline
     let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg">`;
 
@@ -1326,8 +1385,11 @@ render();
       s += `<text x="${W-14}" y="${r(parseFloat(y)-4)}" fill="rgba(255,255,255,0.65)" font-size="9.5" font-family="Barlow Condensed,sans-serif" font-weight="700" text-anchor="end">${ft} ft</text>`;
     }
 
+    const visibleCATS = typeFilter && typeFilter !== 'all'
+      ? CATS.filter(c => c.typeKey === typeFilter) : CATS;
+
     // Arrows + labels — each stability ends at a scaled distance within its category
-    for (const { abbr: ca, endY: catEndY, stabs, lblDist } of CATS) {
+    for (const { abbr: ca, endY: catEndY, stabs, lblDist } of visibleCATS) {
       const baseVert = OY - catEndY;
       const isLong = ca === 'FW' || ca === 'Dist';
       for (const key of stabs) {
@@ -1347,10 +1409,24 @@ render();
         const nx = dx/len, ny = dy/len;
         const sz = 4.5, px = -ny*sz, py = nx*sz;
         const bx = ex - nx*sz*1.8, by = stabEndY - ny*sz*1.8;
+        const arrowKey = `${ca}-${sa}`;
+        const rawLabel = arrowLabels[arrowKey];
+        const displayNames = Array.isArray(rawLabel) && rawLabel.length ? rawLabel : [arrowKey];
+        s += `<g data-arrow="${arrowKey}" style="cursor:pointer;pointer-events:all">`;
         s += `<path d="M ${OX} ${OY} C ${r(cp1x)} ${r(cp1y)}, ${r(cp2x)} ${r(cp2y)}, ${r(ex)} ${r(stabEndY)}" fill="none" stroke="${color}" stroke-width="1.8" stroke-linecap="round" opacity="0.85"/>`;
         s += `<polygon points="${r(ex)},${r(stabEndY)} ${r(bx+px)},${r(by+py)} ${r(bx-px)},${r(by-py)}" fill="${color}" opacity="0.85"/>`;
+        s += `<circle cx="${r(ex)}" cy="${r(stabEndY)}" r="14" fill="transparent"/>`;
         const lbx = ex + lx * lblDist, lby = stabEndY + ly * lblDist;
-        s += `<text x="${r(lbx)}" y="${r(lby+3)}" fill="${color}" font-size="8.5" font-family="Barlow,sans-serif" font-weight="700" text-anchor="${anchor}" opacity="0.9">${ca}-${sa}</text>`;
+        if (displayNames.length === 1) {
+          s += `<text x="${r(lbx)}" y="${r(lby+3)}" fill="${color}" font-size="8.5" font-family="Barlow,sans-serif" font-weight="700" text-anchor="${anchor}" opacity="0.9">${displayNames[0]}</text>`;
+        } else {
+          const lh = 9;
+          const sy = lby + 3 - (displayNames.length - 1) * lh / 2;
+          s += `<text fill="${color}" font-size="8.5" font-family="Barlow,sans-serif" font-weight="700" text-anchor="${anchor}" opacity="0.9">`;
+          displayNames.forEach((nm, i) => { s += `<tspan x="${r(lbx)}" y="${r(sy + i * lh)}">${nm}</tspan>`; });
+          s += `</text>`;
+        }
+        s += `</g>`;
       }
     }
 
@@ -1366,18 +1442,31 @@ render();
     return s;
   }
 
-  function openFC() {
+  function openFC(typeFilter, assignDisc) {
+    _fcFilter = typeFilter || 'all';
+    _fcAssignDisc = assignDisc || null;
+
     const body = document.getElementById('fc-body');
     const initDist = profileDist || 300;
 
+    const FC_TYPES = ['all','putter','midrange','fairway','distance'];
+    const FC_LABELS = { all:'All', putter:'Putters', midrange:'Midranges', fairway:'Fairways', distance:'Distance' };
+    const tabsHtml = `<div class="fc-type-tabs" id="fc-type-tabs">
+      ${FC_TYPES.map(t => `<button class="fc-type-tab${_fcFilter === t ? ' active' : ''}" data-fc-type="${t}">${FC_LABELS[t]}</button>`).join('')}
+    </div>`;
+
+    const bannerHtml = _fcAssignDisc
+      ? `<div class="fc-assign-banner" id="fc-assign-banner">Click an arrow to assign <span class="fc-assign-name">${_fcAssignDisc.name}</span><button class="fc-assign-cancel" id="fc-assign-cancel">✕ Cancel</button></div>`
+      : '';
+
     if (profileDist) {
       body.innerHTML =
-        `<div style="padding-bottom:1rem">
+        `${bannerHtml}${tabsHtml}<div style="padding-bottom:1rem">
            <span class="eval-dist-label">Throw distance from your profile: <strong style="color:var(--text)">${profileDist} ft</strong></span>
          </div><div id="fc-chart"></div>`;
     } else {
       body.innerHTML =
-        `<div style="padding-bottom:1rem">
+        `${bannerHtml}${tabsHtml}<div style="padding-bottom:1rem">
            <span class="eval-dist-label">Your max throw distance</span>
            <div class="eval-dist-ctrl">
              <button class="eval-step-btn" id="fc-dec">−</button>
@@ -1390,7 +1479,7 @@ render();
       document.getElementById('fc-slider').addEventListener('input', function() {
         const d = parseInt(this.value);
         document.getElementById('fc-dist-num').textContent = d;
-        document.getElementById('fc-chart').innerHTML = buildSVG(d);
+        document.getElementById('fc-chart').innerHTML = buildSVG(d, _fcFilter);
       });
       document.getElementById('fc-dec').addEventListener('click', () => {
         const sl = document.getElementById('fc-slider');
@@ -1404,21 +1493,54 @@ render();
       });
     }
 
-    document.getElementById('fc-chart').innerHTML = buildSVG(initDist);
+    document.getElementById('fc-type-tabs').addEventListener('click', e => {
+      const btn = e.target.closest('[data-fc-type]');
+      if (!btn) return;
+      _fcFilter = btn.dataset.fcType;
+      document.querySelectorAll('.fc-type-tab').forEach(b => b.classList.toggle('active', b === btn));
+      const dist = profileDist || parseInt(document.getElementById('fc-slider')?.value || initDist);
+      document.getElementById('fc-chart').innerHTML = buildSVG(dist, _fcFilter);
+    });
+
+    document.getElementById('fc-chart').innerHTML = buildSVG(initDist, _fcFilter);
+    if (_fcAssignDisc) document.getElementById('fc-chart').classList.add('assign-mode');
     document.getElementById('fc-overlay').style.display = 'flex';
   }
 
-  document.getElementById('fc-btn').addEventListener('click', openFC);
-  document.getElementById('fc-close').addEventListener('click', () => {
-    document.getElementById('fc-overlay').style.display = 'none';
+  document.getElementById('fc-body').addEventListener('click', e => {
+    if (e.target.closest('#fc-assign-cancel')) {
+      _fcAssignDisc = null;
+      document.getElementById('fc-chart')?.classList.remove('assign-mode');
+      document.getElementById('fc-assign-banner')?.remove();
+      return;
+    }
+    if (!_fcAssignDisc) return;
+    const g = e.target.closest('[data-arrow]');
+    if (!g) return;
+    // This instance moves to the new arrow (removes from its previous one automatically)
+    fcAssignments[_fcAssignDisc.id] = g.dataset.arrow;
+    saveFcAssignments();
+    _fcAssignDisc = null;
+    document.getElementById('fc-chart')?.classList.remove('assign-mode');
+    document.getElementById('fc-assign-banner')?.remove();
+    const dist = profileDist || parseInt(document.getElementById('fc-slider')?.value || 300);
+    document.getElementById('fc-chart').innerHTML = buildSVG(dist, _fcFilter);
   });
+
+  window._openFC = openFC;
+
+  document.getElementById('fc-btn').addEventListener('click', () => openFC());
+  function closeFC() {
+    _fcAssignDisc = null;
+    document.getElementById('fc-chart')?.classList.remove('assign-mode');
+    document.getElementById('fc-overlay').style.display = 'none';
+  }
+  document.getElementById('fc-close').addEventListener('click', closeFC);
   document.getElementById('fc-overlay').addEventListener('click', e => {
-    if (e.target === document.getElementById('fc-overlay'))
-      document.getElementById('fc-overlay').style.display = 'none';
+    if (e.target === document.getElementById('fc-overlay')) closeFC();
   });
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && document.getElementById('fc-overlay').style.display !== 'none')
-      document.getElementById('fc-overlay').style.display = 'none';
+    if (e.key === 'Escape' && document.getElementById('fc-overlay').style.display !== 'none') closeFC();
   });
 })();
 </script>
