@@ -202,7 +202,7 @@
     .state-msg strong { display: block; font-family: 'Barlow Condensed', sans-serif; font-size: 1.3rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text); margin-bottom: 0.35rem; }
     .state-msg a { color: var(--accent); text-decoration: none; }
 
-    .fc-open-btn { padding:7px 14px; font-family:'Barlow',sans-serif; font-size:12px; font-weight:600; border-radius:6px; border:1px solid rgba(167,139,250,0.4); background:rgba(167,139,250,0.08); color:#a78bfa; cursor:pointer; transition:all 0.15s; }
+    .fc-open-btn { padding:7px 14px; font-family:'Barlow',sans-serif; font-size:12px; font-weight:600; border-radius:6px; border:1px solid rgba(167,139,250,0.4); background:rgba(167,139,250,0.08); color:#a78bfa; cursor:pointer; transition:all 0.15s; margin-left:auto; }
     .fc-open-btn:hover { background:rgba(167,139,250,0.15); }
     .fc-overlay { position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center;padding:1rem; }
     .fc-dialog { background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:100%;max-width:720px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden; }
@@ -336,6 +336,7 @@ const params    = new URLSearchParams(location.search);
 const targetUid = params.get('uid');
 let viewBagDiscs = [];
 let viewBagPrefDist = null;
+let viewBagFcPositions = null;
 const pageMsg   = document.getElementById('page-msg');
 const bagWrap   = document.getElementById('bag-wrap');
 
@@ -402,8 +403,9 @@ if (!targetUid) {
   function renderBag(data) {
     const discs  = decodeBagKeys(data.bag || []);
     const prefs  = data.prefs || {};
-    viewBagDiscs    = discs;
-    viewBagPrefDist = prefs.dist ? parseInt(prefs.dist) : null;
+    viewBagDiscs       = discs;
+    viewBagPrefDist    = prefs.dist ? parseInt(prefs.dist) : null;
+    viewBagFcPositions = prefs.fcPositions || null;
     const name   = data.display_name || 'Anonymous';
     const color  = AVATAR_COLORS.find(c => c.val === prefs.avatarColor) || AVATAR_COLORS[0];
     const ago    = timeAgo(data.updated_at);
@@ -763,18 +765,15 @@ if (!targetUid) {
     { color:'#a371f7', label:'Very Understable',  x:480 },
   ];
 
-  const CAT_ABBR  = { putter:'Putt', midrange:'Mid', fairway:'FW', distance:'Dist' };
-  const STAB_ABBR = { 'very overstable':'VOS','overstable':'OS','neutral':'NE','understable':'US','very understable':'VUS' };
-
   function getArrowLabels() {
     const labels = {};
-    for (const disc of viewBagDiscs) {
-      const ca = CAT_ABBR[disc.type];
-      const sa = STAB_ABBR[disc.stability];
-      if (!ca || !sa) continue;
-      const key = `${ca}-${sa}`;
-      if (!labels[key]) labels[key] = [];
-      labels[key].push(disc.name);
+    if (viewBagFcPositions) {
+      Object.entries(viewBagFcPositions).forEach(([posStr, arrowKey]) => {
+        const disc = viewBagDiscs[parseInt(posStr)];
+        if (!disc) return;
+        if (!labels[arrowKey]) labels[arrowKey] = [];
+        labels[arrowKey].push(disc.name);
+      });
     }
     return labels;
   }

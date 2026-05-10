@@ -603,6 +603,7 @@ supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: { detectSessionInUrl: true }
 });
 let currentUser = null;
+let currentPrefs = {};
 
 function getUserLabel(user) {
   return user.user_metadata?.displayName || user.user_metadata?.full_name || user.email || '';
@@ -672,6 +673,7 @@ async function loadFromDB() {
     const data = rows[0] ?? null;
     if (data) {
       const p = data.prefs || {};
+      currentPrefs = p;
       if (p.avatarColor || p.avatarPhoto) {
         const initial = getUserLabel(currentUser)[0]?.toUpperCase() || '?';
         applyAvatarBadge(p.avatarColor, p.avatarPhoto, initial);
@@ -1354,7 +1356,21 @@ render();
 
   // fcAssignments: { [instanceId]: arrowKey } — one arrow per disc instance
   let fcAssignments = JSON.parse(localStorage.getItem('bc_fc_assignments') || '{}');
-  function saveFcAssignments() { localStorage.setItem('bc_fc_assignments', JSON.stringify(fcAssignments)); }
+  function saveFcAssignments() {
+    localStorage.setItem('bc_fc_assignments', JSON.stringify(fcAssignments));
+    if (!currentUser) return;
+    const posMap = {};
+    myBagIds.forEach((id, idx) => { if (fcAssignments[id]) posMap[idx] = fcAssignments[id]; });
+    const token = _getAuthToken();
+    if (!token) return;
+    const merged = { ...currentPrefs, fcPositions: posMap };
+    currentPrefs = merged;
+    fetch(`${SUPABASE_URL}/rest/v1/bags?on_conflict=user_id`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({ user_id: currentUser.id, prefs: merged })
+    });
+  }
 
   function getArrowLabels() {
     const labels = {};
