@@ -203,7 +203,7 @@
     .state-msg a { color: var(--accent); text-decoration: none; }
 
     .fc-open-btn { padding:7px 14px; font-family:'Barlow',sans-serif; font-size:12px; font-weight:600; border-radius:6px; border:1px solid rgba(167,139,250,0.4); background:rgba(167,139,250,0.08); color:#a78bfa; cursor:pointer; transition:all 0.15s; margin-left:auto; }
-    .fc-throw-bar { display:flex;gap:4px;padding:0.6rem 1.25rem;border-bottom:1px solid var(--border);flex-shrink:0; }
+    .fc-throw-bar { display:flex;gap:4px;margin-right:0.75rem; }
     .fc-throw-btn { padding:4px 12px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border-radius:5px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;transition:all 0.15s; }
     .fc-throw-btn.active { color:#58a6ff;border-color:rgba(88,166,255,0.4);background:rgba(88,166,255,0.08); }
     .fc-open-btn:hover { background:rgba(167,139,250,0.15); }
@@ -727,6 +727,10 @@ if (!targetUid) {
   <div class="fc-dialog">
     <div class="fc-hdr">
       <span class="fc-title">Flight Charts</span>
+      <div class="fc-throw-bar" id="fc-throw-toggle">
+        <button class="fc-throw-btn active" data-throw="rhbh">RHBH / LHFH</button>
+        <button class="fc-throw-btn" data-throw="rhfh">RHFH / LHBH</button>
+      </div>
       <button class="fc-close" id="fc-close">×</button>
     </div>
     <div class="fc-body" id="fc-body"></div>
@@ -852,18 +856,15 @@ if (!targetUid) {
 
     const FC_TYPES = ['all','putter','midrange','fairway','distance'];
     const FC_LABELS = { all:'All', putter:'Putters', midrange:'Midranges', fairway:'Fairways', distance:'Distance' };
-    const throwToggleHtml = `<div class="fc-throw-bar" id="fc-throw-toggle">
-      <button class="fc-throw-btn${!_fcMirror ? ' active' : ''}" data-throw="rhbh">RHBH / LHFH</button>
-      <button class="fc-throw-btn${_fcMirror  ? ' active' : ''}" data-throw="rhfh">RHFH / LHBH</button>
-    </div>`;
+    document.querySelectorAll('#fc-throw-toggle .fc-throw-btn').forEach(b => b.classList.toggle('active', b.dataset.throw === (_fcMirror ? 'rhfh' : 'rhbh')));
     const tabsHtml = `<div class="fc-type-tabs" id="fc-type-tabs">
       ${FC_TYPES.map(t => `<button class="fc-type-tab${fcFilter === t ? ' active' : ''}" data-fc-type="${t}">${FC_LABELS[t]}</button>`).join('')}
     </div>`;
 
     if (viewBagPrefDist) {
-      body.innerHTML = `${throwToggleHtml}${tabsHtml}<div style="padding-bottom:1rem"><span class="fc-dist-label">Throw distance from profile: <strong style="color:var(--text)">${viewBagPrefDist} ft</strong></span></div><div id="fc-chart"></div>`;
+      body.innerHTML = `${tabsHtml}<div style="padding-bottom:1rem"><span class="fc-dist-label">Throw distance from profile: <strong style="color:var(--text)">${viewBagPrefDist} ft</strong></span></div><div id="fc-chart"></div>`;
     } else {
-      body.innerHTML = `${throwToggleHtml}${tabsHtml}<div style="padding-bottom:1rem">
+      body.innerHTML = `${tabsHtml}<div style="padding-bottom:1rem">
         <span class="fc-dist-label">Max throw distance</span>
         <div class="fc-dist-ctrl">
           <button class="fc-step-btn" id="fc-dec">−</button>
@@ -898,6 +899,7 @@ if (!targetUid) {
     });
 
     document.getElementById('fc-chart').innerHTML = buildSVG(initDist, fcFilter, arrowLabels);
+    body.scrollTop = 0;
     document.getElementById('fc-overlay').style.display = 'flex';
   }
 
