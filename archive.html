@@ -627,6 +627,7 @@ function render() {
         return d.stability === stab;
       });
       if (!group.length) return "";
+      group.sort((a, b) => a.name.localeCompare(b.name));
       return `
         <div class="stab-group">
           <div class="stab-group-header">${stab}</div>
