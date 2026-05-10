@@ -201,6 +201,25 @@
     .state-msg { text-align: center; padding: 4rem 2rem; color: var(--muted); font-size: 14px; line-height: 1.6; }
     .state-msg strong { display: block; font-family: 'Barlow Condensed', sans-serif; font-size: 1.3rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text); margin-bottom: 0.35rem; }
     .state-msg a { color: var(--accent); text-decoration: none; }
+
+    .fc-open-btn { padding:7px 14px; font-family:'Barlow',sans-serif; font-size:12px; font-weight:600; border-radius:6px; border:1px solid rgba(167,139,250,0.4); background:rgba(167,139,250,0.08); color:#a78bfa; cursor:pointer; transition:all 0.15s; }
+    .fc-open-btn:hover { background:rgba(167,139,250,0.15); }
+    .fc-overlay { position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center;padding:1rem; }
+    .fc-dialog { background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:100%;max-width:720px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden; }
+    .fc-hdr { display:flex;align-items:center;padding:1rem 1.25rem;border-bottom:1px solid var(--border);flex-shrink:0; }
+    .fc-title { font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;flex:1; }
+    .fc-close { background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:2px 5px;border-radius:4px;line-height:1;transition:color 0.12s; }
+    .fc-close:hover { color:var(--text); }
+    .fc-body { padding:1.25rem;overflow-y:auto;flex:1; }
+    .fc-type-tabs { display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem; }
+    .fc-type-tab { padding:5px 12px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;border-radius:5px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;transition:all 0.15s; }
+    .fc-type-tab.active { color:var(--accent);border-color:rgba(57,211,83,0.4);background:rgba(57,211,83,0.08); }
+    .fc-dist-label { display:block;font-size:12px;color:var(--muted);margin-bottom:0.6rem; }
+    .fc-dist-ctrl { display:flex;align-items:center;gap:8px;margin-bottom:0.35rem; }
+    .fc-step-btn { width:28px;height:28px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:17px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.12s;flex-shrink:0; }
+    .fc-step-btn:hover { border-color:rgba(255,255,255,0.25); }
+    .fc-slider { flex:1;accent-color:#a78bfa;cursor:pointer; }
+    .fc-dist-val { font-size:12px;color:var(--muted);text-align:center; }
   </style>
 </head>
 <body>
@@ -315,6 +334,8 @@ supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 });
 const params    = new URLSearchParams(location.search);
 const targetUid = params.get('uid');
+let viewBagDiscs = [];
+let viewBagPrefDist = null;
 const pageMsg   = document.getElementById('page-msg');
 const bagWrap   = document.getElementById('bag-wrap');
 
@@ -373,6 +394,7 @@ if (!targetUid) {
       loadComments();
       pageMsg.style.display = 'none';
       bagWrap.style.display = '';
+      if (params.get('fc') === '1' && window._openViewFC) window._openViewFC();
     }).catch(e => {
       showError('Could not load bag. ' + (e.message || 'Check your connection.'));
     });
@@ -380,6 +402,8 @@ if (!targetUid) {
   function renderBag(data) {
     const discs  = decodeBagKeys(data.bag || []);
     const prefs  = data.prefs || {};
+    viewBagDiscs    = discs;
+    viewBagPrefDist = prefs.dist ? parseInt(prefs.dist) : null;
     const name   = data.display_name || 'Anonymous';
     const color  = AVATAR_COLORS.find(c => c.val === prefs.avatarColor) || AVATAR_COLORS[0];
     const ago    = timeAgo(data.updated_at);
@@ -409,9 +433,11 @@ if (!targetUid) {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
           <span id="like-label">Like</span>
         </button>
+        <button class="fc-open-btn" id="fc-btn">Flight Charts</button>
       </div>`;
 
     document.getElementById('like-btn').addEventListener('click', toggleLike);
+    document.getElementById('fc-btn').addEventListener('click', () => window._openViewFC && window._openViewFC());
     updateLikeBtn();
 
     let sectionsHtml = '';
@@ -557,7 +583,7 @@ if (!targetUid) {
     const wrap = document.createElement('div');
     wrap.className = 'reply-form-wrap';
     wrap.innerHTML = `
-      <textarea class="comment-textarea" placeholder="Write a reply… (Ctrl+Enter to post)" rows="1" style="font-size:12px;min-height:32px"></textarea>
+      <textarea class="comment-textarea" placeholder="Write a reply…" rows="1" style="font-size:12px;min-height:32px"></textarea>
       <button class="comment-submit" disabled style="font-size:12px;padding:6px 12px">Reply</button>`;
     thread.appendChild(wrap);
 
@@ -568,9 +594,6 @@ if (!targetUid) {
       ta.style.height = 'auto';
       ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
       btn.disabled = !ta.value.trim();
-    });
-    ta.addEventListener('keydown', e => {
-      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) postReply(parentId, thread, wrap);
     });
     btn.addEventListener('click', () => postReply(parentId, thread, wrap));
   }
@@ -619,7 +642,7 @@ if (!targetUid) {
     if (currentUser) {
       el.innerHTML = `
         <div class="comment-form-wrap">
-          <textarea class="comment-textarea" id="comment-textarea" placeholder="Add a comment… (Ctrl+Enter to post)" rows="1"></textarea>
+          <textarea class="comment-textarea" id="comment-textarea" placeholder="Add a comment…" rows="1"></textarea>
           <button class="comment-submit" id="comment-submit" disabled>Post</button>
         </div>
         <div id="comment-error" style="padding:0 1.25rem 0.6rem;font-size:12px;color:#f85149;min-height:0"></div>`;
@@ -629,9 +652,6 @@ if (!targetUid) {
         ta.style.height = 'auto';
         ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
         btn.disabled = !ta.value.trim();
-      });
-      ta.addEventListener('keydown', e => {
-        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) postComment();
       });
       btn.addEventListener('click', postComment);
     } else {
@@ -696,6 +716,159 @@ if (!targetUid) {
     }
   }
 }
+</script>
+
+<div class="fc-overlay" id="fc-overlay" style="display:none">
+  <div class="fc-dialog">
+    <div class="fc-hdr">
+      <span class="fc-title">Flight Charts</span>
+      <button class="fc-close" id="fc-close">×</button>
+    </div>
+    <div class="fc-body" id="fc-body"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const W = 660, H = 545, OX = 300, OY = 505;
+  const STAB = {
+    'very overstable':  { lat:-0.58, color:'#f78166', abbr:'VOS', lx:-1,    ly:-0.10, anchor:'end' },
+    'overstable':       { lat:-0.35, color:'#d29922', abbr:'OS',  lx:-0.85, ly:-0.53, anchor:'end' },
+    'neutral':          { lat: 0,    color:'#39d353', abbr:'NE',  lx: 0,    ly:-1,    anchor:'middle' },
+    'understable':      { lat:+0.35, color:'#58a6ff', abbr:'US',  lx: 0.85, ly:-0.53, anchor:'start' },
+    'very understable': { lat:+0.58, color:'#a371f7', abbr:'VUS', lx: 1,    ly:-0.10, anchor:'start' },
+  };
+  const CP = {
+    'very overstable':  { cp1dx:  0,    cp1t:0.72, cp2dx:+0.20, cp2t:0.07 },
+    'overstable':       { cp1dx:  0,    cp1t:0.70, cp2dx:+0.12, cp2t:0.10 },
+    'neutral-short':    { cp1dx:  0,    cp1t:0.50, cp2dx:  0,   cp2t:0.50 },
+    'neutral-long':     { cp1dx:+0.07,  cp1t:0.42, cp2dx:+0.05, cp2t:0.35 },
+    'understable':      { cp1dx:  0,    cp1t:0.65, cp2dx:-0.06, cp2t:0.15 },
+    'very understable': { cp1dx:+0.04,  cp1t:0.58, cp2dx:-0.12, cp2t:0.15 },
+  };
+  const CATS = [
+    { abbr:'Putt', typeKey:'putter',   label:'Putters',         endY:303, stabs:['overstable','neutral','understable'],                                                      lblDist:26 },
+    { abbr:'Mid',  typeKey:'midrange', label:'Midranges',        endY:213, stabs:['very overstable','overstable','neutral','understable','very understable'], lblDist:16 },
+    { abbr:'FW',   typeKey:'fairway',  label:'Fairway Drivers',  endY:123, stabs:['very overstable','overstable','neutral','understable','very understable'], lblDist:16 },
+    { abbr:'Dist', typeKey:'distance', label:'Distance Drivers', endY: 55, stabs:['very overstable','overstable','neutral','understable','very understable'], lblDist:16 },
+  ];
+  const BASE_DMULT = {
+    'very overstable':0.68,'overstable':0.85,'neutral':1.00,'understable':1.02,'very understable':0.97,
+  };
+  const LEGEND = [
+    { color:'#f78166', label:'Very Overstable', x: 90 },
+    { color:'#d29922', label:'Overstable',       x:205 },
+    { color:'#39d353', label:'Neutral',           x:315 },
+    { color:'#58a6ff', label:'Understable',       x:390 },
+    { color:'#a371f7', label:'Very Understable',  x:480 },
+  ];
+
+  function buildSVG(maxDist, typeFilter) {
+    const r = v => v.toFixed(1);
+    const MAX_VERT = OY - 55;
+    let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg">`;
+    s += `<line x1="${OX}" y1="${OY}" x2="${OX}" y2="12" stroke="rgba(255,255,255,0.18)" stroke-width="1" stroke-dasharray="3,5"/>`;
+    for (let ft = 100; ft <= maxDist; ft += 100) {
+      const y = r(OY - (ft / maxDist) * MAX_VERT);
+      s += `<line x1="10" y1="${y}" x2="${W-10}" y2="${y}" stroke="rgba(255,255,255,0.22)" stroke-width="1" stroke-dasharray="5,4"/>`;
+      s += `<text x="${W-14}" y="${r(parseFloat(y)-4)}" fill="rgba(255,255,255,0.65)" font-size="9.5" font-family="Barlow Condensed,sans-serif" font-weight="700" text-anchor="end">${ft} ft</text>`;
+    }
+    const visibleCATS = typeFilter && typeFilter !== 'all' ? CATS.filter(c => c.typeKey === typeFilter) : CATS;
+    for (const { abbr: ca, endY: catEndY, stabs, lblDist } of visibleCATS) {
+      const baseVert = OY - catEndY;
+      const isLong = ca === 'FW' || ca === 'Dist';
+      for (const key of stabs) {
+        const { lat, color, abbr: sa, lx, ly, anchor } = STAB[key];
+        const dmult = 1 - (1 - BASE_DMULT[key]) * Math.sqrt(baseVert / MAX_VERT);
+        const vert = baseVert * dmult;
+        const stabEndY = OY - vert;
+        const cpKey = key === 'neutral' ? (isLong ? 'neutral-long' : 'neutral-short') : key;
+        const { cp1dx, cp1t, cp2dx, cp2t } = CP[cpKey];
+        const ex = OX + lat * vert;
+        const cp1x = OX + cp1dx * vert, cp1y = OY - cp1t * vert;
+        const cp2x = ex + cp2dx * vert, cp2y = stabEndY + cp2t * vert;
+        const dx = ex - cp2x, dy = stabEndY - cp2y;
+        const len = Math.sqrt(dx*dx + dy*dy) || 1;
+        const nx = dx/len, ny = dy/len;
+        const sz = 4.5, px = -ny*sz, py = nx*sz;
+        const bx = ex - nx*sz*1.8, by = stabEndY - ny*sz*1.8;
+        s += `<path d="M ${OX} ${OY} C ${r(cp1x)} ${r(cp1y)}, ${r(cp2x)} ${r(cp2y)}, ${r(ex)} ${r(stabEndY)}" fill="none" stroke="${color}" stroke-width="1.8" stroke-linecap="round" opacity="0.85"/>`;
+        s += `<polygon points="${r(ex)},${r(stabEndY)} ${r(bx+px)},${r(by+py)} ${r(bx-px)},${r(by-py)}" fill="${color}" opacity="0.85"/>`;
+        const lbx = ex + lx * lblDist, lby = stabEndY + ly * lblDist;
+        s += `<text x="${r(lbx)}" y="${r(lby+3)}" fill="${color}" font-size="8.5" font-family="Barlow,sans-serif" font-weight="700" text-anchor="${anchor}" opacity="0.9">${ca}-${sa}</text>`;
+      }
+    }
+    s += `<circle cx="${OX}" cy="${OY}" r="4" fill="rgba(255,255,255,0.3)"/>`;
+    s += `<text x="${OX}" y="${OY+14}" fill="rgba(255,255,255,0.28)" font-size="8.5" font-family="Barlow Condensed,sans-serif" font-weight="700" text-anchor="middle" letter-spacing="0.06em">THROW ORIGIN</text>`;
+    s += `<text x="10" y="${H-12}" fill="rgba(255,255,255,0.3)" font-size="8" font-family="Barlow,sans-serif" font-weight="700">STABILITY:</text>`;
+    for (const { color, label, x } of LEGEND) {
+      s += `<circle cx="${x}" cy="${H-15}" r="4" fill="${color}" opacity="0.75"/>`;
+      s += `<text x="${x+8}" y="${H-11}" fill="${color}" font-size="8" font-family="Barlow,sans-serif" font-weight="700" opacity="0.75">${label}</text>`;
+    }
+    s += '</svg>';
+    return s;
+  }
+
+  function openFC() {
+    const body = document.getElementById('fc-body');
+    const initDist = viewBagPrefDist || 300;
+    let fcFilter = 'all';
+
+    const FC_TYPES = ['all','putter','midrange','fairway','distance'];
+    const FC_LABELS = { all:'All', putter:'Putters', midrange:'Midranges', fairway:'Fairways', distance:'Distance' };
+    const tabsHtml = `<div class="fc-type-tabs" id="fc-type-tabs">
+      ${FC_TYPES.map(t => `<button class="fc-type-tab${fcFilter === t ? ' active' : ''}" data-fc-type="${t}">${FC_LABELS[t]}</button>`).join('')}
+    </div>`;
+
+    if (viewBagPrefDist) {
+      body.innerHTML = `${tabsHtml}<div style="padding-bottom:1rem"><span class="fc-dist-label">Throw distance from profile: <strong style="color:var(--text)">${viewBagPrefDist} ft</strong></span></div><div id="fc-chart"></div>`;
+    } else {
+      body.innerHTML = `${tabsHtml}<div style="padding-bottom:1rem">
+        <span class="fc-dist-label">Max throw distance</span>
+        <div class="fc-dist-ctrl">
+          <button class="fc-step-btn" id="fc-dec">−</button>
+          <input class="fc-slider" type="range" id="fc-slider" min="100" max="500" step="25" value="${initDist}">
+          <button class="fc-step-btn" id="fc-inc">+</button>
+        </div>
+        <div class="fc-dist-val"><span id="fc-dist-num">${initDist}</span> ft</div>
+      </div><div id="fc-chart"></div>`;
+      document.getElementById('fc-slider').addEventListener('input', function() {
+        document.getElementById('fc-dist-num').textContent = this.value;
+        document.getElementById('fc-chart').innerHTML = buildSVG(parseInt(this.value), fcFilter);
+      });
+      document.getElementById('fc-dec').addEventListener('click', () => {
+        const sl = document.getElementById('fc-slider');
+        sl.value = Math.max(100, parseInt(sl.value) - 25);
+        sl.dispatchEvent(new Event('input'));
+      });
+      document.getElementById('fc-inc').addEventListener('click', () => {
+        const sl = document.getElementById('fc-slider');
+        sl.value = Math.min(500, parseInt(sl.value) + 25);
+        sl.dispatchEvent(new Event('input'));
+      });
+    }
+
+    document.getElementById('fc-type-tabs').addEventListener('click', e => {
+      const btn = e.target.closest('[data-fc-type]');
+      if (!btn) return;
+      fcFilter = btn.dataset.fcType;
+      document.querySelectorAll('.fc-type-tab').forEach(b => b.classList.toggle('active', b === btn));
+      const dist = viewBagPrefDist || parseInt(document.getElementById('fc-slider')?.value || initDist);
+      document.getElementById('fc-chart').innerHTML = buildSVG(dist, fcFilter);
+    });
+
+    document.getElementById('fc-chart').innerHTML = buildSVG(initDist, fcFilter);
+    document.getElementById('fc-overlay').style.display = 'flex';
+  }
+
+  function closeFC() { document.getElementById('fc-overlay').style.display = 'none'; }
+
+  window._openViewFC = openFC;
+
+  document.getElementById('fc-close').addEventListener('click', closeFC);
+  document.getElementById('fc-overlay').addEventListener('click', e => { if (e.target === document.getElementById('fc-overlay')) closeFC(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.getElementById('fc-overlay').style.display !== 'none') closeFC(); });
+})();
 </script>
 
 <script>
