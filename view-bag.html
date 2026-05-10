@@ -203,6 +203,9 @@
     .state-msg a { color: var(--accent); text-decoration: none; }
 
     .fc-open-btn { padding:7px 14px; font-family:'Barlow',sans-serif; font-size:12px; font-weight:600; border-radius:6px; border:1px solid rgba(167,139,250,0.4); background:rgba(167,139,250,0.08); color:#a78bfa; cursor:pointer; transition:all 0.15s; margin-left:auto; }
+    .fc-throw-bar { display:flex;gap:4px;padding:0.6rem 1.25rem;border-bottom:1px solid var(--border);flex-shrink:0; }
+    .fc-throw-btn { padding:4px 12px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border-radius:5px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;transition:all 0.15s; }
+    .fc-throw-btn.active { color:#58a6ff;border-color:rgba(88,166,255,0.4);background:rgba(88,166,255,0.08); }
     .fc-open-btn:hover { background:rgba(167,139,250,0.15); }
     .fc-overlay { position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center;padding:1rem; }
     .fc-dialog { background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:100%;max-width:720px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden; }
@@ -726,6 +729,10 @@ if (!targetUid) {
       <span class="fc-title">Flight Charts</span>
       <button class="fc-close" id="fc-close">×</button>
     </div>
+    <div class="fc-throw-bar" id="fc-throw-toggle">
+      <button class="fc-throw-btn active" data-throw="rhbh">RHBH / LHFH</button>
+      <button class="fc-throw-btn" data-throw="rhfh">RHFH / LHBH</button>
+    </div>
     <div class="fc-body" id="fc-body"></div>
   </div>
 </div>
@@ -765,6 +772,8 @@ if (!targetUid) {
     { color:'#a371f7', label:'Very Understable',  x:480 },
   ];
 
+  let _fcMirror = false;
+
   function getArrowLabels() {
     const labels = {};
     if (viewBagFcPositions) {
@@ -781,6 +790,8 @@ if (!targetUid) {
   function buildSVG(maxDist, typeFilter, arrowLabels) {
     arrowLabels = arrowLabels || {};
     const r = v => v.toFixed(1);
+    const m = _fcMirror ? -1 : 1;
+    const flipAnchor = a => _fcMirror ? (a === 'end' ? 'start' : a === 'start' ? 'end' : 'middle') : a;
     const MAX_VERT = OY - 55;
     let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg">`;
     s += `<line x1="${OX}" y1="${OY}" x2="${OX}" y2="12" stroke="rgba(255,255,255,0.18)" stroke-width="1" stroke-dasharray="3,5"/>`;
@@ -794,12 +805,14 @@ if (!targetUid) {
       const baseVert = OY - catEndY;
       const isLong = ca === 'FW' || ca === 'Dist';
       for (const key of stabs) {
-        const { lat, color, abbr: sa, lx, ly, anchor } = STAB[key];
+        const { lat: _lat, color, abbr: sa, lx: _lx, ly, anchor: _anchor } = STAB[key];
+        const lat = _lat * m, lx = _lx * m, anchor = flipAnchor(_anchor);
         const dmult = 1 - (1 - BASE_DMULT[key]) * Math.sqrt(baseVert / MAX_VERT);
         const vert = baseVert * dmult;
         const stabEndY = OY - vert;
         const cpKey = key === 'neutral' ? (isLong ? 'neutral-long' : 'neutral-short') : key;
-        const { cp1dx, cp1t, cp2dx, cp2t } = CP[cpKey];
+        const { cp1dx: _cp1dx, cp1t, cp2dx: _cp2dx, cp2t } = CP[cpKey];
+        const cp1dx = _cp1dx * m, cp2dx = _cp2dx * m;
         const ex = OX + lat * vert;
         const cp1x = OX + cp1dx * vert, cp1y = OY - cp1t * vert;
         const cp2x = ex + cp2dx * vert, cp2y = stabEndY + cp2t * vert;
@@ -840,6 +853,7 @@ if (!targetUid) {
     const initDist = viewBagPrefDist || 300;
     let fcFilter = 'all';
     const arrowLabels = getArrowLabels();
+    document.querySelectorAll('.fc-throw-btn').forEach(b => b.classList.toggle('active', b.dataset.throw === (_fcMirror ? 'rhfh' : 'rhbh')));
 
     const FC_TYPES = ['all','putter','midrange','fairway','distance'];
     const FC_LABELS = { all:'All', putter:'Putters', midrange:'Midranges', fairway:'Fairways', distance:'Distance' };
@@ -891,6 +905,18 @@ if (!targetUid) {
   function closeFC() { document.getElementById('fc-overlay').style.display = 'none'; }
 
   window._openViewFC = openFC;
+
+  document.getElementById('fc-throw-toggle').addEventListener('click', e => {
+    const btn = e.target.closest('[data-throw]');
+    if (!btn) return;
+    _fcMirror = btn.dataset.throw === 'rhfh';
+    document.querySelectorAll('.fc-throw-btn').forEach(b => b.classList.toggle('active', b === btn));
+    const chart = document.getElementById('fc-chart');
+    if (!chart) return;
+    const arrowLabels = getArrowLabels();
+    const dist = viewBagPrefDist || parseInt(document.getElementById('fc-slider')?.value || 300);
+    chart.innerHTML = buildSVG(dist, document.querySelector('.fc-type-tab.active')?.dataset?.fcType || 'all', arrowLabels);
+  });
 
   document.getElementById('fc-close').addEventListener('click', closeFC);
   document.getElementById('fc-overlay').addEventListener('click', e => { if (e.target === document.getElementById('fc-overlay')) closeFC(); });

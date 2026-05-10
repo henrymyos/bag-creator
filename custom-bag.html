@@ -236,7 +236,7 @@
     .fc-card-name { font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.04em;text-align:center; }
     .fc-card-nums { font-size:10px;color:var(--muted);text-align:center;letter-spacing:0.03em; }
     .fc-empty { text-align:center;color:var(--muted);font-size:13px;padding:2rem 0; }
-    .fc-throw-toggle { display:flex;gap:4px;margin-bottom:0.9rem; }
+    .fc-throw-bar { display:flex;gap:4px;padding:0.6rem 1.25rem;border-bottom:1px solid var(--border);flex-shrink:0; }
     .fc-throw-btn { padding:4px 12px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border-radius:5px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;transition:all 0.15s; }
     .fc-throw-btn.active { color:#58a6ff;border-color:rgba(88,166,255,0.4);background:rgba(88,166,255,0.08); }
     .fc-type-tabs { display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem; }
@@ -1166,6 +1166,10 @@ render();
       <span class="fc-title">Flight Charts</span>
       <button class="help-close" id="fc-close">×</button>
     </div>
+    <div class="fc-throw-bar" id="fc-throw-toggle">
+      <button class="fc-throw-btn active" data-throw="rhbh">RHBH / LHFH</button>
+      <button class="fc-throw-btn" data-throw="rhfh">RHFH / LHBH</button>
+    </div>
     <div class="fc-body" id="fc-body"></div>
   </div>
 </div>
@@ -1473,12 +1477,10 @@ render();
     const body = document.getElementById('fc-body');
     const initDist = profileDist || 300;
 
+    document.querySelectorAll('.fc-throw-btn').forEach(b => b.classList.toggle('active', b.dataset.throw === (_fcMirror ? 'rhfh' : 'rhbh')));
+
     const FC_TYPES = ['all','putter','midrange','fairway','distance'];
     const FC_LABELS = { all:'All', putter:'Putters', midrange:'Midranges', fairway:'Fairways', distance:'Distance' };
-    const throwToggleHtml = `<div class="fc-throw-toggle" id="fc-throw-toggle">
-      <button class="fc-throw-btn${!_fcMirror ? ' active' : ''}" data-throw="rhbh">RHBH / LHFH</button>
-      <button class="fc-throw-btn${_fcMirror  ? ' active' : ''}" data-throw="rhfh">RHFH / LHBH</button>
-    </div>`;
     const tabsHtml = `<div class="fc-type-tabs" id="fc-type-tabs">
       ${FC_TYPES.map(t => `<button class="fc-type-tab${_fcFilter === t ? ' active' : ''}" data-fc-type="${t}">${FC_LABELS[t]}</button>`).join('')}
     </div>`;
@@ -1489,12 +1491,12 @@ render();
 
     if (profileDist) {
       body.innerHTML =
-        `${bannerHtml}${throwToggleHtml}${tabsHtml}<div style="padding-bottom:1rem">
+        `${bannerHtml}${tabsHtml}<div style="padding-bottom:1rem">
            <span class="eval-dist-label">Throw distance from your profile: <strong style="color:var(--text)">${profileDist} ft</strong></span>
          </div><div id="fc-chart"></div>`;
     } else {
       body.innerHTML =
-        `${bannerHtml}${throwToggleHtml}${tabsHtml}<div style="padding-bottom:1rem">
+        `${bannerHtml}${tabsHtml}<div style="padding-bottom:1rem">
            <span class="eval-dist-label">Your max throw distance</span>
            <div class="eval-dist-ctrl">
              <button class="eval-step-btn" id="fc-dec">−</button>
@@ -1520,15 +1522,6 @@ render();
         sl.dispatchEvent(new Event('input'));
       });
     }
-
-    document.getElementById('fc-throw-toggle').addEventListener('click', e => {
-      const btn = e.target.closest('[data-throw]');
-      if (!btn) return;
-      _fcMirror = btn.dataset.throw === 'rhfh';
-      document.querySelectorAll('.fc-throw-btn').forEach(b => b.classList.toggle('active', b === btn));
-      const dist = profileDist || parseInt(document.getElementById('fc-slider')?.value || initDist);
-      document.getElementById('fc-chart').innerHTML = buildSVG(dist, _fcFilter);
-    });
 
     document.getElementById('fc-type-tabs').addEventListener('click', e => {
       const btn = e.target.closest('[data-fc-type]');
@@ -1565,6 +1558,17 @@ render();
   });
 
   window._openFC = openFC;
+
+  document.getElementById('fc-throw-toggle').addEventListener('click', e => {
+    const btn = e.target.closest('[data-throw]');
+    if (!btn) return;
+    _fcMirror = btn.dataset.throw === 'rhfh';
+    document.querySelectorAll('.fc-throw-btn').forEach(b => b.classList.toggle('active', b === btn));
+    const chart = document.getElementById('fc-chart');
+    if (!chart) return;
+    const dist = profileDist || parseInt(document.getElementById('fc-slider')?.value || 300);
+    chart.innerHTML = buildSVG(dist, _fcFilter);
+  });
 
   document.getElementById('fc-btn').addEventListener('click', () => openFC());
   function closeFC() {
