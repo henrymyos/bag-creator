@@ -236,6 +236,9 @@
     .fc-card-name { font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.04em;text-align:center; }
     .fc-card-nums { font-size:10px;color:var(--muted);text-align:center;letter-spacing:0.03em; }
     .fc-empty { text-align:center;color:var(--muted);font-size:13px;padding:2rem 0; }
+    .fc-throw-toggle { display:flex;gap:4px;margin-bottom:0.9rem; }
+    .fc-throw-btn { padding:4px 12px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border-radius:5px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;transition:all 0.15s; }
+    .fc-throw-btn.active { color:#58a6ff;border-color:rgba(88,166,255,0.4);background:rgba(88,166,255,0.08); }
     .fc-type-tabs { display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem; }
     .fc-type-tab { padding:5px 12px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;border-radius:5px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;transition:all 0.15s; }
     .fc-type-tab.active { color:var(--accent);border-color:rgba(57,211,83,0.4);background:rgba(57,211,83,0.08); }
@@ -1385,9 +1388,12 @@ render();
 
   let _fcAssignDisc = null;
   let _fcFilter = 'all';
+  let _fcMirror = false;
 
   function buildSVG(maxDist, typeFilter) {
     const r = v => v.toFixed(1);
+    const m = _fcMirror ? -1 : 1;
+    const flipAnchor = a => _fcMirror ? (a === 'end' ? 'start' : a === 'start' ? 'end' : 'middle') : a;
     const arrowLabels = getArrowLabels();
     const MAX_VERT = OY - 55; // 450px, distance driver baseline
     let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg">`;
@@ -1409,12 +1415,14 @@ render();
       const baseVert = OY - catEndY;
       const isLong = ca === 'FW' || ca === 'Dist';
       for (const key of stabs) {
-        const { lat, color, abbr: sa, lx, ly, anchor } = STAB[key];
+        const { lat: _lat, color, abbr: sa, lx: _lx, ly, anchor: _anchor } = STAB[key];
+        const lat = _lat * m, lx = _lx * m, anchor = flipAnchor(_anchor);
         const dmult = 1 - (1 - BASE_DMULT[key]) * Math.sqrt(baseVert / MAX_VERT);
         const vert = baseVert * dmult;
         const stabEndY = OY - vert;
         const cpKey = key === 'neutral' ? (isLong ? 'neutral-long' : 'neutral-short') : key;
-        const { cp1dx, cp1t, cp2dx, cp2t } = CP[cpKey];
+        const { cp1dx: _cp1dx, cp1t, cp2dx: _cp2dx, cp2t } = CP[cpKey];
+        const cp1dx = _cp1dx * m, cp2dx = _cp2dx * m;
         const ex = OX + lat * vert;
         const cp1x = OX + cp1dx * vert;
         const cp1y = OY - cp1t * vert;
@@ -1467,6 +1475,10 @@ render();
 
     const FC_TYPES = ['all','putter','midrange','fairway','distance'];
     const FC_LABELS = { all:'All', putter:'Putters', midrange:'Midranges', fairway:'Fairways', distance:'Distance' };
+    const throwToggleHtml = `<div class="fc-throw-toggle" id="fc-throw-toggle">
+      <button class="fc-throw-btn${!_fcMirror ? ' active' : ''}" data-throw="rhbh">RHBH / LHF</button>
+      <button class="fc-throw-btn${_fcMirror  ? ' active' : ''}" data-throw="rhfh">RHFH / LHBH</button>
+    </div>`;
     const tabsHtml = `<div class="fc-type-tabs" id="fc-type-tabs">
       ${FC_TYPES.map(t => `<button class="fc-type-tab${_fcFilter === t ? ' active' : ''}" data-fc-type="${t}">${FC_LABELS[t]}</button>`).join('')}
     </div>`;
@@ -1477,12 +1489,12 @@ render();
 
     if (profileDist) {
       body.innerHTML =
-        `${bannerHtml}${tabsHtml}<div style="padding-bottom:1rem">
+        `${bannerHtml}${throwToggleHtml}${tabsHtml}<div style="padding-bottom:1rem">
            <span class="eval-dist-label">Throw distance from your profile: <strong style="color:var(--text)">${profileDist} ft</strong></span>
          </div><div id="fc-chart"></div>`;
     } else {
       body.innerHTML =
-        `${bannerHtml}${tabsHtml}<div style="padding-bottom:1rem">
+        `${bannerHtml}${throwToggleHtml}${tabsHtml}<div style="padding-bottom:1rem">
            <span class="eval-dist-label">Your max throw distance</span>
            <div class="eval-dist-ctrl">
              <button class="eval-step-btn" id="fc-dec">−</button>
@@ -1508,6 +1520,15 @@ render();
         sl.dispatchEvent(new Event('input'));
       });
     }
+
+    document.getElementById('fc-throw-toggle').addEventListener('click', e => {
+      const btn = e.target.closest('[data-throw]');
+      if (!btn) return;
+      _fcMirror = btn.dataset.throw === 'rhfh';
+      document.querySelectorAll('.fc-throw-btn').forEach(b => b.classList.toggle('active', b === btn));
+      const dist = profileDist || parseInt(document.getElementById('fc-slider')?.value || initDist);
+      document.getElementById('fc-chart').innerHTML = buildSVG(dist, _fcFilter);
+    });
 
     document.getElementById('fc-type-tabs').addEventListener('click', e => {
       const btn = e.target.closest('[data-fc-type]');
