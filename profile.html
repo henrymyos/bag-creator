@@ -358,6 +358,10 @@ function renderProfile(user) {
     <div class="section">
       <div class="section-title">Bag Info</div>
       <div class="field">
+        <label>PDGA Number</label>
+        <input type="text" id="prof-pdga" placeholder="e.g. 12345" maxlength="10" inputmode="numeric" />
+      </div>
+      <div class="field">
         <label>Max Throw Distance (ft)</label>
         <input type="number" id="prof-dist" min="100" max="600" step="25" placeholder="e.g. 300" />
       </div>
@@ -445,6 +449,7 @@ function renderProfile(user) {
 
   // Load all prefs: bag info + appearance
   (async () => {
+    const pdgaInput    = document.getElementById('prof-pdga');
     const distInput    = document.getElementById('prof-dist');
     const bagSizeInput = document.getElementById('prof-bagsize');
     const bagStatus    = document.getElementById('bag-settings-status');
@@ -466,6 +471,7 @@ function renderProfile(user) {
       const { data } = await supabase.from('bags').select('prefs').eq('user_id', user.id).single();
       const p = data?.prefs || {};
       currentPrefs = p;
+      if (p.pdgaNumber)  pdgaInput.value    = p.pdgaNumber;
       if (p.dist)        distInput.value    = p.dist;
       if (p.bagSize)     bagSizeInput.value = p.bagSize;
       if (p.avatarColor) currentColor       = p.avatarColor;
@@ -562,10 +568,11 @@ function renderProfile(user) {
     document.getElementById('save-bag-settings-btn').addEventListener('click', async () => {
       const btn = document.getElementById('save-bag-settings-btn');
       btn.disabled = true;
+      const newPdga    = pdgaInput.value.trim().replace(/\D/g, '') || null;
       const newDist    = Math.max(100, Math.min(600, parseInt(distInput.value)    || 300));
       const newBagSize = Math.max(0,   Math.min(36,  parseInt(bagSizeInput.value) || 0));
       try {
-        await savePrefs({ dist: newDist, bagSize: newBagSize });
+        await savePrefs({ pdgaNumber: newPdga, dist: newDist, bagSize: newBagSize });
         bagStatus.textContent = 'Saved.'; bagStatus.className = 'status-msg success';
       } catch (e) {
         bagStatus.textContent = e.message; bagStatus.className = 'status-msg error';
