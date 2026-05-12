@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>My Bag — Bag Creator</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
@@ -61,6 +64,17 @@
     .nav-link { font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none; letter-spacing: 0.05em; padding: 6px 16px; border: 1px solid var(--border2); border-radius: 6px; transition: all 0.15s; white-space: nowrap; }
     .nav-link:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
     .nav-link.active { background: rgba(57,211,83,0.12); border-color: rgba(57,211,83,0.4); color: var(--accent); }
+    .nav-link-profile { display: inline-flex; align-items: center; gap: 7px; padding: 5px 14px 5px 6px; }
+    .nav-avatar {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(57,211,83,0.2); color: var(--accent);
+      font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; flex-shrink: 0;
+    }
+    .nav-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .mobile-menu-link.nav-link-profile { display: flex; align-items: center; gap: 9px; padding-left: 14px; }
+    .mobile-menu-link .nav-avatar { width: 24px; height: 24px; font-size: 12px; }
 
     /* HERO */
     .hero {
@@ -169,6 +183,7 @@
 
     /* ── BAG PANEL ── */
     .bag-panel { padding: 1.5rem 2rem 3rem; }
+    .bag-selector-row { margin-bottom: 0.85rem; }
     .bag-actions {
       display: grid;
       grid-template-areas: "info btns gap right";
@@ -186,6 +201,95 @@
     .bag-right { grid-area: right; display: flex; align-items: center; gap: 0.6rem; }
     .bag-count { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 600; color: var(--muted); }
     .bag-count strong { color: var(--text); font-size: 20px; font-weight: 700; margin-right: 2px; }
+    .bag-selector-wrap { display: flex; align-items: center; gap: 0.35rem; position: relative; }
+    .bag-selector-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 8px 6px 12px;
+      background: var(--bg2); border: 1px solid var(--border2); border-radius: 6px;
+      color: var(--text); font-family: 'Barlow Condensed', sans-serif;
+      font-size: 14px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+      cursor: pointer; transition: all 0.15s;
+      min-width: 0;
+    }
+    .bag-selector-btn:hover { border-color: rgba(255,255,255,0.25); }
+    .bag-selector-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px; }
+    .bag-selector-caret { flex-shrink: 0; opacity: 0.55; transition: transform 0.15s; }
+    .bag-selector-wrap.open .bag-selector-caret { transform: rotate(180deg); }
+    .bag-new-btn {
+      display: flex; align-items: center; gap: 5px;
+      padding: 6px 11px;
+      background: rgba(57,211,83,0.08); border: 1px solid rgba(57,211,83,0.4); border-radius: 6px;
+      color: var(--accent); font-family: 'Barlow', sans-serif;
+      font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+    }
+    .bag-new-btn:hover { background: rgba(57,211,83,0.15); border-color: rgba(57,211,83,0.55); }
+    .bag-dropdown {
+      position: absolute; top: 100%; left: 0; margin-top: 6px;
+      min-width: 260px; max-width: 340px;
+      background: var(--bg2); border: 1px solid var(--border2); border-radius: 8px;
+      padding: 4px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      z-index: 80; max-height: 360px; overflow-y: auto;
+    }
+    .bag-dropdown-empty { padding: 12px; font-size: 12px; color: var(--muted); text-align: center; }
+    .bag-dropdown-item {
+      display: flex; align-items: center; gap: 4px;
+      padding: 7px 6px 7px 10px; border-radius: 5px; transition: background 0.12s;
+    }
+    .bag-dropdown-item:hover { background: var(--bg3); }
+    .bag-dropdown-item.active { background: rgba(57,211,83,0.10); }
+    .bag-dropdown-item.active .bag-dropdown-name { color: var(--accent); }
+    .bag-dropdown-main { flex: 1; min-width: 0; cursor: pointer; }
+    .bag-dropdown-name {
+      font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700;
+      letter-spacing: 0.04em; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .bag-dropdown-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .bag-dropdown-actions { display: flex; gap: 1px; flex-shrink: 0; }
+    .bag-dropdown-action-btn {
+      width: 26px; height: 26px;
+      display: flex; align-items: center; justify-content: center;
+      background: none; border: none; border-radius: 4px;
+      color: var(--muted); cursor: pointer; transition: all 0.12s;
+    }
+    .bag-dropdown-action-btn:hover { background: var(--bg2); color: var(--text); }
+    .bag-dropdown-action-btn.delete:hover { color: #f85149; }
+    .bag-dropdown-action-btn.confirm { color: var(--accent); }
+    .bag-dropdown-action-btn.confirm:hover { background: rgba(57,211,83,0.15); color: var(--accent); }
+    .bag-dropdown-action-btn.cancel:hover { color: #f85149; }
+    .bag-dropdown-action-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .bag-dropdown-action-btn:disabled:hover { background: none; color: var(--muted); }
+    .bag-dropdown-item.editing { background: var(--bg3); }
+    .bag-dropdown-item.editing.active { background: rgba(57,211,83,0.10); }
+    .bag-rename-input {
+      width: 100%; box-sizing: border-box;
+      background: var(--bg2); border: 1px solid var(--accent); border-radius: 5px;
+      padding: 5px 8px; color: var(--text);
+      font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700;
+      letter-spacing: 0.04em; outline: none;
+    }
+    .bag-rename-input:focus { box-shadow: 0 0 0 2px rgba(57,211,83,0.18); }
+    .bag-confirm-delete {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 10px; border-radius: 5px;
+      background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.4);
+      margin-top: 4px;
+    }
+    .bag-confirm-delete-text {
+      flex: 1; font-size: 12px; color: var(--text);
+      font-family: 'Barlow', sans-serif;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .bag-confirm-delete-text strong { color: #f85149; }
+    .bag-confirm-delete-btn {
+      padding: 4px 10px; border-radius: 4px; border: 1px solid var(--border2);
+      background: var(--bg2); color: var(--muted);
+      font-family: 'Barlow', sans-serif; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.04em; cursor: pointer; transition: all 0.12s; flex-shrink: 0;
+    }
+    .bag-confirm-delete-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
+    .bag-confirm-delete-btn.danger { color: #f85149; border-color: rgba(248,81,73,0.4); background: rgba(248,81,73,0.08); }
+    .bag-confirm-delete-btn.danger:hover { background: rgba(248,81,73,0.18); color: #f85149; border-color: rgba(248,81,73,0.6); }
     .action-btn {
       padding: 7px 14px; font-family: 'Barlow', sans-serif; font-size: 12px; font-weight: 600;
       border-radius: 6px; border: 1px solid var(--border2); background: var(--bg2);
@@ -335,17 +439,6 @@
     .auth-banner a:hover { background: rgba(57,211,83,0.16); }
     .save-status { font-size: 11px; color: var(--muted); transition: color 0.2s; }
     .save-status.saved { color: var(--accent); }
-    .user-badge {
-      display: none; align-items: center; gap: 7px;
-      font-size: 12px; color: var(--muted);
-    }
-    .user-avatar {
-      width: 24px; height: 24px; border-radius: 50%;
-      background: rgba(57,211,83,0.2); color: var(--accent);
-      font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700;
-      display: flex; align-items: center; justify-content: center;
-      overflow: hidden; flex-shrink: 0;
-    }
 
     /* MOBILE */
     @media (max-width: 500px) {
@@ -436,7 +529,7 @@
   </nav>
   <div class="nav-right">
     <button class="nav-link nav-help-btn" id="help-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Help</button>
-    <a class="nav-link" href="profile.html" id="nav-profile" style="display:none">Profile</a>
+    <a class="nav-link nav-link-profile" href="profile.html" id="nav-profile" style="display:none"><span class="nav-avatar" id="nav-avatar"></span>Profile</a>
     <a class="nav-link" href="login.html" id="nav-auth">Sign In</a>
   </div>
   <button class="hamburger-btn" id="hamburger-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg> Menu</button>
@@ -449,7 +542,7 @@
   <a class="mobile-menu-link" href="social.html">Community</a>
   <div class="mobile-menu-divider"></div>
   <button class="mobile-menu-link" id="help-btn-mobile">? Help</button>
-  <a class="mobile-menu-link" href="profile.html" id="nav-profile-mobile" style="display:none">Profile</a>
+  <a class="mobile-menu-link nav-link-profile" href="profile.html" id="nav-profile-mobile" style="display:none"><span class="nav-avatar" id="nav-avatar-mobile"></span>Profile</a>
   <a class="mobile-menu-link" href="login.html" id="nav-auth-mobile">Sign In</a>
 </div>
 
@@ -505,6 +598,19 @@
 
   <!-- BAG -->
   <div class="bag-panel">
+    <div class="bag-selector-row" id="bag-selector-row" style="display:none">
+      <div class="bag-selector-wrap" id="bag-selector-wrap">
+        <button class="bag-selector-btn" id="bag-selector-btn" type="button">
+          <span class="bag-selector-name" id="active-bag-name">My Bag</span>
+          <svg class="bag-selector-caret" width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 8,11 13,6"/></svg>
+        </button>
+        <button class="bag-new-btn" id="bag-new-btn" type="button">
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>
+          New Bag
+        </button>
+        <div class="bag-dropdown" id="bag-dropdown" style="display:none"></div>
+      </div>
+    </div>
     <div class="bag-actions">
       <div class="bag-info">
         <div class="bag-count" id="bag-count"><strong>0</strong> discs</div>
@@ -523,10 +629,6 @@
       </div>
       <div class="bag-gap"></div>
       <div class="bag-right">
-        <div class="user-badge" id="user-badge">
-          <div class="user-avatar" id="user-avatar"></div>
-          <span id="user-email"></span>
-        </div>
         <button class="action-btn undo-btn" id="undo-btn" style="display:none">Undo</button>
         <button class="action-btn" id="clear-btn">Clear</button>
       </div>
@@ -538,7 +640,7 @@
 
 <footer>Flight numbers: Speed · Glide · Turn · Fade &nbsp;|&nbsp; Data based on manufacturer specs</footer>
 
-<script src="supabase-config.js"></script>
+<script src="supabase-config.js?v=2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="discs.js"></script>
 <script>
@@ -585,6 +687,16 @@ let myBagIds = [];   // parallel to myBag — unique per disc instance
 let _nextId = 1;
 const newId = () => String(_nextId++);
 
+// Multi-bag state (signed-in users only)
+let bags = [];            // [{ id, name, discs:[keys], fcPositions:{idx:arrowKey} }]
+let activeBagId = null;
+let _nextBagId = 1;
+const newBagId = () => 'b' + (_nextBagId++);
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function getActiveBag() { return bags.find(b => b.id === activeBagId) || null; }
+
 let profileDist = null;
 const urlParam = new URLSearchParams(location.search).get('bag');
 const urlAdd   = new URLSearchParams(location.search).get('add');
@@ -612,45 +724,26 @@ function getUserLabel(user) {
   return user.user_metadata?.displayName || user.user_metadata?.full_name || user.email || '';
 }
 
-function applyAvatarBadge(colorVal, photoData, initial) {
-  const el = document.getElementById('user-avatar');
-  if (!el) return;
-  const hex = colorVal || '#39d353';
-  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
-  if (photoData) {
-    el.innerHTML = `<img src="${photoData}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;">`;
-    el.style.background = 'none';
-    el.style.color = '';
-  } else {
-    el.innerHTML = initial || '?';
-    el.style.background = `rgba(${r},${g},${b},0.2)`;
-    el.style.color = hex;
-  }
-}
+const applyAvatarBadge = applyNavAvatar;
 
 function updateAuthUI() {
   const banner      = document.getElementById('auth-banner');
-  const badge       = document.getElementById('user-badge');
   const navAuth     = document.getElementById('nav-auth');
   const navProfile  = document.getElementById('nav-profile');
   const navAuthM    = document.getElementById('nav-auth-mobile');
   const navProfileM = document.getElementById('nav-profile-mobile');
   if (currentUser) {
     banner.style.display  = 'none';
-    badge.style.display   = 'flex';
     if (navProfile)  navProfile.style.display  = '';
     if (navProfileM) navProfileM.style.display = '';
     const label   = getUserLabel(currentUser);
     const initial = label[0]?.toUpperCase() || '?';
-    const avatarEl = document.getElementById('user-avatar');
-    avatarEl.dataset.initial = initial;
-    avatarEl.textContent = initial;
-    document.getElementById('user-email').textContent = label;
+    applyAvatarBadge(null, null, initial);
+    loadNavAvatar(supabase, currentUser);
     if (navAuth)  { navAuth.textContent  = 'Sign Out'; navAuth.href  = '#'; navAuth.onclick  = e => { e.preventDefault(); signOutAndRedirect(supabase, 'index.html'); }; }
     if (navAuthM) { navAuthM.textContent = 'Sign Out'; navAuthM.href = '#'; navAuthM.onclick = e => { e.preventDefault(); signOutAndRedirect(supabase, 'index.html'); }; }
   } else {
     banner.style.display  = 'flex';
-    badge.style.display   = 'none';
     if (navProfile)  navProfile.style.display  = 'none';
     if (navProfileM) navProfileM.style.display = 'none';
     if (navAuth)  { navAuth.textContent  = 'Sign In'; navAuth.href  = 'login.html?from=custom-bag.html'; navAuth.onclick  = null; }
@@ -661,6 +754,36 @@ function updateAuthUI() {
 function _getAuthToken() {
   const key = Object.keys(localStorage).find(k => k.startsWith('sb-') && k.includes('-auth-token'));
   try { return (key && JSON.parse(localStorage.getItem(key)))?.access_token ?? null; } catch { return null; }
+}
+
+function decodeBagKeysToDiscs(keys) {
+  return (keys || []).flatMap(key => {
+    const [brand, type, ...rest] = key.split('|');
+    const d = DISCS.find(d => d.brand === brand && d.type === type && d.name === rest.join('|'));
+    return d ? [d] : [];
+  });
+}
+
+function loadActiveBagIntoState() {
+  const active = getActiveBag();
+  if (!active) { myBag = []; myBagIds = []; fcAssignments = {}; return; }
+  myBag = decodeBagKeysToDiscs(active.discs);
+  myBagIds = myBag.map(() => newId());
+  fcAssignments = {};
+  Object.entries(active.fcPositions || {}).forEach(([idx, arrowKey]) => {
+    const id = myBagIds[parseInt(idx)];
+    if (id) fcAssignments[id] = arrowKey;
+  });
+  try { localStorage.setItem('bc_fc_assignments', JSON.stringify(fcAssignments)); } catch {}
+}
+
+function syncStateIntoActiveBag() {
+  const active = getActiveBag();
+  if (!active) return;
+  active.discs = myBag.map(discKey);
+  const fp = {};
+  myBagIds.forEach((id, idx) => { if (fcAssignments[id]) fp[idx] = fcAssignments[id]; });
+  active.fcPositions = fp;
 }
 
 async function loadFromDB() {
@@ -674,6 +797,8 @@ async function loadFromDB() {
     if (!res.ok) { render(); return; }
     const rows = await res.json();
     const data = rows[0] ?? null;
+    const urlBagDiscs = myBag.length ? myBag.map(discKey) : null;
+
     if (data) {
       const p = data.prefs || {};
       currentPrefs = p;
@@ -682,17 +807,33 @@ async function loadFromDB() {
         applyAvatarBadge(p.avatarColor, p.avatarPhoto, initial);
       }
       if (p.dist) profileDist = parseInt(p.dist);
+
+      if (Array.isArray(p.bags) && p.bags.length > 0) {
+        bags = p.bags.map(b => ({
+          id: b.id || newBagId(),
+          name: b.name || 'My Bag',
+          discs: Array.isArray(b.discs) ? b.discs : [],
+          fcPositions: b.fcPositions || {}
+        }));
+        bags.forEach(b => { const m = String(b.id).match(/^b(\d+)$/); if (m) _nextBagId = Math.max(_nextBagId, parseInt(m[1]) + 1); });
+        activeBagId = (p.activeBagId && bags.find(b => b.id === p.activeBagId)) ? p.activeBagId : bags[0].id;
+      } else {
+        const id = newBagId();
+        bags = [{
+          id,
+          name: 'My Bag',
+          discs: Array.isArray(data.bag) ? data.bag : [],
+          fcPositions: p.fcPositions || {}
+        }];
+        activeBagId = id;
+      }
+    } else {
+      const id = newBagId();
+      bags = [{ id, name: 'My Bag', discs: urlBagDiscs || [], fcPositions: {} }];
+      activeBagId = id;
     }
-    if (data?.bag?.length) {
-      myBag = data.bag.flatMap(key => {
-        const [brand, type, ...rest] = key.split('|');
-        const d = DISCS.find(d => d.brand === brand && d.type === type && d.name === rest.join('|'));
-        return d ? [d] : [];
-      });
-      myBagIds = myBag.map(() => newId());
-    } else if (myBag.length) {
-      await saveToDB();
-    }
+
+    loadActiveBagIntoState();
 
     if (urlAdd) {
       const toAdd = decodeBag(urlAdd);
@@ -703,6 +844,8 @@ async function loadFromDB() {
       if (merged.length) await saveToDB();
       const cleanUrl = location.pathname + (myBag.length ? `?bag=${encodeBag(myBag)}` : '');
       history.replaceState(null, '', cleanUrl);
+    } else if (!data && urlBagDiscs) {
+      await saveToDB();
     }
 
     updateURL();
@@ -738,6 +881,16 @@ async function saveToDB() {
   if (!currentUser) return null;
   const token = _getAuthToken();
   if (!token) return 'No auth token — please sign out and back in';
+  syncStateIntoActiveBag();
+  const active = getActiveBag();
+  const mergedPrefs = {
+    ...currentPrefs,
+    bags: bags,
+    activeBagId: activeBagId,
+    fcPositions: active?.fcPositions || {}
+  };
+  currentPrefs = mergedPrefs;
+  const activeDiscs = active?.discs || myBag.map(discKey);
   const ctrl = new AbortController();
   const tid = setTimeout(() => ctrl.abort(), 8000);
   try {
@@ -752,7 +905,7 @@ async function saveToDB() {
           'Content-Type': 'application/json',
           'Prefer': 'resolution=merge-duplicates,return=minimal'
         },
-        body: JSON.stringify({ user_id: currentUser.id, bag: myBag.map(discKey) })
+        body: JSON.stringify({ user_id: currentUser.id, bag: activeDiscs, prefs: mergedPrefs })
       }
     );
     clearTimeout(tid);
@@ -774,6 +927,8 @@ async function applyAuthState(user) {
   } else if (!_authApplied) {
     myBag = [];
     myBagIds = [];
+    bags = [];
+    activeBagId = null;
     profileDist = null;
     if (urlAdd) {
       const toAdd = decodeBag(urlAdd);
@@ -789,6 +944,10 @@ async function applyAuthState(user) {
 }
 supabase.auth.onAuthStateChange(async (event, session) => applyAuthState(session?.user ?? null));
 getSupabaseSession(supabase).then(session => applyAuthState(session?.user ?? null));
+window.addEventListener('pageshow', e => {
+  if (e.persisted) { window.location.reload(); return; }
+  if (currentUser) loadNavAvatar(supabase, currentUser);
+});
 
 // ──────────────────────────────────────────────────────────
 
@@ -934,9 +1093,165 @@ function renderBag() {
   display.innerHTML = `<div class="bag-groups">${groups}</div>`;
 }
 
+let editingBagId  = null;
+let deletingBagId = null;
+
+function renderBagSelector() {
+  const row = document.getElementById('bag-selector-row');
+  if (!row) return;
+  if (!currentUser || !bags.length) { row.style.display = 'none'; return; }
+  row.style.display = '';
+  const active = getActiveBag();
+  document.getElementById('active-bag-name').textContent = active?.name || 'My Bag';
+  if (document.getElementById('bag-dropdown').style.display !== 'none') renderBagDropdown();
+}
+
+function renderBagDropdown() {
+  const dd = document.getElementById('bag-dropdown');
+  if (!bags.length) { dd.innerHTML = '<div class="bag-dropdown-empty">No bags yet</div>'; return; }
+  const canDelete = bags.length > 1;
+  dd.innerHTML = bags.map(b => {
+    const count = (b.discs || []).length;
+    const isEditing  = editingBagId  === b.id;
+    const isDeleting = deletingBagId === b.id;
+    const mainAttrs = isEditing ? '' : ' data-action="select"';
+    const mainInner = isEditing
+      ? `<input class="bag-rename-input" type="text" value="${escapeHtml(b.name)}" maxlength="40" />
+         <div class="bag-dropdown-meta">${count} disc${count !== 1 ? 's' : ''}</div>`
+      : `<div class="bag-dropdown-name">${escapeHtml(b.name)}</div>
+         <div class="bag-dropdown-meta">${count} disc${count !== 1 ? 's' : ''}</div>`;
+    const actions = isEditing
+      ? `<button class="bag-dropdown-action-btn confirm" data-action="confirm-rename" title="Save" type="button">
+           <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,8.5 7,12 13,4"/></svg>
+         </button>
+         <button class="bag-dropdown-action-btn cancel" data-action="cancel-rename" title="Cancel" type="button">
+           <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3.5" y1="3.5" x2="12.5" y2="12.5"/><line x1="12.5" y1="3.5" x2="3.5" y2="12.5"/></svg>
+         </button>`
+      : `<button class="bag-dropdown-action-btn" data-action="rename" title="Rename" type="button">
+           <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 1.7L14.3 4.5L5 13.8H2.2V11L11.5 1.7Z"/></svg>
+         </button>
+         <button class="bag-dropdown-action-btn delete" data-action="delete" title="Delete" type="button"${canDelete ? '' : ' disabled'}>
+           <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,4 14,4"/><path d="M5 4V2.5C5 2 5.5 1.5 6 1.5H10C10.5 1.5 11 2 11 2.5V4"/><path d="M3.5 4L4.3 13.5C4.35 14.1 4.85 14.5 5.4 14.5H10.6C11.15 14.5 11.65 14.1 11.7 13.5L12.5 4"/></svg>
+         </button>`;
+    const deleteRow = isDeleting
+      ? `<div class="bag-confirm-delete">
+           <div class="bag-confirm-delete-text">Delete <strong>${escapeHtml(b.name)}</strong>?</div>
+           <button class="bag-confirm-delete-btn" data-action="cancel-delete" type="button">Cancel</button>
+           <button class="bag-confirm-delete-btn danger" data-action="confirm-delete" type="button">Delete</button>
+         </div>`
+      : '';
+    return `<div class="bag-dropdown-item${b.id === activeBagId ? ' active' : ''}${isEditing ? ' editing' : ''}" data-bag-id="${b.id}">
+        <div class="bag-dropdown-main"${mainAttrs}>${mainInner}</div>
+        <div class="bag-dropdown-actions">${actions}</div>
+      </div>${deleteRow}`;
+  }).join('');
+}
+
+function openBagDropdown()  { renderBagDropdown(); document.getElementById('bag-selector-wrap').classList.add('open'); document.getElementById('bag-dropdown').style.display = ''; }
+function closeBagDropdown() { document.getElementById('bag-selector-wrap').classList.remove('open'); document.getElementById('bag-dropdown').style.display = 'none'; }
+function toggleBagDropdown() { if (document.getElementById('bag-dropdown').style.display === 'none') openBagDropdown(); else closeBagDropdown(); }
+
+async function switchToBag(id) {
+  if (editingBagId || deletingBagId) return;
+  if (id === activeBagId) { closeBagDropdown(); return; }
+  if (!bags.find(b => b.id === id)) return;
+  syncStateIntoActiveBag();
+  activeBagId = id;
+  loadActiveBagIntoState();
+  hideUndo();
+  updateURL();
+  render();
+  closeBagDropdown();
+  await saveToDB();
+}
+
+function focusRenameInput() {
+  requestAnimationFrame(() => {
+    const input = document.querySelector('.bag-dropdown-item.editing .bag-rename-input');
+    if (input) { input.focus(); input.select(); }
+  });
+}
+
+function startRenameInline(id) {
+  if (!bags.find(b => b.id === id)) return;
+  editingBagId = id;
+  deletingBagId = null;
+  openBagDropdown();
+  focusRenameInput();
+}
+
+async function commitRenameInline() {
+  const id = editingBagId;
+  if (!id) return;
+  const input = document.querySelector(`.bag-dropdown-item[data-bag-id="${id}"] .bag-rename-input`);
+  const newName = input ? input.value.trim() : '';
+  const bag = bags.find(b => b.id === id);
+  editingBagId = null;
+  if (bag && newName) bag.name = newName;
+  renderBagSelector();
+  renderBagDropdown();
+  if (bag && newName) await saveToDB();
+}
+
+function cancelRenameInline() {
+  if (!editingBagId) return;
+  editingBagId = null;
+  renderBagSelector();
+  renderBagDropdown();
+}
+
+function createNewBag() {
+  if (!currentUser) return;
+  syncStateIntoActiveBag();
+  const id = newBagId();
+  bags.push({ id, name: `Bag ${bags.length + 1}`, discs: [], fcPositions: {} });
+  activeBagId = id;
+  loadActiveBagIntoState();
+  hideUndo();
+  updateURL();
+  render();
+  startRenameInline(id);
+  saveToDB();
+}
+
+function startDeleteInline(id) {
+  if (bags.length <= 1) return;
+  if (!bags.find(b => b.id === id)) return;
+  deletingBagId = id;
+  editingBagId = null;
+  openBagDropdown();
+}
+
+function cancelDeleteInline() {
+  if (!deletingBagId) return;
+  deletingBagId = null;
+  renderBagDropdown();
+}
+
+async function confirmDeleteInline() {
+  const id = deletingBagId;
+  if (!id || bags.length <= 1) return;
+  deletingBagId = null;
+  const wasActive = id === activeBagId;
+  if (wasActive) syncStateIntoActiveBag();
+  bags = bags.filter(b => b.id !== id);
+  if (wasActive) {
+    activeBagId = bags[0].id;
+    loadActiveBagIntoState();
+    hideUndo();
+    updateURL();
+    render();
+  } else {
+    renderBagSelector();
+    renderBagDropdown();
+  }
+  await saveToDB();
+}
+
 function render() {
   renderBrowser();
   renderBag();
+  renderBagSelector();
 }
 
 // EVENTS
@@ -1072,6 +1387,37 @@ undoBtn.addEventListener('click', () => {
   scheduleSave();
   render();
   hideUndo();
+});
+
+document.getElementById('bag-selector-btn').addEventListener('click', e => { e.stopPropagation(); toggleBagDropdown(); });
+document.getElementById('bag-new-btn').addEventListener('click', e => { e.stopPropagation(); createNewBag(); });
+document.getElementById('bag-dropdown').addEventListener('click', e => {
+  const actionEl = e.target.closest('[data-action]');
+  const action = actionEl?.dataset.action;
+  if (!action) return;
+  const item = e.target.closest('[data-bag-id]');
+  const id = item?.dataset.bagId;
+  if (action === 'confirm-rename') { e.stopPropagation(); commitRenameInline(); }
+  else if (action === 'cancel-rename') { e.stopPropagation(); cancelRenameInline(); }
+  else if (action === 'rename') { e.stopPropagation(); startRenameInline(id); }
+  else if (action === 'delete') { if (actionEl.disabled) return; e.stopPropagation(); startDeleteInline(id); }
+  else if (action === 'confirm-delete') { e.stopPropagation(); confirmDeleteInline(); }
+  else if (action === 'cancel-delete') { e.stopPropagation(); cancelDeleteInline(); }
+  else if (action === 'select') { switchToBag(id); }
+});
+document.getElementById('bag-dropdown').addEventListener('keydown', e => {
+  if (!e.target.matches('.bag-rename-input')) return;
+  if (e.key === 'Enter')      { e.preventDefault(); commitRenameInline(); }
+  else if (e.key === 'Escape'){ e.preventDefault(); cancelRenameInline(); }
+});
+document.getElementById('bag-dropdown').addEventListener('click', e => {
+  if (e.target.matches('.bag-rename-input')) e.stopPropagation();
+});
+document.addEventListener('click', e => {
+  if (e.target.closest('#bag-selector-wrap')) return;
+  if (editingBagId)  commitRenameInline();
+  if (deletingBagId) cancelDeleteInline();
+  closeBagDropdown();
 });
 
 render();
@@ -1366,17 +1712,7 @@ render();
   function saveFcAssignments() {
     localStorage.setItem('bc_fc_assignments', JSON.stringify(fcAssignments));
     if (!currentUser) return;
-    const posMap = {};
-    myBagIds.forEach((id, idx) => { if (fcAssignments[id]) posMap[idx] = fcAssignments[id]; });
-    const token = _getAuthToken();
-    if (!token) return;
-    const merged = { ...currentPrefs, fcPositions: posMap };
-    currentPrefs = merged;
-    fetch(`${SUPABASE_URL}/rest/v1/bags?on_conflict=user_id`, {
-      method: 'POST',
-      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify({ user_id: currentUser.id, prefs: merged })
-    });
+    saveToDB();
   }
 
   function getArrowLabels() {

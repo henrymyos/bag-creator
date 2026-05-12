@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Profile — Bag Creator</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
@@ -34,6 +37,17 @@
     .nav-link { font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none; letter-spacing: 0.05em; padding: 6px 16px; border: 1px solid var(--border2); border-radius: 6px; transition: all 0.15s; white-space: nowrap; }
     .nav-link:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
     .nav-link.active { background: rgba(57,211,83,0.12); border-color: rgba(57,211,83,0.4); color: var(--accent); }
+    .nav-link-profile { display: inline-flex; align-items: center; gap: 7px; padding: 5px 14px 5px 6px; }
+    .nav-avatar {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(57,211,83,0.2); color: var(--accent);
+      font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; flex-shrink: 0;
+    }
+    .nav-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .mobile-menu-link.nav-link-profile { display: flex; align-items: center; gap: 9px; padding-left: 14px; }
+    .mobile-menu-link .nav-avatar { width: 24px; height: 24px; font-size: 12px; }
 
     @media (max-width: 500px) {
     }
@@ -196,7 +210,7 @@
   </nav>
   <div class="nav-right">
     <button class="nav-link nav-help-btn" id="help-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Help</button>
-    <a class="nav-link active" href="profile.html" id="nav-profile" style="display:none">Profile</a>
+    <a class="nav-link active nav-link-profile" href="profile.html" id="nav-profile" style="display:none"><span class="nav-avatar" id="nav-avatar"></span>Profile</a>
     <a class="nav-link" href="login.html" id="nav-auth">Sign In</a>
   </div>
   <button class="hamburger-btn" id="hamburger-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg> Menu</button>
@@ -209,7 +223,7 @@
   <a class="mobile-menu-link" href="social.html">Community</a>
   <div class="mobile-menu-divider"></div>
   <button class="mobile-menu-link" id="help-btn-mobile">? Help</button>
-  <a class="mobile-menu-link active" href="profile.html" id="nav-profile-mobile">Profile</a>
+  <a class="mobile-menu-link active nav-link-profile" href="profile.html" id="nav-profile-mobile"><span class="nav-avatar" id="nav-avatar-mobile"></span>Profile</a>
   <a class="mobile-menu-link" href="login.html" id="nav-auth-mobile">Sign In</a>
 </div>
 
@@ -220,7 +234,7 @@
   </div>
 </div>
 
-<script src="supabase-config.js"></script>
+<script src="supabase-config.js?v=2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -233,8 +247,10 @@ function applyAuthState(user) {
   const navAuthM    = document.getElementById('nav-auth-mobile');
   const navProfileM = document.getElementById('nav-profile-mobile');
   if (user) {
+    document.getElementById('not-logged-in').style.display = 'none';
     if (navProfile)  navProfile.style.display  = '';
     if (navProfileM) navProfileM.style.display = '';
+    applyNavAvatar(null, null, _navAvatarInitial(user));
     if (navAuth)  { navAuth.textContent  = 'Sign Out'; navAuth.href  = '#'; navAuth.onclick  = e => { e.preventDefault(); supabase.auth.signOut().finally(() => window.location.href = 'index.html'); }; }
     if (navAuthM) { navAuthM.textContent = 'Sign Out'; navAuthM.href = '#'; navAuthM.onclick = e => { e.preventDefault(); supabase.auth.signOut().finally(() => window.location.href = 'index.html'); }; }
     renderProfile(user);
@@ -262,6 +278,7 @@ const AVATAR_COLORS = [
 ];
 
 function applyAvatar(colorVal, photoData, initial) {
+  applyNavAvatar(colorVal, photoData, initial);
   const circle = document.getElementById('avatar-circle');
   if (!circle) return;
   const c = AVATAR_COLORS.find(x => x.val === colorVal) || AVATAR_COLORS[0];
