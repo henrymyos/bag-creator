@@ -65,7 +65,7 @@ async function loadNavAvatar(client, user) {
   } catch {}
 }
 
-function signOutAndRedirect(client, href) {
+function _performSignOut(client, href) {
   // Clear all local auth tokens immediately so session is gone on next load
   localStorage.removeItem('bc_at');
   localStorage.removeItem('bc_rt');
@@ -74,4 +74,40 @@ function signOutAndRedirect(client, href) {
   }
   client.auth.signOut().catch(() => {});
   window.location.href = href || 'index.html';
+}
+
+function signOutAndRedirect(client, href) {
+  if (document.getElementById('signout-confirm-overlay')) return;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'signout-confirm-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center;padding:1rem;font-family:Barlow,sans-serif;';
+
+  const dialog = document.createElement('div');
+  dialog.style.cssText = 'background:var(--bg2,#161b22);border:1px solid var(--border2,rgba(255,255,255,0.14));border-radius:14px;max-width:380px;width:100%;padding:1.5rem 1.5rem 1.25rem;color:var(--text,#e6edf3);box-shadow:0 12px 40px rgba(0,0,0,0.45);';
+  dialog.innerHTML =
+    '<div style="font-family:Barlow Condensed,sans-serif;font-size:1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.5rem;">Sign out?</div>' +
+    '<div style="font-size:13px;color:var(--muted,#8b949e);line-height:1.55;margin-bottom:1.25rem;">Your bag and settings are saved to your account and will be here when you sign back in.</div>' +
+    '<div style="display:flex;gap:0.6rem;justify-content:flex-end;">' +
+      '<button id="signout-cancel" style="padding:8px 18px;font-family:Barlow,sans-serif;font-size:13px;font-weight:600;border-radius:7px;border:1px solid var(--border2,rgba(255,255,255,0.14));background:var(--bg3,#21262d);color:var(--muted,#8b949e);cursor:pointer;">Cancel</button>' +
+      '<button id="signout-confirm" style="padding:8px 18px;font-family:Barlow,sans-serif;font-size:13px;font-weight:600;border-radius:7px;border:1px solid rgba(248,81,73,0.4);background:rgba(248,81,73,0.12);color:#f85149;cursor:pointer;">Sign Out</button>' +
+    '</div>';
+  overlay.appendChild(dialog);
+
+  function close() {
+    overlay.remove();
+    document.removeEventListener('keydown', onKey);
+  }
+  function onKey(e) {
+    if (e.key === 'Escape') close();
+    if (e.key === 'Enter') { close(); _performSignOut(client, href); }
+  }
+
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  dialog.querySelector('#signout-cancel').addEventListener('click', close);
+  dialog.querySelector('#signout-confirm').addEventListener('click', () => { close(); _performSignOut(client, href); });
+  document.addEventListener('keydown', onKey);
+
+  document.body.appendChild(overlay);
+  dialog.querySelector('#signout-confirm').focus();
 }
