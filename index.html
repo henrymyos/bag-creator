@@ -130,11 +130,11 @@
     .hero h1 em { color: var(--accent); font-style: normal; }
     .hero p { font-size: 15px; color: var(--muted); max-width: 480px; margin: 0 auto; }
  
-    /* CONTROLS */
+    /* CONTROLS — horizontal padding matches .hero so the cards align with the headline */
     .controls {
-      max-width: 90%;
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 2rem 1.5rem 0;
+      padding: 2rem 2rem 0;
     }
     .control-row {
       display: grid;
@@ -514,6 +514,9 @@
       grid-template-columns: repeat(4, 1fr);
       gap: 0.75rem;
       margin-top: 0.75rem;
+    }
+    @media (max-width: 500px) {
+      .disc-count-row { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
     }
 
     .disc-count-item {
