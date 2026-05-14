@@ -1203,6 +1203,12 @@ function cancelRenameInline() {
 function createNewBag() {
   if (!currentUser) return;
   syncStateIntoActiveBag();
+  // Lock in the legacy single-bag public flag into a per-bag map BEFORE we
+  // switch active bag — otherwise the new bag would inherit "public" via the
+  // legacy fallback (data.bag tracks whichever bag is active).
+  if (!currentPrefs.publicBags && currentPrefs.public && activeBagId) {
+    currentPrefs.publicBags = { [activeBagId]: true };
+  }
   const id = newBagId();
   bags.push({ id, name: `Bag ${bags.length + 1}`, discs: [], fcPositions: {} });
   activeBagId = id;
