@@ -894,17 +894,19 @@ if (!targetUid) {
         const bx = ex - nx*sz*1.8, by = stabEndY - ny*sz*1.8;
         s += `<path d="M ${OX} ${OY} C ${r(cp1x)} ${r(cp1y)}, ${r(cp2x)} ${r(cp2y)}, ${r(ex)} ${r(stabEndY)}" fill="none" stroke="${color}" stroke-width="1.8" stroke-linecap="round" opacity="0.85"/>`;
         s += `<polygon points="${r(ex)},${r(stabEndY)} ${r(bx+px)},${r(by+py)} ${r(bx-px)},${r(by-py)}" fill="${color}" opacity="0.85"/>`;
-        const lbx = ex + lx * lblDist, lby = stabEndY + ly * lblDist;
         const arrowKey = `${ca}-${sa}`;
         const rawLabel = arrowLabels[arrowKey];
-        const displayNames = Array.isArray(rawLabel) && rawLabel.length ? rawLabel : [arrowKey];
-        if (displayNames.length === 1) {
-          s += `<text x="${r(lbx)}" y="${r(lby+3)}" fill="${color}" font-size="8.5" font-family="Barlow,sans-serif" font-weight="700" text-anchor="${anchor}" opacity="0.9">${displayNames[0]}</text>`;
-        } else {
-          const lh = 9, sy = lby + 3 - (displayNames.length - 1) * lh / 2;
-          s += `<text fill="${color}" font-size="8.5" font-family="Barlow,sans-serif" font-weight="700" text-anchor="${anchor}" opacity="0.9">`;
-          displayNames.forEach((nm, i) => { s += `<tspan x="${r(lbx)}" y="${r(sy + i * lh)}">${nm}</tspan>`; });
-          s += `</text>`;
+        const displayNames = Array.isArray(rawLabel) && rawLabel.length ? rawLabel : null;
+        if (displayNames) {
+          const lbx = ex + lx * lblDist, lby = stabEndY + ly * lblDist;
+          if (displayNames.length === 1) {
+            s += `<text x="${r(lbx)}" y="${r(lby+3)}" fill="${color}" font-size="8.5" font-family="Barlow,sans-serif" font-weight="700" text-anchor="${anchor}" opacity="0.9">${displayNames[0]}</text>`;
+          } else {
+            const lh = 9, sy = lby + 3 - (displayNames.length - 1) * lh / 2;
+            s += `<text fill="${color}" font-size="8.5" font-family="Barlow,sans-serif" font-weight="700" text-anchor="${anchor}" opacity="0.9">`;
+            displayNames.forEach((nm, i) => { s += `<tspan x="${r(lbx)}" y="${r(sy + i * lh)}">${nm}</tspan>`; });
+            s += `</text>`;
+          }
         }
       }
     }
