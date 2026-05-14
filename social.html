@@ -321,12 +321,36 @@ const TYPE_ORDER = [
 // Current signed-in user (populated after auth resolves)
 let currentUser = null;
 
-function renderCard(data, docId, commentsForCard) {
-  const discs = decodeBagKeys(data.bag || []);
+// Build the list of public bags for one row. Returns [{ bagId, bagName, discKeys, showName }].
+function getPublicBagsForRow(d) {
+  const prefs = d.prefs || {};
+  const bags  = Array.isArray(prefs.bags) ? prefs.bags : [];
+  const publicMap = prefs.publicBags && typeof prefs.publicBags === 'object' ? prefs.publicBags : null;
+  if (publicMap && bags.length) {
+    const pub = bags.filter(b => publicMap[b.id]);
+    return pub.map(b => ({
+      bagId: b.id,
+      bagName: b.name || 'My Bag',
+      discKeys: b.discs || [],
+      showName: pub.length > 1,
+    }));
+  }
+  // Legacy fallback: single shared bag from data.bag (no per-bag map yet)
+  return [{
+    bagId: null,
+    bagName: 'My Bag',
+    discKeys: d.bag || [],
+    showName: false,
+  }];
+}
+
+function renderCard(data, docId, bagInfo, commentsForCard, stats) {
+  const discs = decodeBagKeys(bagInfo.discKeys || []);
   if (!discs.length) return '';
 
   const prefs = data.prefs || {};
   const name  = data.display_name || 'Anonymous';
+  stats = stats || { likeCount: 0, isLiked: false, commentCount: 0 };
   const pdgaNumber = prefs.pdgaNumber || null;
   const color = AVATAR_COLORS.find(c => c.val === prefs.avatarColor) || AVATAR_COLORS[0];
 
@@ -351,19 +375,21 @@ function renderCard(data, docId, commentsForCard) {
   ).join('');
   const more = entries.length > SHOW ? `<span class="disc-chip disc-chip-more">+${entries.length - SHOW} more</span>` : '';
 
-  const viewHref = docId ? `view-bag.html?uid=${encodeURIComponent(docId)}` : '#';
+  const viewHref = docId
+    ? `view-bag.html?uid=${encodeURIComponent(docId)}${bagInfo.bagId ? `&bag=${encodeURIComponent(bagInfo.bagId)}` : ''}`
+    : '#';
   const ago = timeAgo(data.updated_at);
 
-  // Like state
-  const likeCount = data.like_count || 0;
-  const likedBy = Array.isArray(data.liked_by) ? data.liked_by : [];
-  const isLiked = currentUser ? likedBy.includes(currentUser.id) : false;
+  // Like state (per-bag)
+  const likeCount = stats.likeCount || 0;
+  const isLiked   = !!stats.isLiked;
   const likedClass = isLiked ? ' liked' : '';
+  const bagIdAttr = bagInfo.bagId ? esc(bagInfo.bagId) : '';
 
   // Actions row
   const actionsHtml = `
     <div class="card-actions">
-      <button class="action-btn like-btn${likedClass}" data-uid="${esc(docId)}" data-liked="${isLiked ? '1' : '0'}" data-count="${likeCount}" aria-label="Like">
+      <button class="action-btn like-btn${likedClass}" data-uid="${esc(docId)}" data-bag-id="${bagIdAttr}" data-liked="${isLiked ? '1' : '0'}" data-count="${likeCount}" aria-label="Like">
         <svg viewBox="0 0 24 24" fill="${isLiked ? 'rgba(248,81,73,0.18)' : 'none'}" stroke="${isLiked ? '#f85149' : 'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
         </svg>
@@ -373,7 +399,7 @@ function renderCard(data, docId, commentsForCard) {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
         </svg>
-        <span>${data.comment_count || 0}</span>
+        <span>${stats.commentCount || 0}</span>
       </a>
       <a class="view-bag-btn" href="${esc(viewHref)}" style="margin-left:auto;font-size:12px;font-weight:600;color:var(--accent);text-decoration:none;padding:5px 12px;border:1px solid rgba(57,211,83,0.35);border-radius:6px;background:rgba(57,211,83,0.08);transition:all 0.15s">View Bag →</a>
     </div>`;
@@ -386,7 +412,7 @@ function renderCard(data, docId, commentsForCard) {
   // Comments section
   let commentsHtml = '';
   if (commentsForCard && commentsForCard.length > 0) {
-    const totalCount = data.comment_count || commentsForCard.length;
+    const totalCount = stats.commentCount || commentsForCard.length;
     const shown = commentsForCard.slice(-2);
     const lines = shown.map(c => {
       const author = esc(c.author_name || 'Anonymous');
@@ -404,7 +430,7 @@ function renderCard(data, docId, commentsForCard) {
       <div class="card-header">
         ${avatarHtml}
         <div>
-          <div class="card-name">${esc(name)}</div>
+          <div class="card-name">${esc(name)}${bagInfo.showName ? ` <span style="font-weight:500;color:var(--muted);font-size:0.85em">· ${esc(bagInfo.bagName)}</span>` : ''}</div>
           ${pdgaNumber ? `<a class="card-pdga" href="https://www.pdga.com/player/${encodeURIComponent(pdgaNumber)}" target="_blank" rel="noopener noreferrer">PDGA #${esc(pdgaNumber)}</a>` : ''}
         </div>
         ${ago ? `<span class="card-header-timestamp">${ago}</span>` : ''}
@@ -455,6 +481,7 @@ feed.addEventListener('click', async function(e) {
 
   const uid = btn.dataset.uid;
   if (!uid) return;
+  const bagId = btn.dataset.bagId || '';
 
   const wasLiked = btn.dataset.liked === '1';
   const oldCount = parseInt(btn.dataset.count, 10) || 0;
@@ -499,31 +526,32 @@ feed.addEventListener('click', async function(e) {
     }
   }
 
-  // Fetch current liked_by from DB to avoid races
-  const { data: row, error: fetchErr } = await supabase
-    .from('bags')
-    .select('liked_by, like_count')
-    .eq('user_id', uid)
-    .single();
-
-  if (fetchErr) { console.error(fetchErr); return; }
-
-  const likedBy = Array.isArray(row.liked_by) ? row.liked_by : [];
-  let newArr;
+  // Insert or delete this user's like row, then read back the true count
+  let mutErr;
   if (newLiked) {
-    newArr = likedBy.includes(currentUser.id) ? likedBy : [...likedBy, currentUser.id];
+    const { error } = await supabase.from('bag_likes').insert({
+      bag_user_id: uid, bag_id: bagId, liker_id: currentUser.id,
+    });
+    // Duplicate-row conflict is fine — it means they already liked it.
+    mutErr = error && error.code !== '23505' ? error : null;
   } else {
-    newArr = likedBy.filter(id => id !== currentUser.id);
+    const { error } = await supabase.from('bag_likes').delete()
+      .eq('bag_user_id', uid).eq('bag_id', bagId).eq('liker_id', currentUser.id);
+    mutErr = error;
   }
-  const serverCount = newArr.length;
 
-  const { error: updateErr } = await supabase
-    .from('bags')
-    .update({ like_count: serverCount, liked_by: newArr })
-    .eq('user_id', uid);
+  let serverCount = newCount;
+  if (!mutErr) {
+    const { data: stat } = await supabase
+      .from('bag_like_stats')
+      .select('like_count')
+      .eq('bag_user_id', uid).eq('bag_id', bagId)
+      .maybeSingle();
+    serverCount = stat?.like_count || 0;
+  }
 
-  if (updateErr) {
-    console.error(updateErr);
+  if (mutErr) {
+    console.error(mutErr);
     // Revert optimistic update on error
     btn.dataset.liked = wasLiked ? '1' : '0';
     btn.dataset.count = oldCount;
@@ -575,29 +603,48 @@ feed.addEventListener('click', async function(e) {
       .select('*')
       .contains('prefs', { public: true });
     if (error) throw error;
-    const visible = (rows || []).filter(d => (d.bag || []).length > 0);
+    const visible = (rows || []).filter(d => {
+      const bagInfos = getPublicBagsForRow(d);
+      return bagInfos.some(b => (b.discKeys || []).length > 0);
+    });
     if (!visible.length) {
       feed.innerHTML = '<div class="state-msg"><strong>No bags yet</strong>Be the first — turn on sharing from your <a href="profile.html">Profile</a>.</div>';
       return;
     }
     const sorted = visible.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
 
-    // Fetch all comments for visible bags in one query
+    // Fetch comments, like stats, and comment stats for visible bags
     const uidList = sorted.map(d => d.user_id).filter(Boolean);
-    let commentsByUid = {};
+    const statsKey = (uid, bagId) => `${uid}::${bagId || ''}`;
+    const commentsByKey = {};
+    const statsByKey = {};
+
     if (uidList.length) {
-      const { data: commentRows } = await supabase
-        .from('comments')
-        .select('*')
-        .in('bag_user_id', uidList)
-        .order('created_at', { ascending: true });
-      for (const c of (commentRows || [])) {
-        if (!commentsByUid[c.bag_user_id]) commentsByUid[c.bag_user_id] = [];
-        commentsByUid[c.bag_user_id].push(c);
+      const [comm, likeStats, commentStats, myLikes] = await Promise.all([
+        supabase.from('comments').select('*').in('bag_user_id', uidList).order('created_at', { ascending: true }),
+        supabase.from('bag_like_stats').select('*').in('bag_user_id', uidList),
+        supabase.from('bag_comment_stats').select('*').in('bag_user_id', uidList),
+        currentUser
+          ? supabase.from('bag_likes').select('bag_user_id, bag_id').eq('liker_id', currentUser.id).in('bag_user_id', uidList)
+          : Promise.resolve({ data: [] }),
+      ]);
+
+      for (const c of (comm.data || [])) {
+        const k = statsKey(c.bag_user_id, c.bag_id);
+        (commentsByKey[k] = commentsByKey[k] || []).push(c);
       }
+      const ensure = k => (statsByKey[k] = statsByKey[k] || { likeCount: 0, isLiked: false, commentCount: 0 });
+      for (const r of (likeStats.data || []))    ensure(statsKey(r.bag_user_id, r.bag_id)).likeCount    = r.like_count;
+      for (const r of (commentStats.data || [])) ensure(statsKey(r.bag_user_id, r.bag_id)).commentCount = r.comment_count;
+      for (const r of (myLikes.data || []))      ensure(statsKey(r.bag_user_id, r.bag_id)).isLiked      = true;
     }
 
-    const html = sorted.map(d => renderCard(d, d.user_id, commentsByUid[d.user_id] || [])).filter(Boolean).join('');
+    const html = sorted.flatMap(d => {
+      return getPublicBagsForRow(d).map(info => {
+        const k = statsKey(d.user_id, info.bagId);
+        return renderCard(d, d.user_id, info, commentsByKey[k] || [], statsByKey[k]);
+      });
+    }).filter(Boolean).join('');
     feed.innerHTML = html || '<div class="state-msg"><strong>No bags yet</strong>Be the first — turn on sharing from your <a href="profile.html">Profile</a>.</div>';
   } catch (e) {
     console.error(e);

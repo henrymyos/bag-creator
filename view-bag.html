@@ -349,11 +349,16 @@ function colorForId(id) {
 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: { detectSessionInUrl: true }
 });
-const params    = new URLSearchParams(location.search);
-const targetUid = params.get('uid');
+const params      = new URLSearchParams(location.search);
+const targetUid   = params.get('uid');
+const targetBagId = params.get('bag');
+// Empty string is the legacy/default bag key in the per-bag stats tables.
+const bagIdForQuery = targetBagId || '';
 let viewBagDiscs = [];
 let viewBagPrefDist = null;
 let viewBagFcPositions = null;
+let viewBagName  = null;
+let viewBagDiscKeys = [];
 const pageMsg   = document.getElementById('page-msg');
 const bagWrap   = document.getElementById('bag-wrap');
 
@@ -394,10 +399,32 @@ if (!targetUid) {
     }
 
     if (bagData) {
-      liked = currentUser ? (bagData.liked_by || []).includes(currentUser.id) : false;
-      updateLikeBtn();
+      refreshLikedState();
       updateCommentInput();
     }
+  }
+
+  async function refreshLikedState() {
+    if (!currentUser) { liked = false; updateLikeBtn(); return; }
+    const { data } = await supabase
+      .from('bag_likes')
+      .select('liker_id')
+      .eq('bag_user_id', targetUid)
+      .eq('bag_id', bagIdForQuery)
+      .eq('liker_id', currentUser.id)
+      .maybeSingle();
+    liked = !!data;
+    updateLikeBtn();
+  }
+
+  async function fetchLikeCount() {
+    const { data } = await supabase
+      .from('bag_like_stats')
+      .select('like_count')
+      .eq('bag_user_id', targetUid)
+      .eq('bag_id', bagIdForQuery)
+      .maybeSingle();
+    return data?.like_count || 0;
   }
   supabase.auth.onAuthStateChange((event, session) => applyAuthNav(session?.user ?? null));
   getSupabaseSession(supabase).then(session => applyAuthNav(session?.user ?? null));
@@ -405,11 +432,28 @@ if (!targetUid) {
   supabase.from('bags').select('*').eq('user_id', targetUid).single()
     .then(({ data, error }) => {
       if (error || !data) { showError("This bag doesn't exist."); return; }
-      if (!data.prefs || !data.prefs.public) { showError('This bag is private.'); return; }
+      const prefs = data.prefs || {};
+      const publicMap = prefs.publicBags && typeof prefs.publicBags === 'object' ? prefs.publicBags : null;
+      if (targetBagId) {
+        if (!publicMap || !publicMap[targetBagId]) { showError('This bag is private.'); return; }
+        const b = (prefs.bags || []).find(x => x.id === targetBagId);
+        if (!b) { showError("This bag doesn't exist."); return; }
+        viewBagDiscKeys = b.discs || [];
+        viewBagFcPositions = b.fcPositions || null;
+        viewBagName = b.name || null;
+      } else {
+        if (!prefs.public) { showError('This bag is private.'); return; }
+        viewBagDiscKeys = data.bag || [];
+        viewBagFcPositions = prefs.fcPositions || null;
+        viewBagName = null;
+      }
       bagData   = data;
-      likeCount = data.like_count || 0;
-      liked     = currentUser ? (data.liked_by || []).includes(currentUser.id) : false;
       renderBag(data);
+      // Counts and liked-state come from the new per-bag tables
+      Promise.all([fetchLikeCount(), refreshLikedState()]).then(([n]) => {
+        likeCount = n;
+        updateLikeBtn();
+      });
       loadComments();
       pageMsg.style.display = 'none';
       bagWrap.style.display = '';
@@ -419,11 +463,10 @@ if (!targetUid) {
     });
 
   function renderBag(data) {
-    const discs  = decodeBagKeys(data.bag || []);
+    const discs  = decodeBagKeys(viewBagDiscKeys);
     const prefs  = data.prefs || {};
     viewBagDiscs       = discs;
     viewBagPrefDist    = prefs.dist ? parseInt(prefs.dist) : null;
-    viewBagFcPositions = prefs.fcPositions || null;
     const name   = data.display_name || 'Anonymous';
     const color  = AVATAR_COLORS.find(c => c.val === prefs.avatarColor) || AVATAR_COLORS[0];
     const ago    = timeAgo(data.updated_at);
@@ -443,7 +486,7 @@ if (!targetUid) {
       <div class="owner-row">
         ${avatarHtml}
         <div>
-          <div class="owner-name">${esc(name)}</div>
+          <div class="owner-name">${esc(name)}${viewBagName ? ` <span style="font-weight:500;color:var(--muted);font-size:0.8em">· ${esc(viewBagName)}</span>` : ''}</div>
           ${ago ? `<div class="owner-meta">Updated ${ago}</div>` : ''}
         </div>
       </div>
@@ -500,7 +543,7 @@ if (!targetUid) {
     btn.classList.toggle('liked', liked);
   }
 
-  function toggleLike() {
+  async function toggleLike() {
     if (!currentUser) { location.href = loginUrl; return; }
     if (!bagData) return;
     const wasLiked  = liked;
@@ -510,15 +553,29 @@ if (!targetUid) {
     likeCount = Math.max(0, prevCount + (liked ? 1 : -1));
     updateLikeBtn();
 
-    supabase.rpc('toggle_like', { p_bag_user_id: targetUid, p_user_id: currentUser.id })
-      .then(({ error }) => {
-        if (error) {
-          liked     = wasLiked;
-          likeCount = prevCount;
-          updateLikeBtn();
-          console.warn('Like failed:', error.message);
-        }
-      });
+    let error;
+    if (liked) {
+      ({ error } = await supabase.from('bag_likes').insert({
+        bag_user_id: targetUid,
+        bag_id: bagIdForQuery,
+        liker_id: currentUser.id,
+      }));
+    } else {
+      ({ error } = await supabase.from('bag_likes').delete()
+        .eq('bag_user_id', targetUid)
+        .eq('bag_id', bagIdForQuery)
+        .eq('liker_id', currentUser.id));
+    }
+    if (error) {
+      liked     = wasLiked;
+      likeCount = prevCount;
+      updateLikeBtn();
+      console.warn('Like failed:', error.message);
+    } else {
+      // Reconcile with server truth
+      likeCount = await fetchLikeCount();
+      updateLikeBtn();
+    }
   }
 
   async function loadComments() {
@@ -526,6 +583,7 @@ if (!targetUid) {
       .from('comments')
       .select('*')
       .eq('bag_user_id', targetUid)
+      .eq('bag_id', bagIdForQuery)
       .order('created_at', { ascending: true });
     if (error) {
       document.getElementById('comment-list').innerHTML =
@@ -631,13 +689,12 @@ if (!targetUid) {
     ta.disabled = true; btn.disabled = true; btn.textContent = 'Posting…';
 
     const { error } = await supabase.from('comments').insert({
-      bag_user_id: targetUid, text,
+      bag_user_id: targetUid, bag_id: bagIdForQuery, text,
       author_id: currentUser.id, author_name: authorName,
       parent_id: parentId, created_at: new Date().toISOString(),
     });
 
     if (!error) {
-      await supabase.rpc('increment_comment_count', { p_bag_user_id: targetUid });
       let repliesDiv = thread.querySelector('.comment-replies');
       if (!repliesDiv) {
         repliesDiv = document.createElement('div');
@@ -696,6 +753,7 @@ if (!targetUid) {
 
     const { error } = await supabase.from('comments').insert({
       bag_user_id: targetUid,
+      bag_id: bagIdForQuery,
       text,
       author_id: currentUser.id,
       author_name: authorName,
@@ -703,8 +761,6 @@ if (!targetUid) {
     });
 
     if (!error) {
-      await supabase.rpc('increment_comment_count', { p_bag_user_id: targetUid });
-
       const list  = document.getElementById('comment-list');
       const empty = list.querySelector('.no-comments');
       if (empty) list.innerHTML = '';

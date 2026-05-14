@@ -371,13 +371,10 @@ function renderProfile(user) {
       <div class="section-title">Privacy</div>
       <div class="field">
         <label>Community Page</label>
-        <div class="toggle-row">
-          <label class="toggle-switch">
-            <input type="checkbox" id="public-toggle" />
-            <span class="toggle-track"></span>
-          </label>
-          <span class="toggle-label">Show my bag publicly on the Community page</span>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">
+          Choose which bags appear publicly on the Community page.
         </div>
+        <div id="public-bags-list"></div>
         <div class="status-msg" id="privacy-status"></div>
       </div>
     </div>
@@ -390,7 +387,9 @@ function renderProfile(user) {
     </div>
   `;
 
-  let isPublic = false;
+  let publicBags = {};
+  function anyPublic() { return Object.values(publicBags).some(Boolean); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
   // Live char counter
   document.getElementById('display-name-input').addEventListener('input', function() {
@@ -405,7 +404,7 @@ function renderProfile(user) {
     btn.disabled = true;
     try {
       await supabase.auth.updateUser({ data: { displayName: name } });
-      if (isPublic) {
+      if (anyPublic()) {
         await supabase.from('bags').upsert(
           { user_id: user.id, display_name: name || user.email || '' },
           { onConflict: 'user_id' }
@@ -459,7 +458,7 @@ function renderProfile(user) {
     }
 
     try {
-      const { data } = await supabase.from('bags').select('prefs').eq('user_id', user.id).single();
+      const { data } = await supabase.from('bags').select('prefs, bag').eq('user_id', user.id).single();
       const p = data?.prefs || {};
       currentPrefs = p;
       if (p.pdgaNumber)  document.getElementById('prof-pdga').value     = p.pdgaNumber;
@@ -467,10 +466,22 @@ function renderProfile(user) {
       if (p.bagSize)     document.getElementById('prof-bagsize').value  = p.bagSize;
       if (p.avatarColor) currentColor       = p.avatarColor;
       if (p.avatarPhoto) currentPhoto       = p.avatarPhoto;
-      if (p.public)      isPublic           = true;
-    } catch (e) { console.error(e); }
 
-    document.getElementById('public-toggle').checked = isPublic;
+      // Build per-bag visibility map (with legacy migration from old `public` flag)
+      let bagsList = Array.isArray(p.bags) && p.bags.length > 0 ? p.bags : [];
+      if (!bagsList.length && Array.isArray(data?.bag) && data.bag.length > 0) {
+        // Legacy: single bag stored in row.bag with no prefs.bags array yet
+        bagsList = [{ id: p.activeBagId || 'b1', name: 'My Bag' }];
+      }
+      const incoming = p.publicBags && typeof p.publicBags === 'object' ? p.publicBags : null;
+      if (incoming) {
+        publicBags = { ...incoming };
+      } else if (p.public) {
+        const activeId = p.activeBagId || bagsList[0]?.id;
+        if (activeId) publicBags[activeId] = true;
+      }
+      renderPublicBagsList(bagsList);
+    } catch (e) { console.error(e); }
 
     applyAvatar(currentColor, currentPhoto, initial);
 
@@ -534,26 +545,49 @@ function renderProfile(user) {
       try { await savePrefs({ avatarPhoto: null }); } catch (e) { console.error(e); }
     });
 
-    // Public toggle
-    document.getElementById('public-toggle').addEventListener('change', async function() {
-      isPublic = this.checked;
-      const privStatus = document.getElementById('privacy-status');
-      try {
-        await savePrefs({ public: isPublic });
-        await supabase.from('bags').upsert(
-          { user_id: user.id, display_name: getUserLabel(user) },
-          { onConflict: 'user_id' }
-        );
-        privStatus.textContent = isPublic ? 'Your bag is now visible on the Community page.' : 'Your bag is now hidden.';
-        privStatus.className = 'status-msg success';
-      } catch (e) {
-        this.checked = !isPublic;
-        isPublic = !isPublic;
-        privStatus.textContent = e.message;
-        privStatus.className = 'status-msg error';
+    function renderPublicBagsList(bagsList) {
+      const wrap = document.getElementById('public-bags-list');
+      if (!bagsList.length) {
+        wrap.innerHTML = '<div style="font-size:13px;color:var(--muted);">You have no bags yet. <a href="custom-bag.html" style="color:var(--accent)">Build one</a> first.</div>';
+        return;
       }
-      setTimeout(() => { privStatus.textContent = ''; }, 4000);
-    });
+      wrap.innerHTML = bagsList.map(b => `
+        <div class="toggle-row" style="margin-bottom:10px;">
+          <label class="toggle-switch">
+            <input type="checkbox" data-bag-id="${esc(b.id)}" ${publicBags[b.id] ? 'checked' : ''} />
+            <span class="toggle-track"></span>
+          </label>
+          <span class="toggle-label" style="color:var(--text);">${esc(b.name || 'My Bag')}</span>
+        </div>
+      `).join('');
+
+      wrap.querySelectorAll('input[type=checkbox]').forEach(input => {
+        input.addEventListener('change', async () => {
+          const id = input.dataset.bagId;
+          const prev = !!publicBags[id];
+          if (input.checked) publicBags[id] = true; else delete publicBags[id];
+          const privStatus = document.getElementById('privacy-status');
+          try {
+            await savePrefs({ publicBags: { ...publicBags }, public: anyPublic() });
+            await supabase.from('bags').upsert(
+              { user_id: user.id, display_name: getUserLabel(user) },
+              { onConflict: 'user_id' }
+            );
+            const bagName = bagsList.find(b => b.id === id)?.name || 'Bag';
+            privStatus.textContent = input.checked
+              ? `"${bagName}" is now visible on the Community page.`
+              : `"${bagName}" is now hidden.`;
+            privStatus.className = 'status-msg success';
+          } catch (e) {
+            input.checked = prev;
+            if (prev) publicBags[id] = true; else delete publicBags[id];
+            privStatus.textContent = e.message;
+            privStatus.className = 'status-msg error';
+          }
+          setTimeout(() => { privStatus.textContent = ''; }, 4000);
+        });
+      });
+    }
 
   })();
 }
