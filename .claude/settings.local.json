@@ -9,7 +9,19 @@
       "Bash(sed -n '318,326p' /Users/henrymyos/Desktop/bag-creator/social.html)",
       "Bash(sed -n '525,533p' /Users/henrymyos/Desktop/bag-creator/custom-bag.html)",
       "Bash(sed -n '289,297p' /Users/henrymyos/Desktop/bag-creator/view-bag.html)",
-      "Bash(sed -n '656,664p' /Users/henrymyos/Desktop/bag-creator/archive.html)"
+      "Bash(sed -n '656,664p' /Users/henrymyos/Desktop/bag-creator/archive.html)",
+      "Bash(xxd)",
+      "Bash(git *)",
+      "Bash(supabase --version)",
+      "Bash(curl *)",
+      "Bash(node -c /Users/henrymyos/Desktop/bag-creator/supabase-config.js)",
+      "Bash(node *)",
+      "Bash(python3 *)",
+      "mcp__plugin_supabase_supabase__list_projects",
+      "mcp__plugin_supabase_supabase__list_tables",
+      "mcp__plugin_supabase_supabase__apply_migration",
+      "mcp__plugin_supabase_supabase__execute_sql",
+      "Bash(awk '/<style>/,/<\\\\/style>/' /Users/henrymyos/Desktop/bag-creator/custom-bag.html)"
     ]
   }
 }
