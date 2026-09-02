@@ -1,0 +1,34 @@
+type User @table {
+  displayName: String!
+  email: String
+  photoUrl: String
+  averageThrowDistance: Int
+  desiredDiscCapacity: Int
+  createdAt: Timestamp!
+}
+
+type Brand @table {
+  name: String!
+  website: String
+  description: String
+  createdAt: Timestamp!
+}
+
+type DiscGolfBag @table {
+  name: String!
+  brand: Brand!
+  minDiscCapacity: Int!
+  maxDiscCapacity: Int!
+  description: String
+  imageUrl: String
+  price: Float
+  features: [String]
+  createdAt: Timestamp!
+}
+
+type Recommendation @table {
+  user: User!
+  discGolfBag: DiscGolfBag!
+  notes: String
+  createdAt: Timestamp!
+}
