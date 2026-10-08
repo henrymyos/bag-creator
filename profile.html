@@ -351,7 +351,6 @@ function renderProfile(user) {
         <div class="photo-row">
           <input type="file" id="photo-input" accept="image/*" style="display:none">
           <button class="btn" id="upload-photo-btn">Upload Photo</button>
-          ${user.photoURL ? `<button class="btn" id="use-google-photo-btn">Use Google Photo</button>` : ''}
           <button class="btn btn-danger" id="remove-photo-btn" style="display:none">Remove Photo</button>
         </div>
       </div>
@@ -527,16 +526,6 @@ function renderProfile(user) {
       };
       img.src = url;
     });
-
-    const googlePhotoBtn = document.getElementById('use-google-photo-btn');
-    if (googlePhotoBtn) {
-      googlePhotoBtn.addEventListener('click', async () => {
-        currentPhoto = user.user_metadata?.avatar_url || user.user_metadata?.picture || null;
-        applyAvatar(currentColor, currentPhoto, initial);
-        removeBtn.style.display = '';
-        try { await savePrefs({ avatarPhoto: currentPhoto }); } catch (e) { console.error(e); }
-      });
-    }
 
     removeBtn.addEventListener('click', async () => {
       currentPhoto = null;
