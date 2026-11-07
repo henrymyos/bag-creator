@@ -28,3 +28,9 @@ python3 -m http.server 8000
 ```
 
 Requires a `supabase-config.js` with a project URL and anon key.
+
+## Tests
+
+```bash
+node --test   # catalog checks for discs.js (unique keys, valid brands/types, flight numbers)
+```
