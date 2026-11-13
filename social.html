@@ -673,7 +673,7 @@ feed.addEventListener('click', async function(e) {
     <div class="help-header">
       <span class="help-hdr-title">Help</span>
       <span class="help-counter" id="help-counter"></span>
-      <button class="help-close" id="help-close">×</button>
+      <button class="help-close" id="help-close" aria-label="Close help">×</button>
     </div>
     <div class="help-body">
       <div class="help-icon" id="help-icon"></div>
@@ -707,7 +707,7 @@ feed.addEventListener('click', async function(e) {
     document.getElementById('help-prev').disabled           = cur === 0;
     document.getElementById('help-next').textContent        = cur === STEPS.length - 1 ? 'Done' : 'Next →';
     document.getElementById('help-dots').innerHTML = STEPS.map(function(_, i) {
-      return '<button class="help-dot' + (i === cur ? ' active' : '') + '" data-i="' + i + '"></button>';
+      return '<button class="help-dot' + (i === cur ? ' active' : '') + '" data-i="' + i + '" aria-label="Step ' + (i + 1) + '"></button>';
     }).join('');
   }
   function open()  { cur = 0; render(); document.getElementById('help-overlay').style.display = 'flex'; }

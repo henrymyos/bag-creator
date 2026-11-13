@@ -487,8 +487,8 @@ function renderProfile(user) {
 
     // Render color swatches
     const swatchWrap = document.getElementById('color-swatches');
-    swatchWrap.innerHTML = AVATAR_COLORS.map(c =>
-      `<button class="color-swatch${c.val === currentColor ? ' active' : ''}" style="background:${c.val}" data-val="${c.val}"></button>`
+    swatchWrap.innerHTML = AVATAR_COLORS.map((c, i) =>
+      `<button class="color-swatch${c.val === currentColor ? ' active' : ''}" style="background:${c.val}" data-val="${c.val}" aria-label="Avatar color ${i + 1}"></button>`
     ).join('');
     swatchWrap.addEventListener('click', async e => {
       const btn = e.target.closest('.color-swatch');
@@ -588,7 +588,7 @@ function renderProfile(user) {
     <div class="help-header">
       <span class="help-hdr-title">Help</span>
       <span class="help-counter" id="help-counter"></span>
-      <button class="help-close" id="help-close">×</button>
+      <button class="help-close" id="help-close" aria-label="Close help">×</button>
     </div>
     <div class="help-body">
       <div class="help-icon" id="help-icon"></div>
@@ -620,7 +620,7 @@ function renderProfile(user) {
     document.getElementById('help-prev').disabled = cur === 0;
     document.getElementById('help-next').textContent = cur === STEPS.length - 1 ? 'Done' : 'Next →';
     document.getElementById('help-dots').innerHTML = STEPS.map(function(_, i) {
-      return '<button class="help-dot' + (i === cur ? ' active' : '') + '" data-i="' + i + '"></button>';
+      return '<button class="help-dot' + (i === cur ? ' active' : '') + '" data-i="' + i + '" aria-label="Step ' + (i + 1) + '"></button>';
     }).join('');
   }
   function open() { cur = 0; render(); document.getElementById('help-overlay').style.display = 'flex'; }

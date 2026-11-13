@@ -569,7 +569,7 @@
           </svg>
         </span>
         <input class="search-input" id="search-input" type="text" placeholder="Search discs…" autocomplete="off" />
-        <button class="search-clear" id="search-clear">✕</button>
+        <button class="search-clear" id="search-clear" aria-label="Clear search">✕</button>
       </div>
       <div class="tab-group">
         <span class="tab-label">Disc Type</span>
@@ -1034,9 +1034,9 @@ function renderBrowser() {
       </div>
       ${qty > 0
         ? `<div class="disc-qty">
-            <button class="qty-btn qty-dec" data-key="${key}">−</button>
+            <button class="qty-btn qty-dec" data-key="${key}" aria-label="Remove one">−</button>
             <span class="qty-count">${qty}</span>
-            <button class="qty-btn qty-inc" data-key="${key}">+</button>
+            <button class="qty-btn qty-inc" data-key="${key}" aria-label="Add one">+</button>
           </div>`
         : `<button class="add-btn" data-key="${key}" title="Add to bag">+</button>`}
     </div>`;
@@ -1435,7 +1435,7 @@ render();
     <div class="help-header">
       <span class="help-hdr-title">Help</span>
       <span class="help-counter" id="help-counter"></span>
-      <button class="help-close" id="help-close">×</button>
+      <button class="help-close" id="help-close" aria-label="Close help">×</button>
     </div>
     <div class="help-body">
       <div class="help-icon" id="help-icon"></div>
@@ -1470,7 +1470,7 @@ render();
     document.getElementById('help-prev').disabled = cur === 0;
     document.getElementById('help-next').textContent = cur === STEPS.length - 1 ? 'Done' : 'Next →';
     document.getElementById('help-dots').innerHTML = STEPS.map(function(_, i) {
-      return '<button class="help-dot' + (i === cur ? ' active' : '') + '" data-i="' + i + '"></button>';
+      return '<button class="help-dot' + (i === cur ? ' active' : '') + '" data-i="' + i + '" aria-label="Step ' + (i + 1) + '"></button>';
     }).join('');
   }
   function open() { cur = 0; render(); document.getElementById('help-overlay').style.display = 'flex'; }
@@ -1494,15 +1494,15 @@ render();
   <div class="eval-dialog">
     <div class="help-header">
       <span class="help-hdr-title">Bag Evaluation</span>
-      <button class="help-close" id="eval-close">×</button>
+      <button class="help-close" id="eval-close" aria-label="Close">×</button>
     </div>
     <div class="eval-body">
       <div id="eval-slider-row">
         <span class="eval-dist-label">Your max throw distance</span>
         <div class="eval-dist-ctrl">
-          <button class="eval-step-btn" id="eval-dec">−</button>
+          <button class="eval-step-btn" id="eval-dec" aria-label="Lower max distance">−</button>
           <input class="eval-slider" type="range" id="eval-slider" min="100" max="500" step="25" value="300">
-          <button class="eval-step-btn" id="eval-inc">+</button>
+          <button class="eval-step-btn" id="eval-inc" aria-label="Higher max distance">+</button>
         </div>
         <div class="eval-dist-val"><span id="eval-dist-num">300</span> ft</div>
       </div>
@@ -1521,7 +1521,7 @@ render();
         <button class="fc-throw-btn active" data-throw="rhbh" onclick="if(window._fcSetMirror)window._fcSetMirror(false)">RHBH / LHFH</button>
         <button class="fc-throw-btn" data-throw="rhfh" onclick="if(window._fcSetMirror)window._fcSetMirror(true)">RHFH / LHBH</button>
       </div>
-      <button class="help-close" id="fc-close">×</button>
+      <button class="help-close" id="fc-close" aria-label="Close">×</button>
     </div>
     <div class="fc-body" id="fc-body"></div>
   </div>
@@ -1843,9 +1843,9 @@ render();
         `${bannerHtml}${tabsHtml}<div style="padding-bottom:1rem">
            <span class="eval-dist-label">Your max throw distance</span>
            <div class="eval-dist-ctrl">
-             <button class="eval-step-btn" id="fc-dec">−</button>
+             <button class="eval-step-btn" id="fc-dec" aria-label="Lower max distance">−</button>
              <input class="eval-slider" type="range" id="fc-slider" min="100" max="500" step="25" value="${initDist}">
-             <button class="eval-step-btn" id="fc-inc">+</button>
+             <button class="eval-step-btn" id="fc-inc" aria-label="Higher max distance">+</button>
            </div>
            <div class="eval-dist-val"><span id="fc-dist-num">${initDist}</span> ft</div>
          </div><div id="fc-chart"></div>`;
