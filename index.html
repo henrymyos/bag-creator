@@ -841,42 +841,42 @@
       <div class="total-input-row">
         <span>Total discs in bag &nbsp;<span style="color:var(--muted);font-weight:400">(excluding putting discs)</span></span>
         <div class="total-input-group">
-          <button type="button" class="stepper-btn" onclick="adjustTotal(-1)">−</button>
+          <button type="button" class="stepper-btn" onclick="adjustTotal(-1)" aria-label="Fewer discs">−</button>
           <input type="number" class="total-input" id="total-count" min="0" max="35" value="18" />
-          <button type="button" class="stepper-btn" onclick="adjustTotal(1)">+</button>
+          <button type="button" class="stepper-btn" onclick="adjustTotal(1)" aria-label="More discs">+</button>
         </div>
       </div>
       <div class="disc-count-row">
         <div class="disc-count-item">
           <label style="color:var(--putter)">Throwing Putters</label>
           <div class="stepper">
-            <button class="stepper-btn" id="put-dec" onclick="adjustCount('putter',-1)">−</button>
+            <button class="stepper-btn" id="put-dec" onclick="adjustCount('putter',-1)" aria-label="Fewer putters">−</button>
             <span class="stepper-val" id="count-putter">3</span>
-            <button class="stepper-btn" id="put-inc" onclick="adjustCount('putter',1)">+</button>
+            <button class="stepper-btn" id="put-inc" onclick="adjustCount('putter',1)" aria-label="More putters">+</button>
           </div>
         </div>
         <div class="disc-count-item">
           <label style="color:var(--midrange)">Midranges</label>
           <div class="stepper">
-            <button class="stepper-btn" id="mid-dec" onclick="adjustCount('midrange',-1)">−</button>
+            <button class="stepper-btn" id="mid-dec" onclick="adjustCount('midrange',-1)" aria-label="Fewer midranges">−</button>
             <span class="stepper-val" id="count-midrange">5</span>
-            <button class="stepper-btn" id="mid-inc" onclick="adjustCount('midrange',1)">+</button>
+            <button class="stepper-btn" id="mid-inc" onclick="adjustCount('midrange',1)" aria-label="More midranges">+</button>
           </div>
         </div>
         <div class="disc-count-item">
           <label style="color:var(--fairway)">Fairways</label>
           <div class="stepper">
-            <button class="stepper-btn" id="fw-dec" onclick="adjustCount('fairway',-1)">−</button>
+            <button class="stepper-btn" id="fw-dec" onclick="adjustCount('fairway',-1)" aria-label="Fewer fairway drivers">−</button>
             <span class="stepper-val" id="count-fairway">5</span>
-            <button class="stepper-btn" id="fw-inc" onclick="adjustCount('fairway',1)">+</button>
+            <button class="stepper-btn" id="fw-inc" onclick="adjustCount('fairway',1)" aria-label="More fairway drivers">+</button>
           </div>
         </div>
         <div class="disc-count-item">
           <label style="color:var(--distance)">Distances</label>
           <div class="stepper">
-            <button class="stepper-btn" id="dist-dec" onclick="adjustCount('distance',-1)">−</button>
+            <button class="stepper-btn" id="dist-dec" onclick="adjustCount('distance',-1)" aria-label="Fewer distance drivers">−</button>
             <span class="stepper-val" id="count-distance">5</span>
-            <button class="stepper-btn" id="dist-inc" onclick="adjustCount('distance',1)">+</button>
+            <button class="stepper-btn" id="dist-inc" onclick="adjustCount('distance',1)" aria-label="More distance drivers">+</button>
           </div>
         </div>
       </div>
@@ -909,7 +909,7 @@
   <div class="modal-dialog">
     <div class="modal-header">
       <h3>Add Discs to My Bag</h3>
-      <button class="modal-close-btn" id="add-modal-close">×</button>
+      <button class="modal-close-btn" id="add-modal-close" aria-label="Close">×</button>
     </div>
     <div class="modal-body">
       <label class="modal-select-all">
@@ -1508,7 +1508,7 @@ render();
     <div class="help-header">
       <span class="help-hdr-title">Help</span>
       <span class="help-counter" id="help-counter"></span>
-      <button class="help-close" id="help-close">×</button>
+      <button class="help-close" id="help-close" aria-label="Close help">×</button>
     </div>
     <div class="help-body">
       <div class="help-icon" id="help-icon"></div>
@@ -1543,7 +1543,7 @@ render();
     document.getElementById('help-prev').disabled = cur === 0;
     document.getElementById('help-next').textContent = cur === STEPS.length - 1 ? 'Done' : 'Next →';
     document.getElementById('help-dots').innerHTML = STEPS.map(function(_, i) {
-      return '<button class="help-dot' + (i === cur ? ' active' : '') + '" data-i="' + i + '"></button>';
+      return '<button class="help-dot' + (i === cur ? ' active' : '') + '" data-i="' + i + '" aria-label="Step ' + (i + 1) + '"></button>';
     }).join('');
   }
   function open() { cur = 0; render(); document.getElementById('help-overlay').style.display = 'flex'; }
