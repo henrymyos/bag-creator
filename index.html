@@ -24,10 +24,10 @@
       --muted: #8b949e;
       --accent: #39d353;
       --accent2: #58a6ff;
-      --innova: #e05c2a;
+      --innova: #e67d55;
       --discraft: #58a6ff;
       --mvp: #22c55e;
-      --discmania: #e63946;
+      --discmania: #ec6972;
       --prodigy: #0ea5e9;
       --putter: #3fb950;
       --midrange: #d29922;
@@ -249,12 +249,12 @@
     .filter-btn.active.brand-trilogy {
       background: rgba(163,113,247,0.12);
       border-color: rgba(163,113,247,0.4);
-      color: #a371f7;
+      color: #b58df9;
     }
     .filter-btn.active.brand-both {
       background: rgba(163,113,247,0.12);
       border-color: rgba(163,113,247,0.4);
-      color: #a371f7;
+      color: #b58df9;
     }
     .brand-filter-row {
       display: flex;
@@ -365,7 +365,7 @@
     }
     .brand-badge.innova { background: rgba(224,92,42,0.15); color: var(--innova); }
     .brand-badge.discraft { background: rgba(88,166,255,0.15); color: var(--discraft); }
-    .brand-badge.trilogy { background: rgba(163,113,247,0.15); color: #a371f7; }
+    .brand-badge.trilogy { background: rgba(163,113,247,0.15); color: #b58df9; }
     .brand-badge.mvp { background: rgba(34,197,94,0.15); color: var(--mvp); }
     .brand-badge.discmania { background: rgba(230,57,70,0.15); color: var(--discmania); }
     .brand-badge.prodigy { background: rgba(14,165,233,0.15); color: var(--prodigy); }
@@ -487,7 +487,7 @@
     .stability-tag.overstable { background: rgba(247,129,102,0.15); color: #f78166; }
     .stability-tag.neutral { background: rgba(57,211,83,0.12); color: var(--accent); }
     .stability-tag.understable { background: rgba(88,166,255,0.15); color: var(--accent2); }
-    .stability-tag.very-understable { background: rgba(163,113,247,0.18); color: #a371f7; }
+    .stability-tag.very-understable { background: rgba(163,113,247,0.18); color: #b58df9; }
  
     .empty-state {
       text-align: center;
@@ -808,6 +808,7 @@
   </div>
   <button class="hamburger-btn" id="hamburger-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg> Menu</button>
 </header>
+<main>
 
 <div class="mobile-menu" id="mobile-menu">
   <a class="mobile-menu-link active" href="index.html">Bag Builder</a>
@@ -828,7 +829,7 @@
 <div class="controls">
   <div class="control-row">
     <div class="control-card">
-      <label>Maximum Distance</label>
+      <label for="back-slider">Maximum Distance</label>
       <div class="dist-display">
         <span class="num" id="back-out">300</span>
         <span class="unit">feet</span>
@@ -842,7 +843,7 @@
         <span>Total discs in bag &nbsp;<span style="color:var(--muted);font-weight:400">(excluding putting discs)</span></span>
         <div class="total-input-group">
           <button type="button" class="stepper-btn" onclick="adjustTotal(-1)" aria-label="Fewer discs">−</button>
-          <input type="number" class="total-input" id="total-count" min="0" max="35" value="18" />
+          <input type="number" class="total-input" id="total-count" aria-label="Total discs in bag" min="0" max="35" value="18" />
           <button type="button" class="stepper-btn" onclick="adjustTotal(1)" aria-label="More discs">+</button>
         </div>
       </div>
@@ -924,6 +925,7 @@
   </div>
 </div>
  
+</main>
 <footer>Flight numbers: Speed · Glide · Turn · Fade &nbsp;|&nbsp; Data based on manufacturer specs</footer>
  
 <script src="discs.js"></script>
