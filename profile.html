@@ -315,10 +315,10 @@ function renderProfile(user) {
   const userLabel = getUserLabel(user);
   document.getElementById('page-content').innerHTML = `
     <div class="avatar-row">
-      <div class="avatar-circle" id="avatar-circle">${(userLabel || '?')[0].toUpperCase()}</div>
+      <div class="avatar-circle" id="avatar-circle">${esc((userLabel || '?')[0].toUpperCase())}</div>
       <div class="avatar-info">
-        <h2 id="display-name-heading">${user.user_metadata?.displayName || user.user_metadata?.full_name || 'No name set'}</h2>
-        <p>${user.email}</p>
+        <h2 id="display-name-heading">${esc(user.user_metadata?.displayName || user.user_metadata?.full_name || 'No name set')}</h2>
+        <p>${esc(user.email)}</p>
       </div>
     </div>
 
@@ -326,11 +326,11 @@ function renderProfile(user) {
       <div class="section-title">Account Info</div>
       <div class="field">
         <label>Email</label>
-        <input type="text" value="${user.email}" readonly />
+        <input type="text" value="${esc(user.email)}" readonly />
       </div>
       <div class="field">
         <label>Display Name</label>
-        <input type="text" id="display-name-input" value="${user.user_metadata?.displayName || user.user_metadata?.full_name || ''}" placeholder="Your name" maxlength="30" />
+        <input type="text" id="display-name-input" value="${esc(user.user_metadata?.displayName || user.user_metadata?.full_name || '')}" placeholder="Your name" maxlength="30" />
         <div style="font-size:11px;color:var(--muted);margin-top:4px;text-align:right" id="name-char-count">${(user.user_metadata?.displayName || user.user_metadata?.full_name || '').length}/30</div>
       </div>
       <div class="field">
