@@ -660,15 +660,6 @@ const TYPE_COLOR = { putter:'var(--putter)', midrange:'var(--midrange)', fairway
 const BRAND_LABEL = { innova:'Innova', discraft:'Discraft', trilogy:'Trilogy', mvp:'MVP', discmania:'Discmania', prodigy:'Prodigy' };
 const STAB_CLASS  = { 'very overstable':'very-overstable', 'overstable':'overstable', 'neutral':'neutral', 'understable':'understable', 'very understable':'very-understable' };
 const STAB_SHORT  = { 'very overstable':'Very OS', 'overstable':'Overstable', 'neutral':'Neutral', 'understable':'Understable', 'very understable':'Very US' };
-const STAB_ORDER  = { 'very overstable':0, 'overstable':1, 'stable':2, 'neutral':2, 'understable':3, 'very understable':4 };
-
-function sortBagByStability() {
-  const byType = {};
-  TYPE_ORDER.forEach(t => { byType[t] = []; });
-  myBag.forEach(d => { (byType[d.type] || (byType[d.type] = [])).push(d); });
-  TYPE_ORDER.forEach(t => byType[t].sort((a, b) => (STAB_ORDER[a.stability] ?? 2) - (STAB_ORDER[b.stability] ?? 2)));
-  myBag = TYPE_ORDER.flatMap(t => byType[t] || []);
-}
 
 function discKey(d) { return `${d.brand}|${d.type}|${d.name}`; }
 
@@ -715,8 +706,6 @@ if (urlParam) { myBag = decodeBag(urlParam); myBagIds = myBag.map(() => newId())
 let searchQuery = '';
 let selectedType = 'all';
 let selectedBrand = 'all';
-
-function inBag(d) { return myBag.some(b => discKey(b) === discKey(d)); }
 
 function updateURL() {
   const encoded = myBag.length ? `?bag=${encodeBag(myBag)}` : '';
@@ -973,14 +962,6 @@ function addDisc(disc) {
   myBag.push(disc);
   myBagIds.push(newId());
   hideUndo();
-  updateURL();
-  scheduleSave();
-  render();
-}
-
-function removeDisc(key) {
-  const indices = myBag.reduce((acc, d, i) => (discKey(d) === key ? [...acc, i] : acc), []);
-  indices.reverse().forEach(i => { myBag.splice(i, 1); myBagIds.splice(i, 1); });
   updateURL();
   scheduleSave();
   render();
