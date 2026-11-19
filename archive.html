@@ -471,7 +471,7 @@
     <a class="nav-link nav-link-profile" href="profile.html" id="nav-profile" style="display:none"><span class="nav-avatar" id="nav-avatar"></span>Profile</a>
     <a class="nav-link" href="login.html" id="nav-auth">Sign In</a>
   </div>
-  <button class="hamburger-btn" id="hamburger-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg> Menu</button>
+  <button class="hamburger-btn" id="hamburger-btn" aria-expanded="false" aria-controls="mobile-menu"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg> Menu</button>
 </header>
 <main>
 
@@ -765,6 +765,9 @@ render();
   var ham = document.getElementById('hamburger-btn');
   var menu = document.getElementById('mobile-menu');
   ham.addEventListener('click', function(e) { e.stopPropagation(); menu.classList.toggle('open'); });
+  // keep aria-expanded in step with every path that opens or closes the menu
+  new MutationObserver(function() { ham.setAttribute('aria-expanded', menu.classList.contains('open')); }).observe(menu, { attributes: true, attributeFilter: ['class'] });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && menu.classList.contains('open')) { menu.classList.remove('open'); ham.focus(); } });
   document.addEventListener('click', function(e) {
     if (!e.target.closest('#mobile-menu')) menu.classList.remove('open');
   });
