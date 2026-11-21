@@ -10,7 +10,7 @@ A web app for designing, saving, and sharing custom disc golf bags. Pick a max t
 - **My Bag** — save, edit, and view your custom bag with disc flight numbers and descriptions.
 - **Disc Archive** — browse the full disc catalog.
 - **Community** — view other users' bags.
-- **Share image** — on a bag page, **Image** draws a 1080×1350 PNG of the bag (discs by type with flight numbers) and opens the phone share sheet, or downloads it on desktop (`bag-card.js`).
+- **Share image** — on My Bag and on a shared bag page, **Image** draws a 1080×1350 PNG of the bag (discs by type with flight numbers) and opens the phone share sheet, or downloads it on desktop (`bag-card.js`).
 - **Auth + Profiles** — Supabase auth with a per-user profile page; users can only read and write their own bag data.
 
 ## Tech stack
