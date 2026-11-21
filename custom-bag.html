@@ -204,7 +204,7 @@
       border-bottom: 1px solid var(--border);
     }
     .bag-info { grid-area: info; display: flex; align-items: center; gap: 0.6rem; }
-    .bag-btns { grid-area: btns; display: flex; align-items: center; gap: 0.6rem; }
+    .bag-btns { grid-area: btns; display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; }
     .bag-gap { grid-area: gap; }
     .bag-right { grid-area: right; display: flex; align-items: center; gap: 0.6rem; }
     .bag-count { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 600; color: var(--muted); }
@@ -633,6 +633,10 @@
           </svg>
           Share Bag
         </button>
+        <button class="action-btn share-btn" id="share-img-btn">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          <span id="share-img-label">Image</span>
+        </button>
         <button class="action-btn eval-btn" id="eval-btn">Evaluate</button>
         <button class="action-btn fc-btn" id="fc-btn">Flight Charts</button>
       </div>
@@ -653,6 +657,7 @@
 <script src="supabase-config.js?v=2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2" integrity="sha384-7i/4BYWz4Mn+lJfg2HWfEPfZQ7tmFKF3CTSKlXBpxWjNlLjcg+T6smpHG4gLmU1u" crossorigin="anonymous"></script>
 <script src="discs.js"></script>
+<script src="bag-card.js"></script>
 <script>
 const TYPE_ORDER = ['putter','midrange','fairway','distance'];
 const TYPE_LABEL = { putter:'Throwing Putters', midrange:'Midranges', fairway:'Fairway Drivers', distance:'Distance Drivers' };
@@ -1362,6 +1367,18 @@ shareBtn.addEventListener('click', () => {
       }, 2000);
     });
   }
+});
+
+document.getElementById('share-img-btn').addEventListener('click', async e => {
+  const btn = e.currentTarget, label = document.getElementById('share-img-label');
+  if (!myBag.length || btn.disabled) return;
+  btn.disabled = true;
+  label.textContent = 'Making…';
+  const bag = getActiveBag();
+  const res = await shareBagImage({ owner: (bag && bag.name) || 'My Bag', bagName: null, discs: myBag, host: location.host, title: 'My Disc Golf Bag' }).catch(() => 'failed');
+  label.textContent = res === 'saved' ? 'Saved' : res === 'failed' ? 'Try again' : 'Image';
+  btn.disabled = false;
+  if (res === 'saved' || res === 'failed') setTimeout(() => { label.textContent = 'Image'; }, 2000);
 });
 
 let lastClearedIds = [];

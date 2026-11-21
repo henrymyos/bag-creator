@@ -26,6 +26,13 @@ function bagCardColumns(groups) {
 }
 
 const BAG_CARD_W = 1080, BAG_CARD_H = 1350;
+// Same order, labels and colors as the bag pages' TYPE_CONFIG.
+const BAG_CARD_TYPES = [
+  { key:'putter',   label:'Putters',          color:'#3fb950' },
+  { key:'midrange', label:'Midranges',        color:'#d29922' },
+  { key:'fairway',  label:'Fairway Drivers',  color:'#a371f7' },
+  { key:'distance', label:'Distance Drivers', color:'#f78166' },
+];
 
 function brandLabel(b) {
   return b === 'mvp' ? 'MVP' : b.charAt(0).toUpperCase() + b.slice(1);
@@ -38,7 +45,7 @@ function fitText(ctx, text, maxW) {
   return t + '\u2026';
 }
 
-function drawBagCard(ctx, { owner, bagName, discs, types, host }) {
+function drawBagCard(ctx, { owner, bagName, discs, types = BAG_CARD_TYPES, host }) {
   const W = BAG_CARD_W, H = BAG_CARD_H, PAD = 72;
   ctx.fillStyle = '#0d1117';
   ctx.fillRect(0, 0, W, H);
@@ -137,7 +144,7 @@ async function shareBagImage(opts) {
   if (!blob) return 'failed';
   const file = new File([blob], 'disc-golf-bag.png', { type: 'image/png' });
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    try { await navigator.share({ files: [file], title: `${opts.owner}'s Disc Golf Bag` }); return 'shared'; }
+    try { await navigator.share({ files: [file], title: opts.title || `${opts.owner}'s Disc Golf Bag` }); return 'shared'; }
     catch (e) { if (e.name === 'AbortError') return 'cancelled'; } // other errors: fall back to a download
   }
   const a = document.createElement('a');
