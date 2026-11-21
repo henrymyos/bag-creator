@@ -370,7 +370,7 @@
 
     .bag-empty { text-align: center; padding: 4rem 2rem; color: var(--muted); }
     .bag-empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
-    .bag-empty h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 1.3rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text); margin-bottom: 0.4rem; }
+    .bag-empty h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 1.3rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text); margin-bottom: 0.4rem; }
     .bag-empty p { font-size: 14px; }
 
     .bag-groups { display: flex; flex-direction: column; gap: 2rem; }
@@ -1041,7 +1041,7 @@ function renderBag() {
   if (!myBag.length) {
     display.innerHTML = `<div class="bag-empty">
       <div class="bag-empty-icon">🥏</div>
-      <h3>Your bag is empty</h3>
+      <h2>Your bag is empty</h2>
       <p>Search and add discs from the browser on the left.</p>
     </div>`;
     return;
