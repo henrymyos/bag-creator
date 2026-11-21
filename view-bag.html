@@ -297,6 +297,7 @@
 </main>
 <script src="supabase-config.js?v=2"></script>
 <script src="discs.js"></script>
+<script src="bag-card.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2" integrity="sha384-7i/4BYWz4Mn+lJfg2HWfEPfZQ7tmFKF3CTSKlXBpxWjNlLjcg+T6smpHG4gLmU1u" crossorigin="anonymous"></script>
 <script>
 const AVATAR_COLORS = [
@@ -510,6 +511,10 @@ if (!targetUid) {
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13" cy="2.5" r="1.5"/><circle cx="13" cy="13.5" r="1.5"/><circle cx="3" cy="8" r="1.5"/><line x1="4.5" y1="7" x2="11.5" y2="3.5"/><line x1="4.5" y1="9" x2="11.5" y2="12.5"/></svg>
           <span id="share-label">Share</span>
         </button>
+        <button class="like-btn" id="share-img-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          <span id="share-img-label">Image</span>
+        </button>
         <button class="fc-open-btn" id="fc-btn">Flight Charts</button>
       </div>`;
 
@@ -526,6 +531,16 @@ if (!targetUid) {
           setTimeout(() => { label.textContent = 'Share'; }, 2000);
         }, () => {});
       }
+    });
+    document.getElementById('share-img-btn').addEventListener('click', async e => {
+      const btn = e.currentTarget, label = document.getElementById('share-img-label');
+      if (btn.disabled) return;
+      btn.disabled = true;
+      label.textContent = 'Making…';
+      const res = await shareBagImage({ owner: name, bagName: viewBagName, discs, types: TYPE_CONFIG, host: location.host }).catch(() => 'failed');
+      label.textContent = res === 'saved' ? 'Saved' : res === 'failed' ? 'Try again' : 'Image';
+      btn.disabled = false;
+      if (res === 'saved' || res === 'failed') setTimeout(() => { label.textContent = 'Image'; }, 2000);
     });
     updateLikeBtn();
 
