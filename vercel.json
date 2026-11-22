@@ -14,7 +14,7 @@
       ]
     },
     {
-      "source": "/(discs|theme)\\.js",
+      "source": "/(discs|theme|bag-card)\\.js",
       "headers": [
         {
           "key": "Cache-Control",
