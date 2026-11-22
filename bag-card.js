@@ -129,7 +129,7 @@ function drawBagCard(ctx, { owner, bagName, discs, types = BAG_CARD_TYPES, host 
   ctx.fillText('Build yours at', PAD, H - 60);
   const lead = ctx.measureText('Build yours at ').width;
   ctx.fillStyle = '#39d353';
-  ctx.font = '700 30px Barlow, sans-serif';
+  ctx.font = '600 30px Barlow, sans-serif';
   ctx.fillText(host, PAD + lead, H - 60);
 }
 
