@@ -576,7 +576,7 @@
             <circle cx="6.5" cy="6.5" r="5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/>
           </svg>
         </span>
-        <input class="search-input" id="search-input" type="text" placeholder="Search discs…" autocomplete="off" />
+        <input class="search-input" id="search-input" type="text" aria-label="Search discs" placeholder="Search discs…" autocomplete="off" />
         <button class="search-clear" id="search-clear" aria-label="Clear search">✕</button>
       </div>
       <div class="tab-group">
@@ -1112,7 +1112,7 @@ function renderBagDropdown() {
     const isDeleting = deletingBagId === b.id;
     const mainAttrs = isEditing ? '' : ' data-action="select"';
     const mainInner = isEditing
-      ? `<input class="bag-rename-input" type="text" value="${escapeHtml(b.name)}" maxlength="40" />
+      ? `<input class="bag-rename-input" type="text" aria-label="Bag name" value="${escapeHtml(b.name)}" maxlength="40" />
          <div class="bag-dropdown-meta">${count} disc${count !== 1 ? 's' : ''}</div>`
       : `<div class="bag-dropdown-name">${escapeHtml(b.name)}</div>
          <div class="bag-dropdown-meta">${count} disc${count !== 1 ? 's' : ''}</div>`;
@@ -1508,7 +1508,7 @@ render();
         <span class="eval-dist-label">Your max throw distance</span>
         <div class="eval-dist-ctrl">
           <button class="eval-step-btn" id="eval-dec" aria-label="Lower max distance">−</button>
-          <input class="eval-slider" type="range" id="eval-slider" min="100" max="500" step="25" value="300">
+          <input class="eval-slider" type="range" id="eval-slider" aria-label="Max distance (ft)" min="100" max="500" step="25" value="300">
           <button class="eval-step-btn" id="eval-inc" aria-label="Higher max distance">+</button>
         </div>
         <div class="eval-dist-val"><span id="eval-dist-num">300</span> ft</div>
@@ -1851,7 +1851,7 @@ render();
            <span class="eval-dist-label">Your max throw distance</span>
            <div class="eval-dist-ctrl">
              <button class="eval-step-btn" id="fc-dec" aria-label="Lower max distance">−</button>
-             <input class="eval-slider" type="range" id="fc-slider" min="100" max="500" step="25" value="${initDist}">
+             <input class="eval-slider" type="range" id="fc-slider" aria-label="Max distance (ft)" min="100" max="500" step="25" value="${initDist}">
              <button class="eval-step-btn" id="fc-inc" aria-label="Higher max distance">+</button>
            </div>
            <div class="eval-dist-val"><span id="fc-dist-num">${initDist}</span> ft</div>
