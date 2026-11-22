@@ -323,24 +323,24 @@ function renderProfile(user) {
     <div class="section">
       <div class="section-title">Account Info</div>
       <div class="field">
-        <label>Email</label>
-        <input type="text" value="${esc(user.email)}" readonly />
+        <label for="prof-email">Email</label>
+        <input type="text" id="prof-email" value="${esc(user.email)}" readonly />
       </div>
       <div class="field">
-        <label>Display Name</label>
+        <label for="display-name-input">Display Name</label>
         <input type="text" id="display-name-input" value="${esc(user.user_metadata?.displayName || user.user_metadata?.full_name || '')}" placeholder="Your name" maxlength="30" />
         <div style="font-size:11px;color:var(--muted);margin-top:4px;text-align:right" id="name-char-count">${(user.user_metadata?.displayName || user.user_metadata?.full_name || '').length}/30</div>
       </div>
       <div class="field">
-        <label>PDGA Number</label>
+        <label for="prof-pdga">PDGA Number</label>
         <input type="text" id="prof-pdga" placeholder="e.g. 12345" maxlength="10" inputmode="numeric" />
       </div>
       <div class="field">
-        <label>Max Throw Distance (ft)</label>
+        <label for="prof-dist">Max Throw Distance (ft)</label>
         <input type="number" id="prof-dist" min="100" max="600" step="25" placeholder="e.g. 300" />
       </div>
       <div class="field">
-        <label>Bag Size (total discs)</label>
+        <label for="prof-bagsize">Bag Size (total discs)</label>
         <input type="number" id="prof-bagsize" min="0" max="36" placeholder="e.g. 18" />
       </div>
       <div class="status-msg" id="profile-status"></div>
@@ -367,7 +367,7 @@ function renderProfile(user) {
         <label>Theme</label>
         <div class="toggle-row">
           <label class="toggle-switch">
-            <input type="checkbox" id="theme-toggle" ${document.documentElement.getAttribute('data-theme') === 'light' ? 'checked' : ''} />
+            <input type="checkbox" id="theme-toggle" aria-label="Light mode" ${document.documentElement.getAttribute('data-theme') === 'light' ? 'checked' : ''} />
             <span class="toggle-track"></span>
           </label>
           <span class="toggle-label">Light mode</span>
@@ -552,7 +552,7 @@ function renderProfile(user) {
       wrap.innerHTML = bagsList.map(b => `
         <div class="toggle-row" style="margin-bottom:10px;">
           <label class="toggle-switch">
-            <input type="checkbox" data-bag-id="${esc(b.id)}" ${publicBags[b.id] ? 'checked' : ''} />
+            <input type="checkbox" data-bag-id="${esc(b.id)}" aria-label="Make ${esc(b.name || 'My Bag')} public" ${publicBags[b.id] ? 'checked' : ''} />
             <span class="toggle-track"></span>
           </label>
           <span class="toggle-label" style="color:var(--text);">${esc(b.name || 'My Bag')}</span>

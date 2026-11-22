@@ -702,7 +702,7 @@ if (!targetUid) {
     const wrap = document.createElement('div');
     wrap.className = 'reply-form-wrap';
     wrap.innerHTML = `
-      <textarea class="comment-textarea" placeholder="Write a reply…" rows="1" style="font-size:12px;min-height:32px"></textarea>
+      <textarea class="comment-textarea" aria-label="Write a reply" placeholder="Write a reply…" rows="1" style="font-size:12px;min-height:32px"></textarea>
       <button class="comment-submit" disabled style="font-size:12px;padding:6px 12px">Reply</button>`;
     thread.appendChild(wrap);
 
@@ -760,7 +760,7 @@ if (!targetUid) {
     if (currentUser) {
       el.innerHTML = `
         <div class="comment-form-wrap">
-          <textarea class="comment-textarea" id="comment-textarea" placeholder="Add a comment…" rows="1"></textarea>
+          <textarea class="comment-textarea" id="comment-textarea" aria-label="Add a comment" placeholder="Add a comment…" rows="1"></textarea>
           <button class="comment-submit" id="comment-submit" disabled>Post</button>
         </div>
         <div id="comment-error" style="padding:0 1.25rem 0.6rem;font-size:12px;color:#f85149;min-height:0"></div>`;
@@ -982,7 +982,7 @@ if (!targetUid) {
         <span class="fc-dist-label">Max throw distance</span>
         <div class="fc-dist-ctrl">
           <button class="fc-step-btn" id="fc-dec" aria-label="Lower max distance">−</button>
-          <input class="fc-slider" type="range" id="fc-slider" min="100" max="500" step="25" value="${initDist}">
+          <input class="fc-slider" type="range" id="fc-slider" aria-label="Max distance (ft)" min="100" max="500" step="25" value="${initDist}">
           <button class="fc-step-btn" id="fc-inc" aria-label="Higher max distance">+</button>
         </div>
         <div class="fc-dist-val"><span id="fc-dist-num">${initDist}</span> ft</div>
