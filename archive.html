@@ -70,7 +70,7 @@
     }
     .logo {
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 700;
       letter-spacing: 0.02em;
       color: var(--text);
@@ -83,7 +83,7 @@
     @media (max-width: 500px) {
     }
     .nav-link {
-      font-size: 13px; font-weight: 600; color: var(--muted);
+      font-size: 14px; font-weight: 600; color: var(--muted);
       text-decoration: none; letter-spacing: 0.05em;
       padding: 6px 16px; border: 1px solid var(--border2);
       border-radius: var(--r-sm); transition: color 0.15s, border-color 0.15s, background 0.15s;
@@ -93,7 +93,7 @@
     .nav-avatar {
       width: 22px; height: 22px; border-radius: 50%;
       background: rgba(45,212,167,0.2); color: var(--accent);
-      font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700;
+      font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700;
       display: flex; align-items: center; justify-content: center;
       overflow: hidden; flex-shrink: 0;
     }
@@ -149,7 +149,7 @@
       gap: 0.6rem;
     }
     .filter-label {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       letter-spacing: 0.08em;
       text-transform: uppercase;
@@ -169,13 +169,15 @@
       transition: all 0.15s;
     }
     .filter-btn:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
-    .filter-btn.active.brand-all      { background: rgba(45,212,167,0.12);  border-color: rgba(45,212,167,0.4);  color: var(--accent); }
-    .filter-btn.active.brand-innova   { background: rgba(224,92,42,0.12);  border-color: rgba(224,92,42,0.4);  color: var(--innova); }
-    .filter-btn.active.brand-discraft { background: rgba(88,166,255,0.12); border-color: rgba(88,166,255,0.4); color: var(--discraft); }
-    .filter-btn.active.brand-trilogy  { background: rgba(163,113,247,0.12);border-color: rgba(163,113,247,0.4);color: #b58df9; }
-    .filter-btn.active.brand-mvp      { background: rgba(34,197,94,0.12);  border-color: rgba(34,197,94,0.4);  color: var(--mvp); }
-    .filter-btn.active.brand-discmania{ background: rgba(230,57,70,0.12);  border-color: rgba(230,57,70,0.4);  color: var(--discmania); }
-    .filter-btn.active.brand-prodigy  { background: rgba(14,165,233,0.12); border-color: rgba(14,165,233,0.4); color: var(--prodigy); }
+    /* Brand chips: neutral, the brand shows only as an 8 px dot; selected = surface-3 with a teal ring (UI audit 2026-11-21). */
+    .filter-btn.brand-innova { --brand: var(--innova); }
+    .filter-btn.brand-discraft { --brand: var(--discraft); }
+    .filter-btn.brand-trilogy { --brand: #b58df9; }
+    .filter-btn.brand-mvp { --brand: var(--mvp); }
+    .filter-btn.brand-discmania { --brand: var(--discmania); }
+    .filter-btn.brand-prodigy { --brand: var(--prodigy); }
+    .filter-btn[class*="brand-"]:not(.brand-all)::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--brand); margin-right: 8px; vertical-align: 1px; }
+    .filter-btn.active[class*="brand-"] { background: var(--surface-3); border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); color: var(--text); }
     .filter-btn.active.stab-all { background: rgba(45,212,167,0.12); border-color: rgba(45,212,167,0.4); color: var(--accent); }
     .filter-btn.active.stab-overstable { background: rgba(247,129,102,0.15); border-color: rgba(247,129,102,0.4); color: #f78166; }
     .filter-btn.active.stab-neutral { background: rgba(57,211,83,0.12); border-color: rgba(57,211,83,0.4); color: var(--neutral); }
@@ -201,7 +203,7 @@
       border-radius: var(--r-sm);
       color: var(--text);
       font-family: 'Barlow', sans-serif;
-      font-size: 13px;
+      font-size: 14px;
       padding: 6px 28px 6px 30px;
       width: 200px;
       outline: none;
@@ -255,7 +257,7 @@
     /* STABILITY GROUP */
     .stab-group { margin-bottom: 1.5rem; }
     .stab-group-header {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       letter-spacing: 0.08em;
       text-transform: uppercase;
@@ -287,7 +289,7 @@
       margin-bottom: 8px;
     }
     .brand-badge {
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 600;
       letter-spacing: 0.07em;
       text-transform: uppercase;
@@ -302,7 +304,7 @@
     .brand-badge.prodigy   { background: rgba(14,165,233,0.15);  color: var(--prodigy); }
 
     .stability-tag {
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 600;
       letter-spacing: 0.05em;
       text-transform: uppercase;
@@ -324,7 +326,7 @@
     }
     .disc-name {
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 19px;
+      font-size: 20px;
       font-weight: 700;
       color: var(--text);
       line-height: 1;
@@ -333,7 +335,7 @@
       text-overflow: ellipsis;
     }
     .disc-link {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       letter-spacing: 0.08em;
       text-transform: uppercase;
@@ -362,13 +364,14 @@
     }
     .fnum .v {
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 700;
+      font-variant-numeric: tabular-nums;
       display: block;
       line-height: 1;
     }
     .fnum .l {
-      font-size: 9px;
+      font-size: 12px;
       color: var(--muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -398,14 +401,14 @@
     .help-header { display:flex;align-items:center;gap:8px;padding:1rem 1.25rem;border-bottom:1px solid var(--border);flex-shrink:0; }
     .help-hdr-title { font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;letter-spacing:.06em;text-transform:uppercase; }
     .help-counter { font-size:12px;color:var(--muted);margin-left:auto; }
-    .help-close { background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:2px 5px;border-radius:4px;line-height:1; }
+    .help-close { background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:2px 5px;border-radius:4px;line-height:1; }
     .help-close:hover { color:var(--text);background:rgba(255,255,255,0.07); }
     .help-body { padding:2rem 1.5rem;text-align:center;flex:1; }
-    .help-icon { font-size:2.5rem;margin-bottom:1rem;line-height:1; }
-    .help-step-title { font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.75rem; }
+    .help-icon { font-size:44px;margin-bottom:1rem;line-height:1; }
+    .help-step-title { font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.75rem; }
     .help-step-text { font-size:14px;color:var(--muted);line-height:1.65; }
     .help-footer { display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.9rem 1.25rem;border-top:1px solid var(--border);flex-shrink:0; }
-    .help-nav-btn { padding:7px 15px;font-family:'Barlow',sans-serif;font-size:13px;font-weight:600;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap; }
+    .help-nav-btn { padding:7px 15px;font-family:'Barlow',sans-serif;font-size:14px;font-weight:600;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap; }
     .help-nav-btn:hover { color:var(--text);border-color:rgba(255,255,255,.25); }
     .help-nav-btn:disabled { opacity:.3;cursor:default; }
     .help-nav-primary { background:rgba(45,212,167,.12);border-color:rgba(45,212,167,.4);color:var(--accent); }
@@ -433,7 +436,7 @@
     .mobile-menu.open { display: flex; }
     .mobile-menu-link {
       display: block; width: 100%; text-align: left;
-      padding: 10px 12px; font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 600;
+      padding: 10px 12px; font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 600;
       color: var(--muted); text-decoration: none; border-radius: var(--r-sm);
       letter-spacing: 0.04em; background: none; border: none; cursor: pointer;
       transition: background 0.12s, color 0.12s;
@@ -454,6 +457,7 @@
       .stab-filter-row .filter-btn { flex: 0 0 calc((100% - 1.2rem) / 3); }
     }
   </style>
+  <link rel="stylesheet" href="size.css" />
 </head>
 <body>
 
@@ -606,7 +610,7 @@ function discCard(d) {
       </div>
       <div class="disc-title-row">
         <div class="disc-name">${d.name}</div>
-        <a class="disc-link" href="https://1010discs.com/catalogsearch/result/?q=${encodeURIComponent(d.name)}&disc_type=" target="_blank" rel="noopener">Buy <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></a>
+        <a class="disc-link" href="https://1010discs.com/catalogsearch/result/?q=${encodeURIComponent(d.name)}&disc_type=" target="_blank" rel="noopener" aria-label="Buy ${d.name} at 1010 Discs" title="Buy"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></a>
       </div>
       <div class="flight-row">
         <div class="fnum spd"><span class="v">${d.speed}</span><span class="l">Speed</span></div>

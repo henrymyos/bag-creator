@@ -74,7 +74,7 @@
     .nav-right { display: flex; align-items: center; gap: 6px; justify-self: end; }
     .logo {
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 700;
       letter-spacing: 0.02em;
       color: var(--text);
@@ -82,10 +82,10 @@
       justify-self: start;
     }
     .logo span { color: var(--accent); }
-    .header-sub { font-size: 13px; color: var(--muted); }
+    .header-sub { font-size: 14px; color: var(--muted); }
     .nav-tabs { display: flex; gap: 6px; }
     .nav-link {
-      font-size: 13px; font-weight: 600; color: var(--muted);
+      font-size: 14px; font-weight: 600; color: var(--muted);
       text-decoration: none; letter-spacing: 0.05em;
       padding: 6px 16px; border: 1px solid var(--border2);
       border-radius: var(--r-sm); transition: color 0.15s, border-color 0.15s, background 0.15s;
@@ -95,7 +95,7 @@
     .nav-avatar {
       width: 22px; height: 22px; border-radius: 50%;
       background: rgba(45,212,167,0.2); color: var(--accent);
-      font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700;
+      font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700;
       display: flex; align-items: center; justify-content: center;
       overflow: hidden; flex-shrink: 0;
     }
@@ -134,7 +134,7 @@
       margin-bottom: 10px;
     }
     .hero h1 em { color: var(--accent); font-style: normal; }
-    .hero p { font-size: 15px; color: var(--muted); max-width: 480px; margin: 0 auto; }
+    .hero p { font-size: 16px; color: var(--muted); max-width: 36em; margin: 0 auto; }
  
     /* CONTROLS — horizontal padding matches .hero so the cards align with the headline */
     .controls {
@@ -167,7 +167,7 @@
       padding: 1.1rem 1.25rem;
     }
     .control-card label {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       letter-spacing: 0.08em;
       text-transform: uppercase;
@@ -183,7 +183,7 @@
     }
     .dist-display .num {
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 36px;
+      font-size: 32px;
       font-weight: 700;
       color: var(--accent);
       line-height: 1;
@@ -212,7 +212,7 @@
     .range-labels {
       display: flex;
       justify-content: space-between;
-      font-size: 11px;
+      font-size: 12px;
       color: var(--muted);
       margin-top: 6px;
     }
@@ -223,7 +223,7 @@
       flex: 1;
       padding: 7px 10px;
       font-family: 'Barlow', sans-serif;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 500;
       border-radius: var(--r-sm);
       border: 1px solid var(--border2);
@@ -239,29 +239,15 @@
       border-color: rgba(45,212,167,0.4);
       color: var(--accent);
     }
-    .filter-btn.active.brand-innova {
-      background: rgba(224,92,42,0.12);
-      border-color: rgba(224,92,42,0.4);
-      color: var(--innova);
-    }
-    .filter-btn.active.brand-discraft {
-      background: rgba(88,166,255,0.12);
-      border-color: rgba(88,166,255,0.4);
-      color: var(--discraft);
-    }
-    .filter-btn.active.brand-mvp { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.4); color: var(--mvp); }
-    .filter-btn.active.brand-discmania { background: rgba(230,57,70,0.12); border-color: rgba(230,57,70,0.4); color: var(--discmania); }
-    .filter-btn.active.brand-prodigy { background: rgba(14,165,233,0.12); border-color: rgba(14,165,233,0.4); color: var(--prodigy); }
-    .filter-btn.active.brand-trilogy {
-      background: rgba(163,113,247,0.12);
-      border-color: rgba(163,113,247,0.4);
-      color: #b58df9;
-    }
-    .filter-btn.active.brand-both {
-      background: rgba(163,113,247,0.12);
-      border-color: rgba(163,113,247,0.4);
-      color: #b58df9;
-    }
+    /* Brand chips: neutral, the brand shows only as an 8 px dot; selected = surface-3 with a teal ring (UI audit 2026-11-21). */
+    .filter-btn.brand-innova { --brand: var(--innova); }
+    .filter-btn.brand-discraft { --brand: var(--discraft); }
+    .filter-btn.brand-trilogy { --brand: #b58df9; }
+    .filter-btn.brand-mvp { --brand: var(--mvp); }
+    .filter-btn.brand-discmania { --brand: var(--discmania); }
+    .filter-btn.brand-prodigy { --brand: var(--prodigy); }
+    .filter-btn[class*="brand-"]:not(.brand-all)::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--brand); margin-right: 8px; vertical-align: 1px; }
+    .filter-btn.active[class*="brand-"] { background: var(--surface-3); border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); color: var(--text); }
     .brand-filter-row {
       display: flex;
       flex-wrap: wrap;
@@ -301,7 +287,7 @@
         flex: 1;
         padding: 8px 4px;
         font-family: 'Barlow Condensed', sans-serif;
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 700;
         letter-spacing: 0.05em;
         text-transform: uppercase;
@@ -362,7 +348,7 @@
       margin-bottom: 8px;
     }
     .brand-badge {
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 600;
       letter-spacing: 0.07em;
       text-transform: uppercase;
@@ -391,7 +377,7 @@
     }
     .disc-name {
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 19px;
+      font-size: 20px;
       font-weight: 700;
       color: var(--text);
       line-height: 1;
@@ -428,7 +414,7 @@
       transform: translateY(0);
     }
     .disc-link {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       letter-spacing: 0.08em;
       text-transform: uppercase;
@@ -459,13 +445,14 @@
     }
     .fnum .v {
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 700;
+      font-variant-numeric: tabular-nums;
       display: block;
       line-height: 1;
     }
     .fnum .l {
-      font-size: 9px;
+      font-size: 12px;
       color: var(--muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -481,7 +468,7 @@
  
     .stability-tag {
       display: inline-block;
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 600;
       letter-spacing: 0.05em;
       text-transform: uppercase;
@@ -508,7 +495,7 @@
       border: 1px solid rgba(45,212,167,0.15);
       border-radius: var(--r-sm);
       padding: 10px 14px;
-      font-size: 13px;
+      font-size: 14px;
       color: #8bc8a0;
       margin-bottom: 1.5rem;
       line-height: 1.5;
@@ -530,7 +517,7 @@
       flex-direction: column;
     }
     .disc-count-item > label {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       letter-spacing: 0.08em;
       text-transform: uppercase;
@@ -563,7 +550,7 @@
       flex: 1;
       text-align: center;
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 700;
       color: var(--text);
     }
@@ -624,7 +611,7 @@
       gap: 7px;
       padding: 9px 18px;
       font-family: 'Barlow', sans-serif;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 600;
       letter-spacing: 0.03em;
       background: rgba(45,212,167,0.12);
@@ -665,14 +652,14 @@
     }
     .modal-header h3 {
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 700;
       letter-spacing: 0.04em;
       text-transform: uppercase;
     }
     .modal-close-btn {
       background: none; border: none; color: var(--muted);
-      font-size: 22px; cursor: pointer; line-height: 1;
+      font-size: 20px; cursor: pointer; line-height: 1;
       padding: 2px 6px; border-radius: 4px;
     }
     .modal-close-btn:hover { color: var(--text); background: rgba(255,255,255,0.07); }
@@ -684,7 +671,7 @@
       padding-bottom: 0.75rem;
       margin-bottom: 0.75rem;
       border-bottom: 1px solid var(--border);
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 600;
       color: var(--text);
       cursor: pointer;
@@ -693,7 +680,7 @@
     .modal-type-section { margin-bottom: 1rem; }
     .modal-type-label {
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 700;
       letter-spacing: 0.1em;
       text-transform: uppercase;
@@ -713,8 +700,8 @@
     .modal-disc-item:hover { background: rgba(255,255,255,0.05); }
     .modal-disc-item input { width: 15px; height: 15px; accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
     .modal-disc-info { flex: 1; min-width: 0; }
-    .modal-disc-name { font-size: 13px; font-weight: 600; }
-    .modal-disc-meta { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .modal-disc-name { font-size: 14px; font-weight: 600; }
+    .modal-disc-meta { font-size: 12px; color: var(--muted); margin-top: 1px; }
     .modal-footer {
       display: flex;
       align-items: center;
@@ -728,7 +715,7 @@
     .modal-confirm-btn {
       padding: 9px 20px;
       font-family: 'Barlow', sans-serif;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 600;
       background: rgba(45,212,167,0.12);
       border: 1px solid rgba(45,212,167,0.4);
@@ -746,14 +733,14 @@
     .help-header { display:flex;align-items:center;gap:8px;padding:1rem 1.25rem;border-bottom:1px solid var(--border);flex-shrink:0; }
     .help-hdr-title { font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;letter-spacing:.06em;text-transform:uppercase; }
     .help-counter { font-size:12px;color:var(--muted);margin-left:auto; }
-    .help-close { background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:2px 5px;border-radius:4px;line-height:1; }
+    .help-close { background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:2px 5px;border-radius:4px;line-height:1; }
     .help-close:hover { color:var(--text);background:rgba(255,255,255,0.07); }
     .help-body { padding:2rem 1.5rem;text-align:center;flex:1; }
-    .help-icon { font-size:2.5rem;margin-bottom:1rem;line-height:1; }
-    .help-step-title { font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.75rem; }
+    .help-icon { font-size:44px;margin-bottom:1rem;line-height:1; }
+    .help-step-title { font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.75rem; }
     .help-step-text { font-size:14px;color:var(--muted);line-height:1.65; }
     .help-footer { display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.9rem 1.25rem;border-top:1px solid var(--border);flex-shrink:0; }
-    .help-nav-btn { padding:7px 15px;font-family:'Barlow',sans-serif;font-size:13px;font-weight:600;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap; }
+    .help-nav-btn { padding:7px 15px;font-family:'Barlow',sans-serif;font-size:14px;font-weight:600;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap; }
     .help-nav-btn:hover { color:var(--text);border-color:rgba(255,255,255,.25); }
     .help-nav-btn:disabled { opacity:.3;cursor:default; }
     .help-nav-primary { background:rgba(45,212,167,.12);border-color:rgba(45,212,167,.4);color:var(--accent); }
@@ -781,7 +768,7 @@
     .mobile-menu.open { display: flex; }
     .mobile-menu-link {
       display: block; width: 100%; text-align: left;
-      padding: 10px 12px; font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 600;
+      padding: 10px 12px; font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 600;
       color: var(--muted); text-decoration: none; border-radius: var(--r-sm);
       letter-spacing: 0.04em; background: none; border: none; cursor: pointer;
       transition: background 0.12s, color 0.12s;
@@ -796,6 +783,7 @@
       .hamburger-btn { display: flex; }
     }
   </style>
+  <link rel="stylesheet" href="size.css" />
 </head>
 <body>
  
@@ -1225,7 +1213,7 @@ function render() {
   const bag = currentBag;
   const output = document.getElementById("bag-output");
   if (bag.length === 0) {
-    output.innerHTML = '<div class="empty-state"><div style="font-size:2rem">🥏</div><p>No suitable discs found for your throwing capability. Try increasing your distance range.</p></div>';
+    output.innerHTML = '<div class="empty-state"><div style="font-size:32px">🥏</div><p>No suitable discs found for your throwing capability. Try increasing your distance range.</p></div>';
     return;
   }
  
@@ -1264,7 +1252,7 @@ function render() {
                         <path d="M20.49 15a9 9 0 0 1-14.13 3.04L1 14" />
                       </svg>
                     </button>
-                    <a class="disc-link" href="https://1010discs.com/catalogsearch/result/?q=${encodeURIComponent(d.name)}&disc_type=" target="_blank" rel="noopener">Buy <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></a>
+                    <a class="disc-link" href="https://1010discs.com/catalogsearch/result/?q=${encodeURIComponent(d.name)}&disc_type=" target="_blank" rel="noopener" aria-label="Buy ${d.name} at 1010 Discs" title="Buy"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></a>
                   </div>
                 </div>
                 <div class="flight-row">
@@ -1288,7 +1276,7 @@ function render() {
     const count = bag.filter(d => d.type === type).length;
     const active = type === activeMobileTab;
     const color = TYPE_COLOR[type];
-    return `<button class="mobile-tab-btn" data-type="${type}" style="${active ? `border-color:${color};color:${color};background:var(--bg2)` : ''}">${SHORT_LABEL[type]} <span style="opacity:0.55;font-size:11px">${count}</span></button>`;
+    return `<button class="mobile-tab-btn" data-type="${type}" style="${active ? `border-color:${color};color:${color};background:var(--bg2)` : ''}">${SHORT_LABEL[type]} <span style="opacity:0.55;font-size:12px">${count}</span></button>`;
   }).join('');
 }
 

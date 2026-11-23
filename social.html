@@ -41,18 +41,18 @@
       column-gap: 1.5rem; align-items: center; height: 64px;
       position: sticky; top: 0; z-index: 100;
     }
-    .logo { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: 0.02em; color: var(--text); text-decoration: none; justify-self: start; }
+    .logo { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; letter-spacing: 0.02em; color: var(--text); text-decoration: none; justify-self: start; }
     .logo span { color: var(--accent); }
     .nav-tabs { display: flex; gap: 6px; }
     .nav-right { display: flex; align-items: center; gap: 6px; justify-self: end; }
-    .nav-link { font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none; letter-spacing: 0.05em; padding: 6px 16px; border: 1px solid var(--border2); border-radius: var(--r-sm); transition: all 0.15s; white-space: nowrap; display: inline-flex; align-items: center; height: 32px; }
+    .nav-link { font-size: 14px; font-weight: 600; color: var(--muted); text-decoration: none; letter-spacing: 0.05em; padding: 6px 16px; border: 1px solid var(--border2); border-radius: var(--r-sm); transition: all 0.15s; white-space: nowrap; display: inline-flex; align-items: center; height: 32px; }
     .nav-link:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
     .nav-link.active { background: rgba(45,212,167,0.12); border-color: rgba(45,212,167,0.4); color: var(--accent); }
     .nav-link-profile { display: inline-flex; align-items: center; gap: 7px; padding: 3px 14px 3px 5px; }
     .nav-avatar {
       width: 22px; height: 22px; border-radius: 50%;
       background: rgba(45,212,167,0.2); color: var(--accent);
-      font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700;
+      font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700;
       display: flex; align-items: center; justify-content: center;
       overflow: hidden; flex-shrink: 0;
     }
@@ -77,7 +77,7 @@
     .mobile-menu.open { display: flex; }
     .mobile-menu-link {
       display: block; width: 100%; text-align: left;
-      padding: 10px 12px; font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 600;
+      padding: 10px 12px; font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 600;
       color: var(--muted); text-decoration: none; border-radius: var(--r-sm);
       letter-spacing: 0.04em; background: none; border: none; cursor: pointer;
       transition: background 0.12s, color 0.12s;
@@ -95,8 +95,8 @@
     /* Page */
     .page { max-width: 680px; margin: 0 auto; padding: 2rem 1rem 4rem; }
     .page-head { margin-bottom: 1.75rem; }
-    .page-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1.75rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
-    .page-sub { font-size: 13px; color: var(--muted); margin-top: 0.3rem; }
+    .page-title { font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+    .page-sub { font-size: 14px; color: var(--muted); margin-top: 0.3rem; }
 
     /* Feed — single column */
     .feed { display: flex; flex-direction: column; gap: 1.5rem; }
@@ -119,15 +119,15 @@
     .card-avatar {
       width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
-      font-family: 'Barlow Condensed', sans-serif; font-size: 19px; font-weight: 700;
+      font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700;
       overflow: hidden;
     }
     .card-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
-    .card-name { font-family: 'Barlow Condensed', sans-serif; font-size: 1.05rem; font-weight: 700; letter-spacing: 0.02em; }
-    .card-updated { font-size: 11px; color: var(--muted); margin-top: 1px; }
-    .card-pdga { font-size: 11px; font-weight: 600; color: var(--accent); text-decoration: none; letter-spacing: 0.03em; margin-top: 1px; display: block; opacity: 0.85; transition: opacity 0.12s; }
+    .card-name { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.02em; }
+    .card-updated { font-size: 12px; color: var(--muted); margin-top: 1px; }
+    .card-pdga { font-size: 12px; font-weight: 600; color: var(--accent); text-decoration: none; letter-spacing: 0.03em; margin-top: 1px; display: block; opacity: 0.85; transition: opacity 0.12s; }
     .card-pdga:hover { opacity: 1; text-decoration: underline; }
-    .card-header-timestamp { margin-left: auto; font-size: 11px; color: var(--muted); flex-shrink: 0; }
+    .card-header-timestamp { margin-left: auto; font-size: 12px; color: var(--muted); flex-shrink: 0; }
 
     /* Card body */
     .card-body { padding: 0 1.1rem 0.85rem; display: flex; flex-direction: column; gap: 0.65rem; }
@@ -136,7 +136,7 @@
     .disc-breakdown { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
     .breakdown-item {
       padding: 2px 8px; border-radius: 4px;
-      font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 11.5px; letter-spacing: 0.04em;
+      font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 12px; letter-spacing: 0.04em;
       border: 1px solid;
     }
     .breakdown-putter   { color: #3fb950; border-color: rgba(63,185,80,0.25);   background: rgba(63,185,80,0.08);   }
@@ -150,7 +150,7 @@
     .disc-chip {
       padding: 2px 7px; border-radius: 4px;
       background: var(--bg3); border: 1px solid var(--border);
-      font-size: 11px; color: var(--muted);
+      font-size: 12px; color: var(--muted);
     }
     .disc-chip-more { color: rgba(255,255,255,0.28); border-color: transparent; background: none; }
 
@@ -163,7 +163,7 @@
     .action-btn {
       background: none; border: none; cursor: pointer;
       display: inline-flex; align-items: center; gap: 5px;
-      color: var(--muted); font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 500;
+      color: var(--muted); font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 500;
       padding: 3px 0; transition: color 0.12s;
     }
     .action-btn:hover { color: var(--text); }
@@ -184,7 +184,7 @@
       padding: 0.6rem 1.1rem 0.75rem;
       display: flex; flex-direction: column; gap: 0.35rem;
     }
-    .card-comment-line { font-size: 13px; line-height: 1.45; }
+    .card-comment-line { font-size: 14px; line-height: 1.45; }
     .card-comment-line .comment-author { font-weight: 600; margin-right: 0.4em; }
     .card-comment-line .comment-text { color: var(--text); }
     .card-view-comments {
@@ -200,7 +200,7 @@
     }
     .state-msg strong {
       display: block; font-family: 'Barlow Condensed', sans-serif;
-      font-size: 1.3rem; font-weight: 700; letter-spacing: 0.04em;
+      font-size: 20px; font-weight: 700; letter-spacing: 0.04em;
       text-transform: uppercase; color: var(--text); margin-bottom: 0.35rem;
     }
     .state-msg a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
@@ -213,14 +213,14 @@
     .help-header { display:flex;align-items:center;gap:8px;padding:1rem 1.25rem;border-bottom:1px solid var(--border);flex-shrink:0; }
     .help-hdr-title { font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;letter-spacing:.06em;text-transform:uppercase; }
     .help-counter { font-size:12px;color:var(--muted);margin-left:auto; }
-    .help-close { background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:2px 5px;border-radius:4px;line-height:1; }
+    .help-close { background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:2px 5px;border-radius:4px;line-height:1; }
     .help-close:hover { color:var(--text);background:rgba(255,255,255,0.07); }
     .help-body { padding:2rem 1.5rem;text-align:center;flex:1; }
-    .help-icon { font-size:2.5rem;margin-bottom:1rem;line-height:1; }
-    .help-step-title { font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.75rem; }
+    .help-icon { font-size:44px;margin-bottom:1rem;line-height:1; }
+    .help-step-title { font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.75rem; }
     .help-step-text { font-size:14px;color:var(--muted);line-height:1.65; }
     .help-footer { display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.9rem 1.25rem;border-top:1px solid var(--border);flex-shrink:0; }
-    .help-nav-btn { padding:7px 15px;font-family:'Barlow',sans-serif;font-size:13px;font-weight:600;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap; }
+    .help-nav-btn { padding:7px 15px;font-family:'Barlow',sans-serif;font-size:14px;font-weight:600;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap; }
     .help-nav-btn:hover { color:var(--text);border-color:rgba(255,255,255,.25); }
     .help-nav-btn:disabled { opacity:.3;cursor:default; }
     .help-nav-primary { background:rgba(45,212,167,.12);border-color:rgba(45,212,167,.4);color:var(--accent); }
@@ -229,6 +229,7 @@
     .help-dot { width:7px;height:7px;border-radius:50%;background:var(--border2);border:none;cursor:pointer;padding:0;transition:background .15s; }
     .help-dot.active { background:var(--accent); }
   </style>
+  <link rel="stylesheet" href="size.css" />
 </head>
 <body>
 

@@ -1,0 +1,20 @@
+/* Tap-size pass (Nova's UI audit 2026-11-21): every control is at least 44 px (--tap).
+   Loaded after each page's own <style>, so these win without touching every rule. */
+.logo, .back-link { display: inline-flex; align-items: center; min-height: var(--tap); }
+a.logo[style*="block"], .card > .logo { display: flex; justify-content: center; }
+.nav-link, .hamburger-btn, .filter-btn, .type-tab, .brand-tab, .action-btn, .add-to-bag-btn,
+.search-input, .total-input, .submit-btn, .toggle-btn, .card input { min-height: var(--tap); }
+.stepper-btn, .add-btn { width: var(--tap); height: var(--tap); min-width: var(--tap); }
+
+/* Brand chips: dot + name on one line even three-across at 390 px. */
+.filter-btn[class*="brand-"] { white-space: nowrap; padding-inline: 6px; }
+
+/* Buy = 44 px icon button (the cart icon; the label is in aria-label). */
+.disc-link { display: inline-flex; align-items: center; justify-content: center; width: var(--tap); height: var(--tap); padding: 0; }
+.disc-link svg { width: 20px; height: 20px; }
+
+/* Distance slider: 44 px touch strip, the visible track stays 4 px. */
+input[type=range] { height: var(--tap); background: transparent; }
+input[type=range]::-webkit-slider-runnable-track { height: 4px; background: var(--bg3); border-radius: 2px; }
+input[type=range]::-webkit-slider-thumb { margin-top: -7px; }
+input[type=range]::-moz-range-track { height: 4px; background: var(--bg3); border-radius: 2px; }
