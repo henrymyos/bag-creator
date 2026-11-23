@@ -33,5 +33,5 @@ Requires a `supabase-config.js` with a project URL and anon key.
 ## Tests
 
 ```bash
-node --test   # catalog checks for discs.js + share-image layout (bag-card.js)
+node --test   # catalog checks for discs.js, share-image layout (bag-card.js), nav avatar rendering
 ```

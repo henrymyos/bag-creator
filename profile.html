@@ -293,7 +293,11 @@ function applyAvatar(colorVal, photoData, initial) {
   const c = AVATAR_COLORS.find(x => x.val === colorVal) || AVATAR_COLORS[0];
   circle.style.border = `2px solid ${c.border}`;
   if (photoData) {
-    circle.innerHTML = `<img class="avatar-img" src="${photoData}" alt="">`;
+    const img = document.createElement('img');
+    img.className = 'avatar-img';
+    img.src = photoData;
+    img.alt = '';
+    circle.replaceChildren(img);
     circle.style.background = 'none';
     circle.style.color = '';
     circle.style.fontSize = '';

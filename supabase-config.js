@@ -29,7 +29,11 @@ function applyNavAvatar(colorVal, photoData, initial) {
     const el = document.getElementById(id);
     if (!el) return;
     if (photoData) {
-      el.innerHTML = '<img src="' + photoData + '" alt="">';
+      // DOM, not innerHTML: photoData is stored profile data, so it never gets parsed as markup
+      const img = document.createElement('img');
+      img.src = photoData;
+      img.alt = '';
+      el.replaceChildren(img);
       el.style.background = 'none';
       el.style.color = '';
     } else {
